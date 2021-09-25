@@ -2,6 +2,9 @@
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
+#ifndef _PLAYERBOT_GENERICSPELLACTIONS_H
+#define _PLAYERBOT_GENERICSPELLACTIONS_H
+
 #include "Action.h"
 #include "Value.h"
 
@@ -55,7 +58,7 @@ class CastSpellAction : public Action
 
         std::string const& GetTargetName() override { return "current target"; };
         bool Execute(Event event) override;
-        bool isPossible() const override;
+        bool isPossible() override;
 		bool isUseful() override;
         ActionThreatType getThreatType() override { return ACTION_THREAT_SINGLE; }
 
@@ -118,7 +121,7 @@ class CastEnchantItemAction : public CastSpellAction
 			range = botAI->GetRange("spell");
 		}
 
-        bool isPossible() const override;
+        bool isPossible() override;
         std::string const& GetTargetName() override { return "self target"; }
 };
 
@@ -242,13 +245,13 @@ class CastArcaneTorrentAction : public CastBuffSpellAction
 class CastManaTapAction : public CastBuffSpellAction
 {
     public:
-        CastManaTapAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "mana tap") {}
+        CastManaTapAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "mana tap") { }
 };
 
 class CastWarStompAction : public CastSpellAction
 {
     public:
-        CastWarStompAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "war stomp") {}
+        CastWarStompAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "war stomp") { }
 };
 
 class CastSpellOnEnemyHealerAction : public CastSpellAction
@@ -268,3 +271,5 @@ class CastSnareSpellAction : public CastDebuffSpellAction
         Value<Unit*>* GetTargetValue() override;
         std::string const& getName() override { return spell + " on snare target"; }
 };
+
+#endif

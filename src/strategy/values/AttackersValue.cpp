@@ -63,7 +63,7 @@ void AttackersValue::AddAttackersOf(Player* player, std::set<Unit*>& targets)
 	std::list<Unit*> units;
 	Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(player, player, sPlayerbotAIConfig->sightDistance);
     Acore::UnitListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(player, units, u_check);
-    player->VisitNearbyObject(sPlayerbotAIConfig->sightDistance, searcher);
+    Cell::VisitAllObjects(player, searcher, sPlayerbotAIConfig->sightDistance);
 
 	for (Unit* unit : units)
     {

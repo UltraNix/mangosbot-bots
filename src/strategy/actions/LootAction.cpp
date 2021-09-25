@@ -275,12 +275,12 @@ uint32 stackCount = urand(1, proto->GetMaxStackSize());
     uint32 auction_time = uint32(urand(8, 24) * HOUR * sWorld.getConfig(CONFIG_FLOAT_RATE_AUCTION_TIME));
 
     AuctionEntry* auctionEntry = new AuctionEntry;
-    auctionEntry->Id = sObjectMgr.GenerateAuctionID();
-    auctionEntry->itemGuidLow = item->GetObjectGuid().GetCounter();
+    auctionEntry->Id = sObjectMgr->GenerateAuctionID();
+    auctionEntry->itemGuidLow = item->GetGUID().GetCounter();
     auctionEntry->itemTemplate = item->GetEntry();
     auctionEntry->itemCount = item->GetCount();
     auctionEntry->itemRandomPropertyId = item->GetItemRandomPropertyId();
-    auctionEntry->owner = bot->GetGUIDLow();
+    auctionEntry->owner = bot->GetGUID().GetCounter();
     auctionEntry->startbid = bidPrice;
     auctionEntry->bidder = 0;
     auctionEntry->bid = 0;
@@ -366,7 +366,7 @@ bool StoreLootAction::Execute(Event event)
             if (maxStack == 1)
                 continue;
 
-            std::vector<Item*> found = parseItems(chat->formatItem(proto));
+            std::list<Item*> found = parseItems(chat->formatItem(proto));
 
             bool hasFreeStack = false;
 
@@ -386,7 +386,7 @@ bool StoreLootAction::Execute(Event event)
         Player* master = botAI->GetMaster();
         if (sRandomPlayerbotMgr->IsRandomBot(bot) && master)
         {
-            uint32 price = itemcount * auctionbot.GetBuyPrice(proto) * sRandomPlayerbotMgr->GetBuyMultiplier(bot) + gold;
+            uint32 price = itemcount * proto->BuyPrice * sRandomPlayerbotMgr->GetBuyMultiplier(bot) + gold;
             if (price)
                 sRandomPlayerbotMgr->AddTradeDiscount(bot, master, price);
 

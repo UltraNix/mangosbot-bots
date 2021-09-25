@@ -2,6 +2,9 @@
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
+#ifndef _PLAYERBOT_ROGUEACTIONS_H
+#define _PLAYERBOT_ROGUEACTIONS_H
+
 #include "GenericSpellActions.h"
 
 class Event;
@@ -28,14 +31,14 @@ class CastStealthAction : public CastBuffSpellAction
 
         std::string const& GetTargetName() override { return "self target"; }
 
-        bool isPossible() const override;
+        bool isPossible() override;
         bool Execute(Event event) override;
 };
 
 class UnstealthAction : public Action
 {
     public:
-        UnstealthAction(PlayerbotAI* botAI) : Action(botAI, "unstealth") {}
+        UnstealthAction(PlayerbotAI* botAI) : Action(botAI, "unstealth") { }
 
         bool Execute(Event event) override;
 };
@@ -110,3 +113,5 @@ class CastKickOnEnemyHealerAction : public CastSpellOnEnemyHealerAction
     public:
         CastKickOnEnemyHealerAction(PlayerbotAI* botAI) : CastSpellOnEnemyHealerAction(botAI, "kick") { }
 };
+
+#endif

@@ -16,11 +16,11 @@ Unit* FlagCarrierValue::Calculate()
         {
             BattlegroundWS *bg = (BattlegroundWS*)botAI->GetBot()->GetBattleground();
 
-            if ((!sameTeam && bot->GetTeam() == HORDE || (sameTeam && bot->GetTeam() == ALLIANCE)) && !bg->GetFlagCarrierGuid(TEAM_INDEX_HORDE).IsEmpty())
-                carrier = bg->GetBgMap()->GetPlayer(bg->GetFlagCarrierGuid(TEAM_INDEX_HORDE));
+            if ((!sameTeam && bot->GetTeam() == HORDE || (sameTeam && bot->GetTeam() == ALLIANCE)) && !bg->GetFlagPickerGUID(TEAM_INDEX_HORDE).IsEmpty())
+                carrier = bg->GetBgMap()->GetPlayer(bg->GetFlagPickerGUID(TEAM_INDEX_HORDE));
 
-            if ((!sameTeam && bot->GetTeam() == ALLIANCE || (sameTeam && bot->GetTeam() == HORDE)) && !bg->GetFlagCarrierGuid(TEAM_INDEX_ALLIANCE).IsEmpty())
-                carrier = bg->GetBgMap()->GetPlayer(bg->GetFlagCarrierGuid(TEAM_INDEX_ALLIANCE));
+            if ((!sameTeam && bot->GetTeam() == ALLIANCE || (sameTeam && bot->GetTeam() == HORDE)) && !bg->GetFlagPickerGUID(TEAM_INDEX_ALLIANCE).IsEmpty())
+                carrier = bg->GetBgMap()->GetPlayer(bg->GetFlagPickerGUID(TEAM_INDEX_ALLIANCE));
 
             if (carrier)
             {
@@ -120,7 +120,7 @@ CreatureData const* BgMasterValue::NearestBm(bool allowDead)
                 continue;
 
             //Is the unit dead?
-            if (unit->GetDeathState() == DEAD)
+            if (unit->getDeathState() == DEAD)
                 continue;
         }
 

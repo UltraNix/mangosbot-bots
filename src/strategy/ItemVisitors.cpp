@@ -57,7 +57,7 @@ bool FindPetVisitor::Accept(ItemTemplate const* proto)
 
             for (uint8 i = 0; i < 3; i++)
             {
-                if (spellInfo->Effects[i].Effect == SPELL_EFFECT_SUMMON_CRITTER)
+                if (spellInfo->Effects[i].Effect == SPELL_EFFECT_SUMMON_PET)
                     return true;
             }
         }

@@ -90,8 +90,8 @@ bool EmoteActionBase::Emote(Unit* target, uint32 type)
     if (bot->isMoving())
         return false;
 
-    if (target && !bot->isInFront(target, sPlayerbotAIConfig->sightDistance, EMOTE_ANGLE_IN_FRONT))
-        bot->SetFacingTo(target);
+    if (target && !bot->HasInArc(EMOTE_ANGLE_IN_FRONT, target, sPlayerbotAIConfig->sightDistance))
+        bot->SetFacingToObject(target);
 
     ObjectGuid oldSelection = bot->GetTarget();
     if (target)
@@ -99,8 +99,8 @@ bool EmoteActionBase::Emote(Unit* target, uint32 type)
         bot->SetTarget(target->GetGUID());
 
         Player* player = dynamic_cast<Player*>(target);
-        if (player && player->GetPlayerbotAI() && !player->isInFront(bot, sPlayerbotAIConfig->sightDistance, EMOTE_ANGLE_IN_FRONT))
-            player->SetFacingTo(bot);
+        if (player && player->GetPlayerbotAI() && !player->HasInArc(EMOTE_ANGLE_IN_FRONT, bot, sPlayerbotAIConfig->sightDistance))
+            player->SetFacingToObject(bot);
     }
 
     bot->HandleEmoteCommand(type);
@@ -138,10 +138,10 @@ bool EmoteActionBase::ReceiveEmote(Player* source, uint32 emote)
 
     switch (emote)
     {
-        case TEXTEMOTE_BONK:
+        case TEXT_EMOTE_BONK:
             emoteId = EMOTE_ONESHOT_CRY;
             break;
-        case TEXTEMOTE_SALUTE:
+        case TEXT_EMOTE_SALUTE:
             emoteId = EMOTE_ONESHOT_SALUTE;
             break;
         case 325:
@@ -151,7 +151,7 @@ bool EmoteActionBase::ReceiveEmote(Player* source, uint32 emote)
                 botAI->TellMasterNoFacing("Fine.. I'll stay right here..");
             }
             break;
-        case TEXTEMOTE_BECKON:
+        case TEXT_EMOTE_BECKON:
         case 324:
             if (botAI->GetMaster() == source)
             {
@@ -159,382 +159,382 @@ bool EmoteActionBase::ReceiveEmote(Player* source, uint32 emote)
                 botAI->TellMasterNoFacing("Wherever you go, I'll follow..");
             }
             break;
-        case TEXTEMOTE_WAVE:
-        case TEXTEMOTE_GREET:
-        case TEXTEMOTE_HAIL:
-        case TEXTEMOTE_HELLO:
-        case TEXTEMOTE_WELCOME:
-        case TEXTEMOTE_INTRODUCE:
+        case TEXT_EMOTE_WAVE:
+        case TEXT_EMOTE_GREET:
+        case TEXT_EMOTE_HAIL:
+        case TEXT_EMOTE_HELLO:
+        case TEXT_EMOTE_WELCOME:
+        case TEXT_EMOTE_INTRODUCE:
             emoteText = "Hey there!";
             emoteId = EMOTE_ONESHOT_WAVE;
             break;
-        case TEXTEMOTE_DANCE:
+        case TEXT_EMOTE_DANCE:
             emoteText = "Shake what your mama gave you!";
             emoteId = EMOTE_ONESHOT_DANCE;
             break;
-        case TEXTEMOTE_FLIRT:
-        case TEXTEMOTE_KISS:
-        case TEXTEMOTE_HUG:
-        case TEXTEMOTE_BLUSH:
-        case TEXTEMOTE_SMILE:
-        case TEXTEMOTE_LOVE:
-            //case TEXTEMOTE_HOLDHAND:
+        case TEXT_EMOTE_FLIRT:
+        case TEXT_EMOTE_KISS:
+        case TEXT_EMOTE_HUG:
+        case TEXT_EMOTE_BLUSH:
+        case TEXT_EMOTE_SMILE:
+        case TEXT_EMOTE_LOVE:
+            //case TEXT_EMOTE_HOLDHAND:
             emoteText = "Awwwww...";
             emoteId = EMOTE_ONESHOT_SHY;
             break;
-        case TEXTEMOTE_FLEX:
+        case TEXT_EMOTE_FLEX:
             emoteText = "Hercules! Hercules!";
             emoteId = EMOTE_ONESHOT_APPLAUD;
             break;
-        case TEXTEMOTE_ANGRY:
-            //case TEXTEMOTE_FACEPALM:
-        case TEXTEMOTE_GLARE:
-        case TEXTEMOTE_BLAME:
-            //case TEXTEMOTE_FAIL:
-            //case TEXTEMOTE_REGRET:
-            //case TEXTEMOTE_SCOLD:
-            //case TEXTEMOTE_CROSSARMS:
+        case TEXT_EMOTE_ANGRY:
+            //case TEXT_EMOTE_FACEPALM:
+        case TEXT_EMOTE_GLARE:
+        case TEXT_EMOTE_BLAME:
+            //case TEXT_EMOTE_FAIL:
+            //case TEXT_EMOTE_REGRET:
+            //case TEXT_EMOTE_SCOLD:
+            //case TEXT_EMOTE_CROSSARMS:
             emoteText = "Did I do thaaaaat?";
             emoteId = EMOTE_ONESHOT_QUESTION;
             break;
-        case TEXTEMOTE_FART:
-        case TEXTEMOTE_BURP:
-        case TEXTEMOTE_GASP:
-        case TEXTEMOTE_NOSEPICK:
-        case TEXTEMOTE_SNIFF:
-        case TEXTEMOTE_STINK:
+        case TEXT_EMOTE_FART:
+        case TEXT_EMOTE_BURP:
+        case TEXT_EMOTE_GASP:
+        case TEXT_EMOTE_NOSEPICK:
+        case TEXT_EMOTE_SNIFF:
+        case TEXT_EMOTE_STINK:
             emoteText = "Wasn't me! Just sayin'..";
             emoteId = EMOTE_ONESHOT_POINT;
             break;
-        case TEXTEMOTE_JOKE:
+        case TEXT_EMOTE_JOKE:
             emoteId = EMOTE_ONESHOT_LAUGH;
             emoteText = "Oh.. was I not supposed to laugh so soon?";
             break;
-        case TEXTEMOTE_CHICKEN:
+        case TEXT_EMOTE_CHICKEN:
             emoteText = "We'll see who's chicken soon enough!";
             emoteId = EMOTE_ONESHOT_RUDE;
             break;
-        case TEXTEMOTE_APOLOGIZE:
+        case TEXT_EMOTE_APOLOGIZE:
             emoteId = EMOTE_ONESHOT_POINT;
             emoteText = "You damn right you're sorry!";
             break;
-        case TEXTEMOTE_APPLAUD:
-        case TEXTEMOTE_CLAP:
-        case TEXTEMOTE_CONGRATULATE:
-        case TEXTEMOTE_HAPPY:
-            //case TEXTEMOTE_GOLFCLAP:
+        case TEXT_EMOTE_APPLAUD:
+        case TEXT_EMOTE_CLAP:
+        case TEXT_EMOTE_CONGRATULATE:
+        case TEXT_EMOTE_HAPPY:
+            //case TEXT_EMOTE_GOLFCLAP:
             emoteId = EMOTE_ONESHOT_BOW;
             emoteText = "Thank you.. Thank you.. I'm here all week.";
             break;
-        case TEXTEMOTE_BEG:
-        case TEXTEMOTE_GROVEL:
-        case TEXTEMOTE_PLEAD:
+        case TEXT_EMOTE_BEG:
+        case TEXT_EMOTE_GROVEL:
+        case TEXT_EMOTE_PLEAD:
             emoteId = EMOTE_ONESHOT_NO;
             emoteText = "Beg all you want.. I have nothing for you.";
             break;
-        case TEXTEMOTE_BITE:
-        case TEXTEMOTE_POKE:
-        case TEXTEMOTE_SCRATCH:
-            //case TEXTEMOTE_PINCH:
-            //case TEXTEMOTE_PUNCH:
+        case TEXT_EMOTE_BITE:
+        case TEXT_EMOTE_POKE:
+        case TEXT_EMOTE_SCRATCH:
+            //case TEXT_EMOTE_PINCH:
+            //case TEXT_EMOTE_PUNCH:
             emoteId = EMOTE_ONESHOT_ROAR;
             emoteYell = "OUCH! Dammit, that hurt!";
             break;
-        case TEXTEMOTE_BORED:
+        case TEXT_EMOTE_BORED:
             emoteId = EMOTE_ONESHOT_NO;
             emoteText = "My job description doesn't include entertaining you..";
             break;
-        case TEXTEMOTE_BOW:
-        case TEXTEMOTE_CURTSEY:
+        case TEXT_EMOTE_BOW:
+        case TEXT_EMOTE_CURTSEY:
             emoteId = EMOTE_ONESHOT_BOW;
             break;
-        case TEXTEMOTE_BRB:
-        case TEXTEMOTE_SIT:
+        case TEXT_EMOTE_BRB:
+        case TEXT_EMOTE_SIT:
             emoteId = EMOTE_ONESHOT_EAT;
             emoteText = "Looks like time for an AFK break..";
             break;
-        case TEXTEMOTE_AGREE:
-        case TEXTEMOTE_NOD:
+        case TEXT_EMOTE_AGREE:
+        case TEXT_EMOTE_NOD:
             emoteId = EMOTE_ONESHOT_EXCLAMATION;
             emoteText = "At least SOMEONE agrees with me!";
             break;
-        case TEXTEMOTE_AMAZE:
-        case TEXTEMOTE_COWER:
-        case TEXTEMOTE_CRINGE:
-        case TEXTEMOTE_EYE:
-        case TEXTEMOTE_KNEEL:
-        case TEXTEMOTE_PEER:
-        case TEXTEMOTE_SURRENDER:
-        case TEXTEMOTE_PRAISE:
-        case TEXTEMOTE_SCARED:
-        case TEXTEMOTE_COMMEND:
-            //case TEXTEMOTE_AWE:
-            //case TEXTEMOTE_JEALOUS:
-            //case TEXTEMOTE_PROUD:
+        case TEXT_EMOTE_AMAZE:
+        case TEXT_EMOTE_COWER:
+        case TEXT_EMOTE_CRINGE:
+        case TEXT_EMOTE_EYE:
+        case TEXT_EMOTE_KNEEL:
+        case TEXT_EMOTE_PEER:
+        case TEXT_EMOTE_SURRENDER:
+        case TEXT_EMOTE_PRAISE:
+        case TEXT_EMOTE_SCARED:
+        case TEXT_EMOTE_COMMEND:
+            //case TEXT_EMOTE_AWE:
+            //case TEXT_EMOTE_JEALOUS:
+            //case TEXT_EMOTE_PROUD:
             emoteId = EMOTE_ONESHOT_FLEX;
             emoteText = "Yes, Yes. I know I'm amazing..";
             break;
-        case TEXTEMOTE_BLEED:
-        case TEXTEMOTE_MOURN:
-        case TEXTEMOTE_FLOP:
-            //case TEXTEMOTE_FAINT:
-            //case TEXTEMOTE_PULSE:
+        case TEXT_EMOTE_BLEED:
+        case TEXT_EMOTE_MOURN:
+        case TEXT_EMOTE_FLOP:
+            //case TEXT_EMOTE_FAINT:
+            //case TEXT_EMOTE_PULSE:
             emoteId = EMOTE_ONESHOT_KNEEL;
             emoteText = "MEDIC! Stat!";
             break;
-        case TEXTEMOTE_BLINK:
+        case TEXT_EMOTE_BLINK:
             emoteId = EMOTE_ONESHOT_KICK;
             emoteText = "What? You got something in your eye?";
             break;
-        case TEXTEMOTE_BOUNCE:
-        case TEXTEMOTE_BARK:
+        case TEXT_EMOTE_BOUNCE:
+        case TEXT_EMOTE_BARK:
             emoteId = EMOTE_ONESHOT_POINT;
             emoteText = "Who's a good doggy? You're a good doggy!";
             break;
-        case TEXTEMOTE_BYE:
+        case TEXT_EMOTE_BYE:
             emoteId = EMOTE_ONESHOT_WAVE;
             emoteText = "Umm.... wait! Where are you going?!";
             break;
-        case TEXTEMOTE_CACKLE:
-        case TEXTEMOTE_LAUGH:
-        case TEXTEMOTE_CHUCKLE:
-        case TEXTEMOTE_GIGGLE:
-        case TEXTEMOTE_GUFFAW:
-        case TEXTEMOTE_ROFL:
-        case TEXTEMOTE_SNICKER:
-            //case TEXTEMOTE_SNORT:
+        case TEXT_EMOTE_CACKLE:
+        case TEXT_EMOTE_LAUGH:
+        case TEXT_EMOTE_CHUCKLE:
+        case TEXT_EMOTE_GIGGLE:
+        case TEXT_EMOTE_GUFFAW:
+        case TEXT_EMOTE_ROFL:
+        case TEXT_EMOTE_SNICKER:
+            //case TEXT_EMOTE_SNORT:
             emoteId = EMOTE_ONESHOT_LAUGH;
             emoteText = "Wait... what are we laughing at again?";
             break;
-        case TEXTEMOTE_CONFUSED:
-        case TEXTEMOTE_CURIOUS:
-        case TEXTEMOTE_FIDGET:
-        case TEXTEMOTE_FROWN:
-        case TEXTEMOTE_SHRUG:
-        case TEXTEMOTE_SIGH:
-        case TEXTEMOTE_STARE:
-        case TEXTEMOTE_TAP:
-        case TEXTEMOTE_SURPRISED:
-        case TEXTEMOTE_WHINE:
-        case TEXTEMOTE_BOGGLE:
-        case TEXTEMOTE_LOST:
-        case TEXTEMOTE_PONDER:
-        case TEXTEMOTE_SNUB:
-        case TEXTEMOTE_SERIOUS:
-        case TEXTEMOTE_EYEBROW:
+        case TEXT_EMOTE_CONFUSED:
+        case TEXT_EMOTE_CURIOUS:
+        case TEXT_EMOTE_FIDGET:
+        case TEXT_EMOTE_FROWN:
+        case TEXT_EMOTE_SHRUG:
+        case TEXT_EMOTE_SIGH:
+        case TEXT_EMOTE_STARE:
+        case TEXT_EMOTE_TAP:
+        case TEXT_EMOTE_SURPRISED:
+        case TEXT_EMOTE_WHINE:
+        case TEXT_EMOTE_BOGGLE:
+        case TEXT_EMOTE_LOST:
+        case TEXT_EMOTE_PONDER:
+        case TEXT_EMOTE_SNUB:
+        case TEXT_EMOTE_SERIOUS:
+        case TEXT_EMOTE_EYEBROW:
             emoteId = EMOTE_ONESHOT_QUESTION;
             emoteText = "Don't look at  me.. I just work here";
             break;
-        case TEXTEMOTE_COUGH:
-        case TEXTEMOTE_DROOL:
-        case TEXTEMOTE_SPIT:
-        case TEXTEMOTE_LICK:
-        case TEXTEMOTE_BREATH:
-            //case TEXTEMOTE_SNEEZE:
-            //case TEXTEMOTE_SWEAT:
+        case TEXT_EMOTE_COUGH:
+        case TEXT_EMOTE_DROOL:
+        case TEXT_EMOTE_SPIT:
+        case TEXT_EMOTE_LICK:
+        case TEXT_EMOTE_BREATH:
+            //case TEXT_EMOTE_SNEEZE:
+            //case TEXT_EMOTE_SWEAT:
             emoteId = EMOTE_ONESHOT_POINT;
             emoteText = "Ewww! Keep your nasty germs over there!";
             break;
-        case TEXTEMOTE_CRY:
+        case TEXT_EMOTE_CRY:
             emoteId = EMOTE_ONESHOT_CRY;
             emoteText = "Don't you start crying or it'll make me start crying!";
             break;
-        case TEXTEMOTE_CRACK:
+        case TEXT_EMOTE_CRACK:
             emoteId = EMOTE_ONESHOT_ROAR;
             emoteText = "It's clobbering time!";
             break;
-        case TEXTEMOTE_EAT:
-        case TEXTEMOTE_DRINK:
+        case TEXT_EMOTE_EAT:
+        case TEXT_EMOTE_DRINK:
             emoteId = EMOTE_ONESHOT_EAT;
             emoteText = "I hope you brought enough for the whole class...";
             break;
-        case TEXTEMOTE_GLOAT:
-        case TEXTEMOTE_MOCK:
-        case TEXTEMOTE_TEASE:
-        case TEXTEMOTE_EMBARRASS:
+        case TEXT_EMOTE_GLOAT:
+        case TEXT_EMOTE_MOCK:
+        case TEXT_EMOTE_TEASE:
+        case TEXT_EMOTE_EMBARRASS:
             emoteId = EMOTE_ONESHOT_CRY;
             emoteText = "Doesn't mean you need to be an ass about it..";
             break;
-        case TEXTEMOTE_HUNGRY:
+        case TEXT_EMOTE_HUNGRY:
             emoteId = EMOTE_ONESHOT_EAT;
             emoteText = "What? You want some of this?";
             break;
-        case TEXTEMOTE_LAYDOWN:
-        case TEXTEMOTE_TIRED:
-        case TEXTEMOTE_YAWN:
+        case TEXT_EMOTE_LAYDOWN:
+        case TEXT_EMOTE_TIRED:
+        case TEXT_EMOTE_YAWN:
             emoteId = EMOTE_ONESHOT_KNEEL;
             emoteText = "Is it break time already?";
             break;
-        case TEXTEMOTE_MOAN:
-        case TEXTEMOTE_MOON:
-        case TEXTEMOTE_SEXY:
-        case TEXTEMOTE_SHAKE:
-        case TEXTEMOTE_WHISTLE:
-        case TEXTEMOTE_CUDDLE:
-        case TEXTEMOTE_PURR:
-        case TEXTEMOTE_SHIMMY:
-        case TEXTEMOTE_SMIRK:
-        case TEXTEMOTE_WINK:
-            //case TEXTEMOTE_CHARM:
+        case TEXT_EMOTE_MOAN:
+        case TEXT_EMOTE_MOON:
+        case TEXT_EMOTE_SEXY:
+        case TEXT_EMOTE_SHAKE:
+        case TEXT_EMOTE_WHISTLE:
+        case TEXT_EMOTE_CUDDLE:
+        case TEXT_EMOTE_PURR:
+        case TEXT_EMOTE_SHIMMY:
+        case TEXT_EMOTE_SMIRK:
+        case TEXT_EMOTE_WINK:
+            //case TEXT_EMOTE_CHARM:
             emoteId = EMOTE_ONESHOT_NO;
             emoteText = "Keep it in your pants, boss..";
             break;
-        case TEXTEMOTE_NO:
-        case TEXTEMOTE_VETO:
-        case TEXTEMOTE_DISAGREE:
-        case TEXTEMOTE_DOUBT:
+        case TEXT_EMOTE_NO:
+        case TEXT_EMOTE_VETO:
+        case TEXT_EMOTE_DISAGREE:
+        case TEXT_EMOTE_DOUBT:
             emoteId = EMOTE_ONESHOT_QUESTION;
             emoteText = "Aww.... why not?!";
             break;
-        case TEXTEMOTE_PANIC:
+        case TEXT_EMOTE_PANIC:
             emoteId = EMOTE_ONESHOT_EXCLAMATION;
             emoteText = "Now is NOT the time to panic!";
             break;
-        case TEXTEMOTE_POINT:
+        case TEXT_EMOTE_POINT:
             emoteId = EMOTE_ONESHOT_POINT;
             emoteText = "What?! I can do that TOO!";
             break;
-        case TEXTEMOTE_RUDE:
-        case TEXTEMOTE_RASP:
+        case TEXT_EMOTE_RUDE:
+        case TEXT_EMOTE_RASP:
             emoteId = EMOTE_ONESHOT_RUDE;
             emoteText = "Right back at you, bub!", LANG_UNIVERSAL;
             break;
-        case TEXTEMOTE_ROAR:
-        case TEXTEMOTE_THREATEN:
-        case TEXTEMOTE_CALM:
-        case TEXTEMOTE_DUCK:
-        case TEXTEMOTE_TAUNT:
-        case TEXTEMOTE_PITY:
-        case TEXTEMOTE_GROWL:
-            //case TEXTEMOTE_TRAIN:
-            //case TEXTEMOTE_INCOMING:
-            //case TEXTEMOTE_CHARGE:
-            //case TEXTEMOTE_FLEE:
-            //case TEXTEMOTE_ATTACKMYTARGET:
-        case TEXTEMOTE_OPENFIRE:
-        case TEXTEMOTE_ENCOURAGE:
-        case TEXTEMOTE_ENEMY:
-            //case TEXTEMOTE_CHALLENGE:
-            //case TEXTEMOTE_REVENGE:
-            //case TEXTEMOTE_SHAKEFIST:
+        case TEXT_EMOTE_ROAR:
+        case TEXT_EMOTE_THREATEN:
+        case TEXT_EMOTE_CALM:
+        case TEXT_EMOTE_DUCK:
+        case TEXT_EMOTE_TAUNT:
+        case TEXT_EMOTE_PITY:
+        case TEXT_EMOTE_GROWL:
+            //case TEXT_EMOTE_TRAIN:
+            //case TEXT_EMOTE_INCOMING:
+            //case TEXT_EMOTE_CHARGE:
+            //case TEXT_EMOTE_FLEE:
+            //case TEXT_EMOTE_ATTACKMYTARGET:
+        case TEXT_EMOTE_OPENFIRE:
+        case TEXT_EMOTE_ENCOURAGE:
+        case TEXT_EMOTE_ENEMY:
+            //case TEXT_EMOTE_CHALLENGE:
+            //case TEXT_EMOTE_REVENGE:
+            //case TEXT_EMOTE_SHAKEFIST:
             emoteId = EMOTE_ONESHOT_ROAR;
             emoteYell = "RAWR!";
             break;
-        case TEXTEMOTE_TALK:
-        case TEXTEMOTE_TALKEX:
-        case TEXTEMOTE_TALKQ:
-        case TEXTEMOTE_LISTEN:
+        case TEXT_EMOTE_TALK:
+        case TEXT_EMOTE_TALKEX:
+        case TEXT_EMOTE_TALKQ:
+        case TEXT_EMOTE_LISTEN:
             emoteId = EMOTE_ONESHOT_TALK;
             emoteText = "Blah Blah Blah Yakety Smackety..";
             break;
-        case TEXTEMOTE_THANK:
+        case TEXT_EMOTE_THANK:
             emoteId = EMOTE_ONESHOT_BOW;
             emoteText = "You are quite welcome!";
             break;
-        case TEXTEMOTE_VICTORY:
-        case TEXTEMOTE_CHEER:
-        case TEXTEMOTE_TOAST:
-            //case TEXTEMOTE_HIGHFIVE:
-            //case TEXTEMOTE_DING:
+        case TEXT_EMOTE_VICTORY:
+        case TEXT_EMOTE_CHEER:
+        case TEXT_EMOTE_TOAST:
+            //case TEXT_EMOTE_HIGHFIVE:
+            //case TEXT_EMOTE_DING:
             emoteId = EMOTE_ONESHOT_CHEER;
             emoteText = "Yay!";
             break;
-        case TEXTEMOTE_COLD:
-        case TEXTEMOTE_SHIVER:
-        case TEXTEMOTE_THIRSTY:
-            //case TEXTEMOTE_OOM:
-            //case TEXTEMOTE_HEALME:
-            //case TEXTEMOTE_POUT:
+        case TEXT_EMOTE_COLD:
+        case TEXT_EMOTE_SHIVER:
+        case TEXT_EMOTE_THIRSTY:
+            //case TEXT_EMOTE_OOM:
+            //case TEXT_EMOTE_HEALME:
+            //case TEXT_EMOTE_POUT:
             emoteId = EMOTE_ONESHOT_QUESTION;
             emoteText = "And what exactly am I supposed to do about that?";
             break;
-        case TEXTEMOTE_COMFORT:
-        case TEXTEMOTE_SOOTHE:
-        case TEXTEMOTE_PAT:
+        case TEXT_EMOTE_COMFORT:
+        case TEXT_EMOTE_SOOTHE:
+        case TEXT_EMOTE_PAT:
             emoteId = EMOTE_ONESHOT_CRY;
             emoteText = "Thanks...";
             break;
-        case TEXTEMOTE_INSULT:
+        case TEXT_EMOTE_INSULT:
             emoteId = EMOTE_ONESHOT_CRY;
             emoteText = "You hurt my feelings..";
             break;
-        case TEXTEMOTE_JK:
+        case TEXT_EMOTE_JK:
             emoteId = EMOTE_ONESHOT_POINT;
             emoteText = "You.....";
             break;
-        case TEXTEMOTE_RAISE:
+        case TEXT_EMOTE_RAISE:
             emoteId = EMOTE_ONESHOT_POINT;
             emoteText = "Yes.. you.. at the back of the class..";
             break;
-        case TEXTEMOTE_READY:
+        case TEXT_EMOTE_READY:
             emoteId = EMOTE_ONESHOT_SALUTE;
             emoteText = "Ready here, too!";
             break;
-        case TEXTEMOTE_SHOO:
+        case TEXT_EMOTE_SHOO:
             emoteId = EMOTE_ONESHOT_KICK;
             emoteText = "Shoo yourself!";
             break;
-        case TEXTEMOTE_SLAP:
-            //case TEXTEMOTE_SMACK:
+        case TEXT_EMOTE_SLAP:
+            //case TEXT_EMOTE_SMACK:
             emoteId = EMOTE_ONESHOT_CRY;
             emoteText = "What did I do to deserve that?";
             break;
-        case TEXTEMOTE_STAND:
+        case TEXT_EMOTE_STAND:
             emoteId = EMOTE_ONESHOT_NONE;
             emoteText = "What? Break time's over? Fine..";
             break;
-        case TEXTEMOTE_TICKLE:
+        case TEXT_EMOTE_TICKLE:
             emoteId = EMOTE_ONESHOT_LAUGH;
             emoteText = "Hey! Stop that!";
             break;
-        case TEXTEMOTE_VIOLIN:
+        case TEXT_EMOTE_VIOLIN:
             emoteId = EMOTE_ONESHOT_TALK;
             emoteText = "Har Har.. very funny..";
             break;
-            //case TEXTEMOTE_HELPME:
+            //case TEXT_EMOTE_HELPME:
             //    bot->HandleEmoteCommand(EMOTE_ONESHOT_POINT);
             //    bot->Yell("Quick! Someone HELP!", LANG_UNIVERSAL);
             //    break;
-        case TEXTEMOTE_GOODLUCK:
-            //case TEXTEMOTE_LUCK:
+        case TEXT_EMOTE_GOODLUCK:
+            //case TEXT_EMOTE_LUCK:
             emoteId = EMOTE_ONESHOT_TALK;
             emoteText = "Thanks... I'll need it..";
             break;
-        case TEXTEMOTE_BRANDISH:
-            //case TEXTEMOTE_MERCY:
+        case TEXT_EMOTE_BRANDISH:
+            //case TEXT_EMOTE_MERCY:
             emoteId = EMOTE_ONESHOT_BEG;
             emoteText = "Please don't kill me!";
             break;
-        /*case TEXTEMOTE_BADFEELING:
+        /*case TEXT_EMOTE_BADFEELING:
             bot->HandleEmoteCommand(EMOTE_ONESHOT_QUESTION);
             bot->Say("I'm just waiting for the ominous music now...", LANG_UNIVERSAL);
             break;
-        case TEXTEMOTE_MAP:
+        case TEXT_EMOTE_MAP:
             bot->HandleEmoteCommand(EMOTE_ONESHOT_NO);
             bot->Say("Noooooooo.. you just couldn't ask for directions, huh?", LANG_UNIVERSAL);
             break;
-        case TEXTEMOTE_IDEA:
-        case TEXTEMOTE_THINK:
+        case TEXT_EMOTE_IDEA:
+        case TEXT_EMOTE_THINK:
             bot->HandleEmoteCommand(EMOTE_ONESHOT_NO);
             bot->Say("Oh boy.. another genius idea...", LANG_UNIVERSAL);
             break;
-        case TEXTEMOTE_OFFER:
+        case TEXT_EMOTE_OFFER:
             bot->HandleEmoteCommand(EMOTE_ONESHOT_NO);
             bot->Say("No thanks.. I had some back at the last village", LANG_UNIVERSAL);
             break;
-        case TEXTEMOTE_PET:
+        case TEXT_EMOTE_PET:
             bot->HandleEmoteCommand(EMOTE_ONESHOT_ROAR);
             bot->Say("Do I look like a dog to you?!", LANG_UNIVERSAL);
             break;
-        case TEXTEMOTE_ROLLEYES:
+        case TEXT_EMOTE_ROLLEYES:
             bot->HandleEmoteCommand(EMOTE_ONESHOT_POINT);
             bot->Say("Keep doing that and I'll roll those eyes right out of your head..", LANG_UNIVERSAL);
             break;
-        case TEXTEMOTE_SING:
+        case TEXT_EMOTE_SING:
             bot->HandleEmoteCommand(EMOTE_ONESHOT_APPLAUD);
             bot->Say("Lovely... just lovely..", LANG_UNIVERSAL);
             break;
-        case TEXTEMOTE_COVEREARS:
+        case TEXT_EMOTE_COVEREARS:
             bot->HandleEmoteCommand(EMOTE_ONESHOT_EXCLAMATION);
             bot->Yell("You think that's going to help you?!", LANG_UNIVERSAL);
             break;*/
@@ -545,14 +545,14 @@ bool EmoteActionBase::ReceiveEmote(Player* source, uint32 emote)
             break;
     }
 
-    if (source && !bot->isMoving() && !bot->IsInFront(source, sPlayerbotAIConfig->sightDistance, EMOTE_ANGLE_IN_FRONT))
+    if (source && !bot->isMoving() && !bot->HasInArc(EMOTE_ANGLE_IN_FRONT, source, sPlayerbotAIConfig->sightDistance))
         sServerFacade->SetFacingTo(bot, source);
 
     if (emoteText.size())
-        bot->Say(emoteText, (bot->GetTeam() == ALLIANCE ? LANG_COMMON : LANG_ORCISH));
+        bot->Say(emoteText, (bot->GetTeamId() == TEAM_ALLIANCE ? LANG_COMMON : LANG_ORCISH));
 
     if (emoteYell.size())
-        bot->Yell(emoteYell, (bot->GetTeam() == ALLIANCE ? LANG_COMMON : LANG_ORCISH));
+        bot->Yell(emoteYell, (bot->GetTeamId() == TEAM_ALLIANCE ? LANG_COMMON : LANG_ORCISH));
 
     if (emoteId)
         bot->HandleEmoteCommand(emoteId);
@@ -578,16 +578,16 @@ bool EmoteAction::Execute(Event event)
         p.rpos(0);
         p >> source >> text_emote >> emote_num >> namlen;
         if (namlen > 1)
-            p.read(nam, namlen);
+            p >> nam;
 
         if (strstri(bot->GetName().c_str(), nam.c_str()))
         {
-            pSource = sObjectMgr.GetPlayer(source);
+            pSource = ObjectAccessor::FindPlayer(source);
 
             if (pSource && sServerFacade->GetDistance2d(bot, pSource) < sPlayerbotAIConfig->farDistance)
             {
-                LOG_INFO("playerbots", "Bot #%d %s:%d <%s> received SMSG_TEXT_EMOTE %d",
-                    bot->GetGUIDLow(), bot->GetTeam() == ALLIANCE ? "A" : "H", bot->getLevel(), bot->GetName().c_str(), text_emote);
+                LOG_INFO("playerbots", "Bot %s %s:%d <%s> received SMSG_TEXT_EMOTE %d",
+                    bot->GetGUID().ToString().c_str(), bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H", bot->getLevel(), bot->GetName().c_str(), text_emote);
                 emote = text_emote;
             }
 
@@ -602,13 +602,13 @@ bool EmoteAction::Execute(Event event)
         p.rpos(0);
         p >> emoteId >> source;
 
-        pSource = sObjectMgr.GetPlayer(source);
+        pSource = ObjectAccessor::FindPlayer(source);
         if (pSource && sServerFacade->GetDistance2d(bot, pSource) < sPlayerbotAIConfig->farDistance && emoteId != EMOTE_ONESHOT_NONE)
         {
-            if (pSource->GetSelectionGuid() == bot->GetObjectGuid())
+            if (pSource->GetTarget() == bot->GetGUID())
             {
-                LOG_INFO("playerbots", "Bot #%d %s:%d <%s> received SMSG_EMOTE %d",
-                    bot->GetGUIDLow(), bot->GetTeam() == ALLIANCE ? "A" : "H", bot->getLevel(), bot->GetName().c_str(), emoteId);
+                LOG_INFO("playerbots", "Bot %s %s:%d <%s> received SMSG_EMOTE %d",
+                    bot->GetGUID().ToString().c_str(), bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H", bot->getLevel(), bot->GetName().c_str(), emoteId);
 
                 std::vector<uint32> types;
                 for (int32 i = sEmotesTextStore.GetNumRows(); i >= 0; --i)

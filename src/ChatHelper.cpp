@@ -23,7 +23,7 @@ static bool substrContainsInMap(std::string const& searchTerm, std::map<std::str
     for (typename std::map<std::string, T>::iterator i = searchIn.begin(); i != searchIn.end(); ++i)
     {
         std::string term = i->first;
-		if (term.size() > 1 && searchTerm.find(term) != string::npos)
+		if (term.size() > 1 && searchTerm.find(term) != std::string::npos)
             return true;
     }
 
@@ -102,6 +102,7 @@ ChatHelper::ChatHelper(PlayerbotAI* botAI) : PlayerbotAIAware(botAI)
     skills["herbalism"] = SKILL_HERBALISM;
     skills["mining"] = SKILL_MINING;
     skills["skinning"] = SKILL_SKINNING;
+    skills["jewelcrafting"] = SKILL_JEWELCRAFTING;
 
     chats["party"] = CHAT_MSG_PARTY;
     chats["p"] = CHAT_MSG_PARTY;
@@ -399,7 +400,7 @@ GuidVector ChatHelper::parseGameobjects(std::string const& text)
         if (endPos == -1)     //break if error
             break;
 
-        istringstream stream(text.substr(pos, endPos - pos));
+        std::istringstream stream(text.substr(pos, endPos - pos));
         uint64 guid;
         stream >> guid;
 

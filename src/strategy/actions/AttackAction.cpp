@@ -7,6 +7,7 @@
 #include "LootObjectStack.h"
 #include "Playerbot.h"
 #include "ServerFacade.h"
+#include "CreatureAI.h"
 
 bool AttackAction::Execute(Event event)
 {
@@ -122,8 +123,8 @@ bool AttackAction::Attack(Unit* target)
         botAI->PlaySound(sounds[urand(0, sounds.size() - 1)]);
     }
 
-    if (!bot->IsInFront(target, sPlayerbotAIConfig->sightDistance, CAST_ANGLE_IN_FRONT))
-        bot->SetFacingTo(target);
+    if (!bot->HasInArc(CAST_ANGLE_IN_FRONT, target, sPlayerbotAIConfig->sightDistance))
+        bot->SetFacingToObject(target);
 
     if (bot->Attack(target, !botAI->IsRanged(bot) || sServerFacade->GetDistance2d(bot, target) <= sPlayerbotAIConfig->tooCloseDistance))
     {

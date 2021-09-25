@@ -2,6 +2,9 @@
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
+#ifndef _PLAYERBOT_TRIGGER_H
+#define _PLAYERBOT_TRIGGER_H
+
 #include "Common.h"
 #include "Action.h"
 #include "Value.h"
@@ -41,7 +44,7 @@ class Trigger : public AiNamedObject
         virtual void Reset() { }
         virtual Unit* GetTarget();
         virtual Value<Unit*>* GetTargetValue();
-        virtual std::string const& GetTargetName() override { return "self target"; }
+        virtual std::string const& GetTargetName() { return "self target"; }
 
 		bool needCheck()
         {
@@ -87,3 +90,5 @@ class TriggerNode
         NextAction** handlers;
         std::string name;
 };
+
+#endif

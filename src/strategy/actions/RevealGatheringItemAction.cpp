@@ -35,7 +35,7 @@ bool RevealGatheringItemAction::Execute(Event event)
     std::list<GameObject*> targets;
     AnyGameObjectInObjectRangeCheck u_check(bot, sPlayerbotAIConfig->grindDistance);
     Acore::GameObjectListSearcher<AnyGameObjectInObjectRangeCheck> searcher(bot, targets, u_check);
-    bot->VisitNearbyObject(sPlayerbotAIConfig->reactDistance, searcher);
+    Cell::VisitAllObjects(bot, searcher, sPlayerbotAIConfig->reactDistance);
 
     std::vector<GameObject*> result;
     for (GameObject* go : targets)
@@ -50,7 +50,7 @@ bool RevealGatheringItemAction::Execute(Event event)
                 if (lockInfo->Type[i] == LOCK_KEY_SKILL)
                 {
                     uint32 skillId = SkillByLockType(LockType(lockInfo->Index[i]));
-                    uint32 reqSkillValue = max((uint32)2, lockInfo->Skill[i]);
+                    uint32 reqSkillValue = std::max(2u, lockInfo->Skill[i]);
                     if ((skillId == SKILL_MINING || skillId == SKILL_HERBALISM) && botAI->HasSkill((SkillType)skillId) && uint32(bot->GetSkillValue(skillId)) >= reqSkillValue)
                     {
                         result.push_back(go);

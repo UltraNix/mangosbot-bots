@@ -2,6 +2,9 @@
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
+#ifndef _PLAYERBOT_ATTACKERCOUNTVALUES_H
+#define _PLAYERBOT_ATTACKERCOUNTVALUES_H
+
 #include "NamedObjectContext.h"
 #include "Value.h"
 
@@ -43,3 +46,5 @@ class BalancePercentValue : public Uint8CalculatedValue, public Qualified
         Unit* GetTarget();
         uint8 Calculate() override;
 };
+
+#endif

@@ -54,7 +54,7 @@ bool PetitionSignAction::Execute(Event event)
         }
     }
 
-    Player* _inviter = sObjectMgr.GetPlayer(inviter);
+    Player* _inviter = ObjectAccessor::FindPlayer(inviter);
     if (!inviter)
         return false;
 

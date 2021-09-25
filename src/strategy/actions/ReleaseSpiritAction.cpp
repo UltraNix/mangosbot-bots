@@ -35,7 +35,7 @@ bool ReleaseSpiritAction::Execute(Event event)
         context->GetValue<uint32>("death count")->Set(dCount + 1);
     }
 
-    LOG_INFO("playerbots", "Bot #%d %s:%d <%s> released", bot->GetGUIDLow(), bot->GetTeam() == ALLIANCE ? "A" : "H", bot->getLevel(), bot->GetName().c_str());
+    LOG_INFO("playerbots", "Bot %s %s:%d <%s> released", bot->GetGUID().ToString().c_str(), bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H", bot->getLevel(), bot->GetName().c_str());
 
     WorldPacket packet(CMSG_REPOP_REQUEST);
     packet << uint8(0);
@@ -45,7 +45,7 @@ bool ReleaseSpiritAction::Execute(Event event)
     if (bot->InBattleground() && !botAI->HasAura(2584, bot))
     {
         // cast Waiting for Resurrect
-        bot->CastSpell(bot, 2584, TRIGGERED_OLD_TRIGGERED);
+        bot->CastSpell(bot, 2584, true);
     }
 
     // add waiting for ress aura
@@ -65,18 +65,18 @@ bool AutoReleaseSpiritAction::Execute(Event event)
         context->GetValue<uint32>("death count")->Set(dCount + 1);
     }
 
-    LOG_INFO("playerbots", "Bot #%d %s:%d <%s> auto released", bot->GetGUIDLow(), bot->GetTeam() == ALLIANCE ? "A" : "H", bot->getLevel(), bot->GetName().c_str());
+    LOG_INFO("playerbots", "Bot %s %s:%d <%s> auto released", bot->GetGUID().ToString().c_str(), bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H", bot->getLevel(), bot->GetName().c_str());
 
     WorldPacket packet(CMSG_REPOP_REQUEST);
     packet << uint8(0);
     bot->GetSession()->HandleRepopRequestOpcode(packet);
 
-    LOG_INFO("playerbots", "Bot #%d %s:%d <%s> releases spirit", bot->GetGUIDLow(), bot->GetTeam() == ALLIANCE ? "A" : "H", bot->getLevel(), bot->GetName().c_str());
+    LOG_INFO("playerbots", "Bot %s %s:%d <%s> releases spirit", bot->GetGUID().ToString().c_str(), bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H", bot->getLevel(), bot->GetName().c_str());
 
     if (bot->InBattleground() && !botAI->HasAura(2584, bot))
     {
         // cast Waiting for Resurrect
-        bot->CastSpell(bot, 2584, TRIGGERED_OLD_TRIGGERED);
+        bot->CastSpell(bot, 2584, true);
     }
 
     return true;
@@ -89,13 +89,13 @@ bool AutoReleaseSpiritAction::isUseful()
 
     return ((!bot->GetGroup()) || (bot->GetGroup() && botAI->GetGroupMaster() == bot) || (botAI->GetGroupMaster() && botAI->GetGroupMaster() != bot &&
         botAI->GetGroupMaster()->isDead() &&
-        bot->getDeathState() != botAI->GetGroupMaster()->GetDeathState()))
+        bot->getDeathState() != botAI->GetGroupMaster()->getDeathState()))
         && bot->isDead() && !bot->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST);
 }
 
 bool RepopAction::Execute(Event event)
 {
-    LOG_INFO("playerbots", "Bot #%d %s:%d <%s> repops at graveyard", bot->GetGUIDLow(), bot->GetTeam() == ALLIANCE ? "A" : "H", bot->getLevel(), bot->GetName().c_str());
+    LOG_INFO("playerbots", "Bot %s %s:%d <%s> repops at graveyard", bot->GetGUID().ToString().c_str(), bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H", bot->getLevel(), bot->GetName().c_str());
 
     bot->RepopAtGraveyard();
 

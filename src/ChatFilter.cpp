@@ -3,12 +3,13 @@
  */
 
 #include "ChatFilter.h"
+#include "Group.h"
 #include "Playerbot.h"
 #include "RtiTargetValue.h"
 
 std::string ChatFilter::Filter(std::string message)
 {
-    if (message.find("@") == string::npos)
+    if (message.find("@") == std::string::npos)
         return message;
 
     return message.substr(message.find(" ") + 1);
@@ -62,7 +63,7 @@ class LevelChatFilter : public ChatFilter
             if (message[0] != '@')
                 return message;
 
-            if (message.find("-") != string::npos)
+            if (message.find("-") != std::string::npos)
             {
                 uint32 fromLevel = atoi(message.substr(message.find("@") + 1, message.find("-")).c_str());
                 uint32 toLevel = atoi(message.substr(message.find("-") + 1, message.find(" ")).c_str());
@@ -246,7 +247,7 @@ class SubGroupChatFilter : public ChatFilter
                 std::string pnum = message.substr(6, message.find(" "));
                 uint32 from = atoi(pnum.c_str());
                 uint32 to = from;
-                if (pnum.find("-") != string::npos)
+                if (pnum.find("-") != std::string::npos)
                 {
                     from = atoi(pnum.substr(pnum.find("@") + 1, pnum.find("-")).c_str());
                     to = atoi(pnum.substr(pnum.find("-") + 1, pnum.find(" ")).c_str());

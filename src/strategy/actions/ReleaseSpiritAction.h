@@ -2,6 +2,9 @@
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
+#ifndef _PLAYERBOT_RELEASESPIRITACTION_H
+#define _PLAYERBOT_RELEASESPIRITACTION_H
+
 #include "Action.h"
 
 class Event;
@@ -18,7 +21,7 @@ class ReleaseSpiritAction : public Action
 class AutoReleaseSpiritAction : public ReleaseSpiritAction
 {
     public:
-        AutoReleaseSpiritAction(PlayerbotAI* botAI, std::string const& name = "auto release") : ReleaseSpiritAction(botAI, name) {}
+        AutoReleaseSpiritAction(PlayerbotAI* botAI, std::string const& name = "auto release") : ReleaseSpiritAction(botAI, name) { }
 
         bool Execute(Event event) override;
         bool isUseful() override;
@@ -27,8 +30,10 @@ class AutoReleaseSpiritAction : public ReleaseSpiritAction
 class RepopAction : public Action
 {
     public:
-        RepopAction(PlayerbotAI* botAI, std::string const& name = "repop") : Action(botAI, name) {}
+        RepopAction(PlayerbotAI* botAI, std::string const& name = "repop") : Action(botAI, name) { }
 
         bool Execute(Event event) override;
         bool isUseful() override;
 };
+
+#endif

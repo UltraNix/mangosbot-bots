@@ -2,6 +2,9 @@
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
+#ifndef _PLAYERBOT_TRAVELNODE_H
+#define _PLAYERBOT_TRAVELNODE_H
+
 #include "TravelMgr.h"
 #include <shared_mutex>
 
@@ -9,11 +12,11 @@
 //
 // Pathfinding in (c)mangos is based on detour recast an opensource nashmesh creation and pathfinding codebase.
 // This system is used for mob and npc pathfinding and in this codebase also for bots.
-// Because mobs and npc movement is based on following a player or a set path the pathfinder is limited to 296y.
+// Because mobs and npc movement is based on following a player or a set path the PathGenerator is limited to 296y.
 // This means that when trying to find a path from A to B distances beyond 296y will be a best guess often moving in a straight path.
 // Bots would get stuck moving from Northshire to Stormwind because there is no 296y path that doesn't go (initially) the wrong direction.
 //
-// To remedy this limitation without altering the pathfinder limits too much this node system was introduced.
+// To remedy this limitation without altering the PathGenerator limits too much this node system was introduced.
 //
 //  <S> ---> [N1] ---> [N2] ---> [N3] ---> <E>
 //
@@ -24,7 +27,7 @@
 // Termonology:
 // Node: a location on a map for which we know bots are likely to want to travel to or need to travel past to reach other nodes.
 // Link: the connection between two nodes. A link signifies that the bot can travel from one node to another. A link is one-directional.
-// Path: the waypointpath returned by the standard pathfinder to move from one node (or position) to another. A path can be imcomplete or empty which means there is no link.
+// Path: the waypointpath returned by the standard PathGenerator to move from one node (or position) to another. A path can be imcomplete or empty which means there is no link.
 // Route: the list of nodes that give the shortest route from a node to a distant node. Routes are calculated using a standard A* search based on links.
 //
 // On server start saved nodes and links are loaded. Paths and routes are calculated on the fly but saved for future use.
@@ -80,7 +83,7 @@ class TravelNodePath
         bool complete = false;
 
         //List of WorldPositions to get to the destination.
-        std::vector<WorldPosition> path = {};
+        std::vector<WorldPosition> path = { };
 
         //The extra (loading/transport) time it takes to take this path.
         float extraCost = 0;
@@ -210,7 +213,7 @@ class TravelNode
         void cropUselessLinks();
 
         //Returns all nodes that can be reached from this node.
-        std::vector<TravelNode*> getNodeMap(bool importantOnly = false, std::vector<TravelNode*> ignoreNodes = {});
+        std::vector<TravelNode*> getNodeMap(bool importantOnly = false, std::vector<TravelNode*> ignoreNodes = { });
 
         void print(bool printFailed = true);
 
@@ -258,7 +261,7 @@ struct PathNodePoint
 class TravelPath
 {
     public:
-        TravelPath() {};
+        TravelPath() { };
         TravelPath(std::vector<PathNodePoint> fullPath1) { fullPath = fullPath1; }
 
         void addPoint(PathNodePoint point) { fullPath.push_back(point); }
@@ -293,7 +296,7 @@ class TravelPath
 class TravelNodeRoute
 {
     public:
-        TravelNodeRoute() {}
+        TravelNodeRoute() { }
         TravelNodeRoute(std::vector<TravelNode*> nodes1) { nodes = nodes1; /*currentNode = route.begin();*/ }
 
         bool isEmpty() { return nodes.empty(); }
@@ -303,7 +306,7 @@ class TravelNodeRoute
 
         std::vector<TravelNode*> getNodes() { return nodes; }
 
-        TravelPath buildPath(std::vector<WorldPosition> pathToStart = {}, std::vector<WorldPosition> pathToEnd = {}, Unit* bot = nullptr);
+        TravelPath buildPath(std::vector<WorldPosition> pathToStart = { }, std::vector<WorldPosition> pathToEnd = { }, Unit* bot = nullptr);
 
         std::ostringstream const& print();
 
@@ -331,7 +334,7 @@ class TravelNodeStub
 class TravelNodeMap
 {
     public:
-        TravelNodeMap() {};
+        TravelNodeMap() { };
         TravelNodeMap(TravelNodeMap* baseMap);
 
         static TravelNodeMap* instance()
@@ -397,3 +400,5 @@ class TravelNodeMap
 };
 
 #define sTravelNodeMap TravelNodeMap::instance()
+
+#endif

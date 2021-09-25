@@ -42,9 +42,9 @@ std::string const& UnitManualSetValue::Format()
 
 std::string const& CDPairCalculatedValue::Format()
 {
-    CreatureData const* creatureDataPair = Calculate();
-    CreatureInfo const* bmTemplate = ObjectMgr::GetCreatureTemplate(creatureDataPair->second.id);
-    return creatureDataPair ? bmTemplate->Name : "<none>";
+    CreatureData const* creatureData = Calculate();
+    CreatureTemplate const* bmTemplate = sObjectMgr->GetCreatureTemplate(creatureData->id);
+    return bmTemplate ? bmTemplate->Name : "<none>";
 }
 
 std::string const& CDPairListCalculatedValue::Format()
@@ -53,7 +53,7 @@ std::string const& CDPairListCalculatedValue::Format()
     std::vector<CreatureData const*> cdPairs = Calculate();
     for (CreatureData const* cdPair : cdPairs)
     {
-        out << cdPair.first << ",";
+        out << cdPair->id << ",";
     }
 
     out << "}";

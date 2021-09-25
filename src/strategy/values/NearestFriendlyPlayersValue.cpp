@@ -10,7 +10,7 @@ void NearestFriendlyPlayersValue::FindUnits(std::list<Unit*> &targets)
 {
     Acore::AnyFriendlyUnitInObjectRangeCheck u_check(bot, range);
     Acore::UnitListSearcher<Acore::AnyFriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
-    bot->VisitNearbyObject(range, searcher);
+    Cell::VisitAllObjects(bot, searcher, range);
 }
 
 bool NearestFriendlyPlayersValue::AcceptUnit(Unit* unit)

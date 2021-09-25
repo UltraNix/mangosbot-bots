@@ -16,6 +16,8 @@
 #include "Chat.h"
 #include "GuildTaskMgr.h"
 #include "PerformanceMonitor.h"
+#include "PlayerbotMgr.h"
+#include "RandomPlayerbotMgr.h"
 #include "ScriptMgr.h"
 
 class playerbots_commandscript : public CommandScript

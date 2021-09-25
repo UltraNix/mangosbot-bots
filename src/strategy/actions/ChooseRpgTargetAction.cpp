@@ -3,6 +3,7 @@
  */
 
 #include "ChooseRpgTargetAction.h"
+#include "BattlegroundMgr.h"
 #include "ChatHelper.h"
 #include "Event.h"
 #include "PossibleRpgTargetsValue.h"
@@ -60,7 +61,7 @@ BattlegroundTypeId ChooseRpgTargetAction::CanQueueBg(ObjectGuid guid)
     {
         BattlegroundQueueTypeId queueTypeId = (BattlegroundQueueTypeId)i;
 
-        BattlegroundTypeId bgTypeId = sServerFacade->BgTemplateId(queueTypeId);
+        BattlegroundTypeId bgTypeId = BattlegroundMgr::BGTemplateId(queueTypeId);
 
         Battleground* bg = sBattlegroundMgr->GetBattlegroundTemplate(bgTypeId);
         if (!bg)
@@ -73,13 +74,13 @@ BattlegroundTypeId ChooseRpgTargetAction::CanQueueBg(ObjectGuid guid)
         if (bot->InBattlegroundQueueForBattlegroundQueueType(queueTypeId))
             continue;
 
-        std::map<Team, std::map<BattlegroundTypeId, std::vector<uint32>>> battleMastersCache = sRandomPlayerbotMgr->getBattleMastersCache();
+        std::map<TeamId, std::map<BattlegroundTypeId, std::vector<uint32>>> battleMastersCache = sRandomPlayerbotMgr->getBattleMastersCache();
 
-        for (auto& entry : battleMastersCache[TEAM_BOTH_ALLOWED][bgTypeId])
+        for (auto& entry : battleMastersCache[TEAM_NEUTRAL][bgTypeId])
             if (entry == guid.GetEntry())
                 return bgTypeId;
 
-        for (auto& entry : battleMastersCache[bot->GetTeam()][bgTypeId])
+        for (auto& entry : battleMastersCache[bot->GetTeamId()][bgTypeId])
             if (entry == guid.GetEntry())
                 return bgTypeId;
     }
@@ -157,20 +158,20 @@ bool ChooseRpgTargetAction::Execute(Event event)
                 if (AI_VALUE(uint8, "bag space") > 80)
                     priority = 100;
 
-            if (unit->isArmorer())
+            if (unit->IsArmorer())
                 if (AI_VALUE(uint8, "bag space") > 80 || (AI_VALUE(uint8, "durability") < 80 && AI_VALUE(uint32, "repair cost") < bot->GetMoney()))
                     priority = 95;
 
-            uint32 dialogStatus = bot->GetSession()->getDialogStatus(bot, unit, DIALOG_STATUS_NONE);
+            uint32 dialogStatus = bot->GetQuestDialogStatus(unit);
             if (dialogStatus == DIALOG_STATUS_REWARD2 || dialogStatus == DIALOG_STATUS_REWARD || dialogStatus == DIALOG_STATUS_REWARD_REP)
                 priority = 90;
             else if (CanTrain(guid) || dialogStatus == DIALOG_STATUS_AVAILABLE)
                 priority = 80;
             else if (travelTarget->getDestination() && travelTarget->getDestination()->getEntry() == unit->GetEntry())
                 priority = 70;
-            else if (unit->isInnkeeper() && AI_VALUE2(float, "distance", "home bind") > 1000.0f)
+            else if (unit->IsInnkeeper() && AI_VALUE2(float, "distance", "home bind") > 1000.0f)
                 priority = 60;
-            else if (unit->isBattleMaster() && CanQueueBg(guid) != BATTLEGROUND_TYPE_NONE)
+            else if (unit->IsBattleMaster() && CanQueueBg(guid) != BATTLEGROUND_TYPE_NONE)
                 priority = 50;
         }
         else
@@ -181,7 +182,7 @@ bool ChooseRpgTargetAction::Execute(Event event)
             if (!isFollowValid(bot, go))
                 continue;
 
-            uint32 dialogStatus = bot->GetSession()->getDialogStatus(bot, go, DIALOG_STATUS_NONE);
+            uint32 dialogStatus = bot->GetQuestDialogStatus(go);
             if (dialogStatus == DIALOG_STATUS_REWARD2 || dialogStatus == DIALOG_STATUS_REWARD || dialogStatus == DIALOG_STATUS_REWARD_REP)
                 priority = 90;
             else if (dialogStatus == DIALOG_STATUS_AVAILABLE)
@@ -255,7 +256,7 @@ bool ChooseRpgTargetAction::Execute(Event event)
         botAI->TellMasterNoFacing(out);
     }
 
-    context->GetValue<ObjectGuid>("rpg target")->Set(*guid);
+    context->GetValue<ObjectGuid>("rpg target")->Set(guid);
 
     return true;
 }
@@ -269,7 +270,7 @@ bool ChooseRpgTargetAction::isUseful()
 bool ChooseRpgTargetAction::isFollowValid(Player* bot, WorldObject* target)
 {
     WorldLocation location;
-    target->GetPosition(location);
+    target->GetPosition(location.m_positionX, location.m_positionY, location.m_positionZ);
     return isFollowValid(bot, location);
 }
 

@@ -2,6 +2,9 @@
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
+#ifndef _PLAYERBOT_THREATVALUES_H
+#define _PLAYERBOT_THREATVALUES_H
+
 #include "NamedObjectContext.h"
 #include "Value.h"
 
@@ -18,3 +21,5 @@ class ThreatValue : public Uint8CalculatedValue, public Qualified
     protected:
     	uint8 Calculate(Unit* target);
 };
+
+#endif

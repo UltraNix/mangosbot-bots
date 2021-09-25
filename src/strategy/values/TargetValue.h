@@ -2,6 +2,9 @@
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
+#ifndef _PLAYERBOT_TARGETVALUE_H
+#define _PLAYERBOT_TARGETVALUE_H
+
 #include "Unit.h"
 #include "Value.h"
 
@@ -60,7 +63,7 @@ class TravelTargetValue : public ManualSetValue<TravelTarget*>
 class LastLongMoveValue : public CalculatedValue<WorldPosition>
 {
     public:
-        LastLongMoveValue(PlayerbotAI* botAI) : CalculatedValue<WorldPosition>(botAI, "last long move", 30) {}
+        LastLongMoveValue(PlayerbotAI* botAI) : CalculatedValue<WorldPosition>(botAI, "last long move", 30) { }
 
         WorldPosition Calculate() override;
 };
@@ -68,7 +71,7 @@ class LastLongMoveValue : public CalculatedValue<WorldPosition>
 class HomeBindValue : public CalculatedValue<WorldPosition>
 {
     public:
-        HomeBindValue(PlayerbotAI* botAI) : CalculatedValue<WorldPosition>(botAI, "home bind", 30) {}
+        HomeBindValue(PlayerbotAI* botAI) : CalculatedValue<WorldPosition>(botAI, "home bind", 30) { }
 
         WorldPosition Calculate() override;
 };
@@ -93,3 +96,5 @@ class PullTargetValue : public ManualSetValue<ObjectGuid>
     public:
         PullTargetValue(PlayerbotAI* botAI) : ManualSetValue<ObjectGuid>(botAI, ObjectGuid::Empty) { }
 };
+
+#endif

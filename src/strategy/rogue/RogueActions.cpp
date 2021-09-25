@@ -6,7 +6,7 @@
 #include "Event.h"
 #include "Playerbot.h"
 
-bool CastStealthAction::isPossible() const
+bool CastStealthAction::isPossible()
 {
     // do not use with WSG flag
     return !botAI->HasAura(23333, bot) && !botAI->HasAura(23335, bot);

@@ -10,7 +10,8 @@
 #include <iomanip>
 #include <regex>
 
-TravelNodePath::TravelNodePath(float distance1, float extraCost1, bool portal1, uint32 portalId1, bool transport1, bool calculated1, uint32 maxLevelMob1, uint32 maxLevelAlliance1, uint32 maxLevelHorde1, float swimDistance1)
+TravelNodePath::TravelNodePath(float distance1, float extraCost1, bool portal1, uint32 portalId1, bool transport1, bool calculated1,
+    uint32 maxLevelMob1, uint32 maxLevelAlliance1, uint32 maxLevelHorde1, float swimDistance1)
 {
     distance = distance1;
     extraCost = extraCost1;
@@ -798,7 +799,7 @@ TravelPath TravelNodeRoute::buildPath(std::vector<WorldPosition> pathToStart, st
             if (!nodePath || !nodePath->getComplete()) //It looks like we can't properly path to our node. Make a temporary reverse path and see if that works instead.
             {
                 returnNodePath = *node->buildPath(prevNode, nullptr); //Build reverse path and save it to a temporary variable.
-                std::vector<WorldPosition> path = returnNodePath.getPath();
+                std::vector<WorldPosition> path = returnNodepath.GetPath();
                 std::reverse(path.begin(), path.end()); //Reverse the path
                 returnNodePath.setPath(path);
                 nodePath = &returnNodePath;

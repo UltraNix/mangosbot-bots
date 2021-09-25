@@ -2,15 +2,17 @@
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
+#ifndef _PLAYERBOT_AIOBJECTCONTEXT_H
+#define _PLAYERBOT_AIOBJECTCONTEXT_H
+
 #include "Common.h"
 #include "NamedObjectContext.h"
-#include "Value.h"
 #include "PlayerbotAIAware.h"
+#include "Strategy.h"
+#include "Trigger.h"
+#include "Value.h"
 
-class Action;
 class PlayerbotAI;
-class Strategy;
-class Trigger;
 
 class AiObjectContext : public PlayerbotAIAware
 {
@@ -49,3 +51,5 @@ class AiObjectContext : public PlayerbotAIAware
         NamedObjectContextList<Trigger> triggerContexts;
         NamedObjectContextList<UntypedValue> valueContexts;
 };
+
+#endif

@@ -2,6 +2,9 @@
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
+#ifndef _PLAYERBOT_TRIGGERCONTEXT_H
+#define _PLAYERBOT_TRIGGERCONTEXT_H
+
 #include "GenericTriggers.h"
 #include "ActiveQuestTriggers.h"
 #include "CureTriggers.h"
@@ -248,3 +251,5 @@ class TriggerContext : public NamedObjectContext<Trigger>
         static Trigger* hearth_is_faster(PlayerbotAI* botAI) { return new HearthIsFasterTrigger(botAI); }
         static Trigger* player_wants_in_bg(PlayerbotAI* botAI) { return new PlayerWantsInBattlegroundTrigger(botAI); }
 };
+
+#endif

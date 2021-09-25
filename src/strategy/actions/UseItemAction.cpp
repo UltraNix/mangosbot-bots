@@ -264,7 +264,7 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget)
         float p = 0.f;
         if (isDrink && isFood)
         {
-            p = min(hp, mp);
+            p = std::min(hp, mp);
             TellConsumableUse(item, "Feasting", p);
         }
         else if (isDrink)
@@ -322,7 +322,7 @@ bool UseItemAction::SocketItem(Item* item, Item* gem, bool replace)
         {
             if (fits)
             {
-                *packet << ObjectGuid();
+                *packet << ObjectGuid::Empty;
                 continue;
             }
 
@@ -389,7 +389,7 @@ bool UseManaPotion::isUseful()
 
 bool UseHearthStone::Execute(Event event)
 {
-    if (bot->IsMoving())
+    if (bot->isMoving())
     {
         MotionMaster& mm = *bot->GetMotionMaster();
         bot->StopMoving();
@@ -421,11 +421,11 @@ bool UseRandomRecipe::Execute(Event event)
 
     for (auto& recipe : recipes)
     {
-        ItemUsage usage = AI_VALUE2(ItemUsage, "item usage", recipe->GetProto()->ItemId);
+        ItemUsage usage = AI_VALUE2(ItemUsage, "item usage", recipe->GetTemplate()->ItemId);
 
         if (usage == ITEM_USAGE_SKILL && bot->CanUseItem(recipe) == EQUIP_ERR_OK)
         {
-            name = recipe->GetProto()->Name1;
+            name = recipe->GetTemplate()->Name1;
 
             break;
         }

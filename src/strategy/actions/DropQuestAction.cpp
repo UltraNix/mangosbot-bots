@@ -104,8 +104,8 @@ void CleanQuestLogAction::DropQuestType(uint8& numQuest, uint8 wantNum, bool isG
         if (!isGreen)
         {
             int32 lowLevelDiff = sWorld->getIntConfig(CONFIG_QUEST_LOW_LEVEL_HIDE_DIFF);
-            if (lowLevelDiff < 0 || bot->getLevel() <= bot->GetQuestLevelForPlayer(quest) + uint32(lowLevelDiff)) //Quest is not gray
-                if (bot->getLevel() + 5 > bot->GetQuestLevelForPlayer(quest))                                     //Quest is not red
+            if (lowLevelDiff < 0 || bot->getLevel() <= bot->GetQuestLevel(quest) + uint32(lowLevelDiff)) // Quest is not gray
+                if (bot->getLevel() + 5 > bot->GetQuestLevel(quest))                                     // Quest is not red
                     continue;
         }
 
@@ -125,7 +125,7 @@ void CleanQuestLogAction::DropQuestType(uint8& numQuest, uint8 wantNum, bool isG
         bot->TakeQuestSourceItem(questId, false);
 
         bot->SetQuestStatus(questId, QUEST_STATUS_NONE);
-        bot->getQuestStatusMap()[questId].m_rewarded = false;
+        bot->RemoveRewardedQuest(questId);
 
         numQuest--;
 

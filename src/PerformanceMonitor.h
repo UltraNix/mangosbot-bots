@@ -2,8 +2,8 @@
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
-#ifndef _PerformanceMonitor_H
-#define _PerformanceMonitor_H
+#ifndef _PLAYERBOT_PERFORMANCEMONITOR_H
+#define _PLAYERBOT_PERFORMANCEMONITOR_H
 
 #include "Common.h"
 #include <mutex>
@@ -51,7 +51,7 @@ class PerformanceMonitor
         }
 
 	public:
-        PerformanceMonitorOperation* start(PerformanceMetric metric, std::string name);
+        PerformanceMonitorOperation* start(PerformanceMetric metric, std::string const& name);
         void PrintStats();
         void Reset();
 
@@ -59,7 +59,6 @@ class PerformanceMonitor
         std::map<PerformanceMetric, std::map<std::string, PerformanceData*> > data;
         std::mutex lock;
 };
-
 
 #define sPerformanceMonitor PerformanceMonitor::instance()
 

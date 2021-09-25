@@ -10,10 +10,10 @@ bool SetHomeAction::Execute(Event event)
 {
     Player* master = GetMaster();
 
-    ObjectGuid selection = bot->GetSelectionGuid();
-    if (AI_VALUE(ObjectGuid, "rpg target") != bot->GetSelectionGuid())
+    ObjectGuid selection = bot->GetTarget();
+    if (AI_VALUE(ObjectGuid, "rpg target") != bot->GetTarget())
         if (master)
-            selection = master->GetSelectionGuid();
+            selection = master->GetTarget();
         else
             return false;
 

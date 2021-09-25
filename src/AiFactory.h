@@ -2,6 +2,9 @@
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
+#ifndef _PLAYERBOT_AIFACTORY_H
+#define _PLAYERBOT_AIFACTORY_H
+
 #include "Common.h"
 
 class AiObjectContext;
@@ -27,3 +30,5 @@ class AiFactory
         static std::map<uint8, uint32> GetPlayerSpecTabs(Player* player);
         static BotRoles GetPlayerRoles(Player* player);
 };
+
+#endif

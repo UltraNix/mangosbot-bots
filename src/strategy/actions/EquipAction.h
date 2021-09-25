@@ -2,6 +2,9 @@
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
+#ifndef _PLAYERBOT_EQUIPACTION_H
+#define _PLAYERBOT_EQUIPACTION_H
+
 #include "ChatHelper.h"
 #include "InventoryAction.h"
 
@@ -31,3 +34,5 @@ class EquipUpgradesAction : public EquipAction
 
         bool Execute(Event event) override;
 };
+
+#endif

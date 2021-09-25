@@ -2,6 +2,9 @@
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
+#ifndef _PLAYERBOT_CUSTOMSTRATEGYEDITACTION_H
+#define _PLAYERBOT_CUSTOMSTRATEGYEDITACTION_H
+
 #include "Action.h"
 
 class Event;
@@ -20,3 +23,5 @@ class CustomStrategyEditAction : public Action
         bool Print(std::string const& name);
         bool Edit(std::string const& name, uint32 idx, std::string const& command);
 };
+
+#endif

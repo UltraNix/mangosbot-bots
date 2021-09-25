@@ -34,7 +34,7 @@ PlayerbotSecurityLevel PlayerbotSecurity::LevelFor(Player* from, DenyReason* rea
             return PLAYERBOT_SECURITY_DENY_ALL;
         }
 
-        Group* group = from->GetGroup()
+        Group* group = from->GetGroup();
         if (group)
         {
             for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())

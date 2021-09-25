@@ -54,7 +54,7 @@ bool QueryQuestAction::Execute(Event event)
         if (travel)
         {
             uint32 limit = 0;
-            std::vector<TravelDestination*> allDestinations = sTravelMgr.getQuestTravelDestinations(bot, questId, true, true, -1);
+            std::vector<TravelDestination*> allDestinations = sTravelMgr->getQuestTravelDestinations(bot, questId, true, true, -1);
 
             std::sort(allDestinations.begin(), allDestinations.end(), [botPos](TravelDestination* i, TravelDestination* j) { return i->distanceTo(botPos) < j->distanceTo(botPos); });
 

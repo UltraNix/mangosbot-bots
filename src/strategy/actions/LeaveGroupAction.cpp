@@ -16,7 +16,7 @@ bool PartyCommandAction::Execute(Event event)
     WorldPacket& p = event.getPacket();
     p.rpos(0);
     uint32 operation;
-    string member;
+    std::string member;
 
     p >> operation >> member;
 
@@ -77,7 +77,7 @@ bool LeaveGroupAction::Leave()
     if (randomBot)
     {
         bot->GetPlayerbotAI()->SetMaster(nullptr);
-        sRandomPlayerbotMgr->ScheduleTeleport(bot->GetGUID());
+        sRandomPlayerbotMgr->ScheduleTeleport(bot->GetGUID().GetCounter());
     }
 
     if (!aiMaster)

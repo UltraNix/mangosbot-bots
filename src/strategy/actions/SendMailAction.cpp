@@ -135,7 +135,7 @@ bool SendMailAction::Execute(Event event)
 
             if (randomBot)
             {
-                uint32 price = item->GetCount() * auctionbot.GetSellPrice(proto);
+                uint32 price = item->GetCount() * proto->SellPrice;
                 if (!price)
                 {
                     std::ostringstream out;

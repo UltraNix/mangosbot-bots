@@ -145,7 +145,7 @@ std::string const& QueryItemUsageAction::QueryItemPrice(ItemTemplate const* item
         for (std::list<Item*>::iterator i = items.begin(); i != items.end(); ++i)
         {
             Item* sell = *i;
-            int32 price = sell->GetCount() * auctionbot.GetSellPrice(sell->GetTemplate()) * sRandomPlayerbotMgr->GetSellMultiplier(bot);
+            int32 price = sell->GetCount() * sell->GetTemplate()->SellPrice * sRandomPlayerbotMgr->GetSellMultiplier(bot);
             if (!sellPrice || sellPrice > price)
                 sellPrice = price;
         }
@@ -159,7 +159,7 @@ std::string const& QueryItemUsageAction::QueryItemPrice(ItemTemplate const* item
     if (usage == ITEM_USAGE_NONE)
         return msg.str();
 
-    int32 buyPrice = auctionbot.GetBuyPrice(item) * sRandomPlayerbotMgr->GetBuyMultiplier(bot);
+    int32 buyPrice = item->BuyPrice * sRandomPlayerbotMgr->GetBuyMultiplier(bot);
     if (buyPrice)
     {
         if (sellPrice)
@@ -199,7 +199,7 @@ std::string const& QueryItemUsageAction::QueryQuestItem(uint32 itemId, Quest con
 {
     for (uint32 i = 0; i < QUEST_OBJECTIVES_COUNT; i++)
     {
-        if (questTemplate->ReqItemId[i] != itemId)
+        if (questTemplate->RequiredItemId[i] != itemId)
             continue;
 
         uint32 required = questTemplate->RequiredItemCount[i];

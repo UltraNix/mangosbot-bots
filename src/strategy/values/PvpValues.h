@@ -2,6 +2,9 @@
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
+#ifndef _PLAYERBOT_PVPVALUES_H
+#define _PLAYERBOT_PVPVALUES_H
+
 #include "Value.h"
 
 class PlayerbotAI;
@@ -28,7 +31,7 @@ class BgRoleValue : public ManualSetValue<uint32>
 class BgMastersValue : public SingleCalculatedValue<std::vector<CreatureData const*>>, public Qualified
 {
     public:
-        BgMastersValue(PlayerbotAI* botAI) : SingleCalculatedValue<std::vector<CreatureData const*>>(botAI, "bg masters") {}
+        BgMastersValue(PlayerbotAI* botAI) : SingleCalculatedValue<std::vector<CreatureData const*>>(botAI, "bg masters") { }
 
         std::vector<CreatureData const*> Calculate() override;
 };
@@ -36,7 +39,7 @@ class BgMastersValue : public SingleCalculatedValue<std::vector<CreatureData con
 class BgMasterValue : public CDPairCalculatedValue, public Qualified
 {
     public:
-        BgMasterValue(PlayerbotAI* botAI) : CDPairCalculatedValue(botAI, "bg master", 60) {}
+        BgMasterValue(PlayerbotAI* botAI) : CDPairCalculatedValue(botAI, "bg master", 60) { }
 
         CreatureData const* Calculate() override;
         CreatureData const* NearestBm(bool allowDead = true) override;
@@ -54,3 +57,5 @@ class FlagCarrierValue : public UnitCalculatedValue
         bool sameTeam;
         bool ignoreRange;
 };
+
+#endif

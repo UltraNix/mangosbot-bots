@@ -3,7 +3,7 @@
  */
 
 #include "ArenaTeamActions.h"
-#include "ArenaTeam.h"
+#include "ArenaTeamMgr.h"
 #include "Playerbot.h"
 
 bool ArenaTeamAcceptAction::Execute(Event event)
@@ -20,7 +20,7 @@ bool ArenaTeamAcceptAction::Execute(Event event)
     if (!inviter)
         return false;
 
-    ArenaTeam* at = sObjectMgr.GetArenaTeamById(bot->GetArenaTeamIdInvited());
+    ArenaTeam* at = sArenaTeamMgr->GetArenaTeamById(bot->GetArenaTeamIdInvited());
     if (!at)
         return false;
 
@@ -38,14 +38,14 @@ bool ArenaTeamAcceptAction::Execute(Event event)
         WorldPacket data(CMSG_ARENA_TEAM_ACCEPT);
         bot->GetSession()->HandleArenaTeamAcceptOpcode(data);
         bot->Say("Thanks for the invite!", LANG_UNIVERSAL);
-        LOG_INFO("playerbots", "Bot #%d <%s> accepts Arena Team invite", bot->GetGUIDLow(), bot->GetName().c_str());
+        LOG_INFO("playerbots", "Bot %s <%s> accepts Arena Team invite", bot->GetGUID().ToString().c_str(), bot->GetName().c_str());
         return true;
     }
     else
     {
         WorldPacket data(CMSG_ARENA_TEAM_DECLINE);
         bot->GetSession()->HandleArenaTeamDeclineOpcode(data);
-        LOG_INFO("playerbots", "Bot #%d <%s> declines Arena Team invite", bot->GetGUIDLow(), bot->GetName().c_str());
+        LOG_INFO("playerbots", "Bot %s <%s> declines Arena Team invite", bot->GetGUID().ToString().c_str(), bot->GetName().c_str());
         return false;
     }
 

@@ -40,7 +40,7 @@ bool WtsAction::Execute(Event event)
         if (usage == ITEM_USAGE_NONE)
             continue;
 
-        int32 buyPrice = PricingStrategy::RoundPrice(auctionbot.GetBuyPrice(proto) * sRandomPlayerbotMgr->GetBuyMultiplier(bot));
+        int32 buyPrice = proto->BuyPrice * sRandomPlayerbotMgr->GetBuyMultiplier(bot);
         if (!buyPrice)
             continue;
 

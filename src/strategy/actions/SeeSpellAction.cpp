@@ -9,10 +9,6 @@
 #include "Playerbot.h"
 #include "TravelMgr.h"
 
-#ifdef ELUNA
-#include "LuaEngine.h"
-#endif
-
 Creature* SeeSpellAction::CreateWps(Player* wpOwner, float x, float y, float z, float o, uint32 entry, Creature* lastWp, bool important)
 {
     float dist = wpOwner->GetDistance(x, y, z);
@@ -100,7 +96,7 @@ bool SeeSpellAction::Execute(Event event)
         botAI->TellMaster(out);
 
         /*
-        PathFinder path(bot);
+        PathGenerator path(bot);
 
         std::ostringstream out;
 
@@ -135,12 +131,12 @@ bool SeeSpellAction::Execute(Event event)
         /*
         WorldPosition pos = WorldPosition(bot->GetMapId(), x, y, z, 0);
 
-        sTravelNodeMap.m_nMapMtx.lock();
-        TravelNode* node = sTravelNodeMap.getNode(&pos,nullptr, 20);
+        sTravelNodeMap->m_nMapMtx.lock();
+        TravelNode* node = sTravelNodeMap->getNode(&pos,nullptr, 20);
 
         if (!node)
         {
-            node = sTravelNodeMap.addNode(&pos,"User Node", false, true, false);
+            node = sTravelNodeMap->addNode(&pos,"User Node", false, true, false);
 
             if (node)
             {
@@ -151,7 +147,7 @@ bool SeeSpellAction::Execute(Event event)
         {
             if (!node->isImportant())
             {
-                sTravelNodeMap.removeNode(node);
+                sTravelNodeMap->removeNode(node);
                 botAI->TellMaster("node removed");
             }
             else
@@ -162,7 +158,7 @@ bool SeeSpellAction::Execute(Event event)
             }
         }
 
-        sTravelNodeMap.m_nMapMtx.unlock();
+        sTravelNodeMap->m_nMapMtx.unlock();
         */
     }
 

@@ -34,7 +34,7 @@ bool AcceptInvitationAction::Execute(Event event)
     if (sRandomPlayerbotMgr->IsRandomBot(bot))
         botAI->SetMaster(inviter);
     //else
-        //sPlayerbotDbStore.Save(botAI);
+        //sPlayerbotDbStore->Save(botAI);
 
     botAI->ResetStrategies();
     botAI->ChangeStrategy("+follow,-lfg,-bg", BOT_STATE_NON_COMBAT);

@@ -2,6 +2,9 @@
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
+#ifndef _PLAYERBOT_CHOOSETARGETACTIONS_H
+#define _PLAYERBOT_CHOOSETARGETACTIONS_H
+
 #include "AttackAction.h"
 
 class Event;
@@ -40,7 +43,7 @@ class AttackAnythingAction : public AttackAction
         std::string const& GetTargetName() override { return "grind target"; }
         bool Execute(Event event) override;
         bool isUseful() override;
-        bool isPossible() const override;
+        bool isPossible() override;
 
     private:
         //Todo: add specific conditions when bots should always be active (ie. in a guild with a player, some day grouped with a player, ect.)
@@ -75,7 +78,7 @@ class AttackRtiTargetAction : public AttackAction
 class AttackEnemyFlagCarrierAction : public AttackAction
 {
     public:
-        AttackEnemyFlagCarrierAction(PlayerbotAI* botAI) : AttackAction(botAI, "attack enemy flag carrier") {}
+        AttackEnemyFlagCarrierAction(PlayerbotAI* botAI) : AttackAction(botAI, "attack enemy flag carrier") { }
 
         std::string const& GetTargetName() override { return "enemy flag carrier"; }
         bool isUseful() override;
@@ -88,3 +91,5 @@ class DropTargetAction : public Action
 
         bool Execute(Event event) override;
 };
+
+#endif

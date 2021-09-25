@@ -91,7 +91,7 @@ bool CheckMountStateAction::Execute(Event event)
     if (!bot->IsMounted() && (fartarget || chasedistance))
         return Mount();
 
-    if (attackdistance && bot->IsMounted() && (!noattackers && sServerFacade->IsInCombat(bot)))
+    if (attackdistance && bot->IsMounted() && (!noattackers && bot->IsInCombat()))
     {
         WorldPacket emptyPacket;
         bot->GetSession()->HandleCancelMountAuraOpcode(emptyPacket);
@@ -203,8 +203,8 @@ bool CheckMountStateAction::Mount()
         if (effect < masterSpeed)
             continue;
 
-        uint32 index = (spellInfo->Effects[1].ApplyAuraName == SPELL_AURA_MOD_FLIGHT_SPEED_MOUNTED ||
-            spellInfo->Effects[2].ApplyAuraName == SPELL_AURA_MOD_FLIGHT_SPEED_MOUNTED) ? 1 : 0;
+        uint32 index = (spellInfo->Effects[1].ApplyAuraName == SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED ||
+            spellInfo->Effects[2].ApplyAuraName == SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) ? 1 : 0;
 
         allSpells[index][effect].push_back(spellId);
     }
@@ -212,8 +212,8 @@ bool CheckMountStateAction::Mount()
     int32 masterMountType = 0;
     if (masterSpell)
     {
-        masterMountType = (masterSpell->Effects[1].ApplyAuraName == SPELL_AURA_MOD_FLIGHT_SPEED_MOUNTED ||
-            masterSpell->Effects[2].ApplyAuraName == SPELL_AURA_MOD_FLIGHT_SPEED_MOUNTED) ? 1 : 0;
+        masterMountType = (masterSpell->Effects[1].ApplyAuraName == SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED ||
+            masterSpell->Effects[2].ApplyAuraName == SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) ? 1 : 0;
     }
 
     std::map<int32, std::vector<uint32>>& spells = allSpells[masterMountType];

@@ -2,6 +2,9 @@
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
+#ifndef _PLAYERBOT_CHATHELPER_H
+#define _PLAYERBOT_CHATHELPER_H
+
 #include "Common.h"
 #include "ObjectGuid.h"
 #include "PlayerbotAIAware.h"
@@ -63,5 +66,7 @@ class ChatHelper : public PlayerbotAIAware
         static std::map<std::string, ChatMsg> chats;
         static std::map<uint8, std::string> classes;
         static std::map<uint8, std::string> races;
-        static std::map<uint8, std::map<uint8, std::string> > specs;
+        static std::map<uint8, std::map<uint8, std::string>> specs;
 };
+
+#endif

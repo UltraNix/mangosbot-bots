@@ -2,6 +2,9 @@
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
+#ifndef _PLAYERBOT_GENERICTRIGGERS_H
+#define _PLAYERBOT_GENERICTRIGGERS_H
+
 #include "RangeTriggers.h"
 #include "HealthTriggers.h"
 #include "Trigger.h"
@@ -647,7 +650,7 @@ class CorpseNearTrigger : public Trigger
 class IsFallingTrigger : public Trigger
 {
     public:
-        IsFallingTrigger(PlayerbotAI* botAI) : Trigger(botAI, "falling", 10) {}
+        IsFallingTrigger(PlayerbotAI* botAI) : Trigger(botAI, "falling", 10) { }
 
         bool IsActive() override;
 };
@@ -655,7 +658,9 @@ class IsFallingTrigger : public Trigger
 class IsFallingFarTrigger : public Trigger
 {
     public:
-        IsFallingFarTrigger(PlayerbotAI* botAI) : Trigger(botAI, "falling far", 10) {}
+        IsFallingFarTrigger(PlayerbotAI* botAI) : Trigger(botAI, "falling far", 10) { }
 
         bool IsActive() override;
 };
+
+#endif

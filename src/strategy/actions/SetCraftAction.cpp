@@ -48,7 +48,7 @@ bool SetCraftAction::Execute(Event event)
     {
         for (SkillLineAbilityEntry const* skillLine : sSkillLineAbilityStore)
         {
-            skillSpells[skillLine->spellId] = skillLine;
+            skillSpells[skillLine->Spell] = skillLine;
         }
     }
 
@@ -158,6 +158,6 @@ uint32 SetCraftAction::GetCraftFee(CraftData& data)
     if (!proto)
         return 0;
 
-    uint32 level = max(proto->ItemLevel, proto->RequiredLevel);
-    return sAhBotsConfigMgr->defaultMinPrice * level * level / 40;
+    uint32 level = std::max(proto->ItemLevel, proto->RequiredLevel);
+    return level * level / 40;
 }

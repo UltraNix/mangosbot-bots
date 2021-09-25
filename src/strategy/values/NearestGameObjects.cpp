@@ -29,7 +29,7 @@ GuidVector NearestGameObjects::Calculate()
     std::list<GameObject*> targets;
     AnyGameObjectInObjectRangeCheck u_check(bot, range);
     Acore::GameObjectListSearcher<AnyGameObjectInObjectRangeCheck> searcher(bot, targets, u_check);
-    bot->VisitNearbyObject(range, searcher);
+    Cell::VisitAllObjects(bot, searcher, range);
 
     GuidVector result;
     for (GameObject* go : targets)

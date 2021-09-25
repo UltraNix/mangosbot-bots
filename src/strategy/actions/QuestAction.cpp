@@ -6,6 +6,7 @@
 #include "Event.h"
 #include "ChatHelper.h"
 #include "Playerbot.h"
+#include "ReputationMgr.h"
 
 bool QuestAction::Execute(Event event)
 {
@@ -66,26 +67,19 @@ bool QuestAction::CompleteQuest(Player* player, uint32 entry)
         int32 creature = pQuest->RequiredNpcOrGo[i];
         uint32 creaturecount = pQuest->RequiredNpcOrGoCount[i];
 
-        if (uint32 spell_id = pQuest->ReqSpell[i])
-        {
-            for (uint16 z = 0; z < creaturecount; ++z)
-            {
-                player->CastedCreatureOrGO(creature, ObjectGuid(), spell_id);
-            }
-        }
-        else if (creature > 0)
+        if (creature > 0)
         {
             if (CreatureTemplate const* cInfo = sObjectMgr->GetCreatureTemplate(creature))
                 for (uint16 z = 0; z < creaturecount; ++z)
                 {
-                    player->KilledMonster(cInfo, ObjectGuid());
+                    player->KilledMonster(cInfo, ObjectGuid::Empty);
                 }
         }
         else if (creature < 0)
         {
             for (uint16 z = 0; z < creaturecount; ++z)
             {
-                player->CastedCreatureOrGO(-creature, ObjectGuid(), 0);
+                player->KillCreditGO(-creature);
             }
         }
     }
@@ -109,7 +103,7 @@ bool QuestAction::CompleteQuest(Player* player, uint32 entry)
         player->ModifyMoney(-ReqOrRewMoney);
     }
 
-    player->CompleteQuest(entry, QUEST_STATUS_FORCE_COMPLETE);
+    player->CompleteQuest(entry);
 
     return true;
 }
@@ -137,8 +131,8 @@ bool QuestAction::ProcessQuests(WorldObject* questGiver)
         return false;
     }
 
-    if (!bot->IsInFront(questGiver, sPlayerbotAIConfig->sightDistance, CAST_ANGLE_IN_FRONT))
-        bot->SetFacingTo(questGiver);
+    if (!bot->HasInArc(CAST_ANGLE_IN_FRONT, questGiver, sPlayerbotAIConfig->sightDistance))
+        bot->SetFacingToObject(questGiver);
 
     bot->SetTarget(guid);
     bot->PrepareQuestMenu(guid);
@@ -187,11 +181,11 @@ bool QuestAction::AcceptQuest(Quest const* quest, ObjectGuid questGiver)
 
         if (bot->GetQuestStatus(questId) == QUEST_STATUS_NONE && !sPlayerbotAIConfig->syncQuestWithPlayer)
         {
-            Object* pObject = bot->GetObjectByTypeMask(questGiver, TYPEMASK_CREATURE_GAMEOBJECT_PLAYER_OR_ITEM);
+            Object* pObject = ObjectAccessor::GetObjectByTypeMask(*bot, questGiver, TYPEMASK_UNIT | TYPEMASK_GAMEOBJECT | TYPEMASK_ITEM);
             bot->AddQuest(quest, pObject);
         }
 
-        if (bot->GetQuestStatus(questId) != QUEST_STATUS_NONE && bot->GetQuestStatus(questId) != QUEST_STATUS_AVAILABLE)
+        if (bot->GetQuestStatus(questId) != QUEST_STATUS_NONE && bot->GetQuestStatus(questId) != QUEST_STATUS_REWARDED)
         {
             out << "Accepted " << chat->formatQuest(quest);
             botAI->TellMaster(out);

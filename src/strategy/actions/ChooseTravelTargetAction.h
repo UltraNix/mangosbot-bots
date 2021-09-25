@@ -2,6 +2,9 @@
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
+#ifndef _PLAYERBOT_CHOOSETRAVELTARGETACTION_H
+#define _PLAYERBOT_CHOOSETRAVELTARGETACTION_H
+
 #include "MovementActions.h"
 #include "TravelMgr.h"
 
@@ -51,3 +54,5 @@ class ChooseTravelTargetAction : public MovementAction
         virtual bool needForQuest(Unit* target);
         virtual bool needItemForQuest(uint32 itemId, Quest const* questTemplate, QuestStatusData const* questStatus);
 };
+
+#endif

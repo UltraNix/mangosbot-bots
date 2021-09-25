@@ -2,6 +2,9 @@
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
+#ifndef _PLAYERBOT_PVPTRIGGERS_H
+#define _PLAYERBOT_PVPTRIGGERS_H
+
 #include "Trigger.h"
 
 class PlayerbotAI;
@@ -65,7 +68,7 @@ class EnemyTeamHasFlag : public Trigger
 class PlayerIsInBattleground : public Trigger
 {
     public:
-        PlayerIsInBattleground(PlayerbotAI* botAI) : Trigger(botAI, "in Battleground") {}
+        PlayerIsInBattleground(PlayerbotAI* botAI) : Trigger(botAI, "in Battleground") { }
 
         bool IsActive() override;
 };
@@ -73,7 +76,7 @@ class PlayerIsInBattleground : public Trigger
 class BgWaitingTrigger : public Trigger
 {
     public:
-        BgWaitingTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bg waiting", 30) {}
+        BgWaitingTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bg waiting", 30) { }
 
         bool IsActive() override;
 };
@@ -81,7 +84,7 @@ class BgWaitingTrigger : public Trigger
 class BgActiveTrigger : public Trigger
 {
     public:
-        BgActiveTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bg active", 1) {}
+        BgActiveTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bg active", 1) { }
 
         bool IsActive() override;
 };
@@ -89,7 +92,7 @@ class BgActiveTrigger : public Trigger
 class PlayerIsInBattlegroundWithoutFlag : public Trigger
 {
     public:
-        PlayerIsInBattlegroundWithoutFlag(PlayerbotAI* botAI) : Trigger(botAI, "in Battleground without flag") {}
+        PlayerIsInBattlegroundWithoutFlag(PlayerbotAI* botAI) : Trigger(botAI, "in Battleground without flag") { }
 
         bool IsActive() override;
 };
@@ -97,7 +100,9 @@ class PlayerIsInBattlegroundWithoutFlag : public Trigger
 class PlayerWantsInBattlegroundTrigger : public Trigger
 {
     public:
-        PlayerWantsInBattlegroundTrigger(PlayerbotAI* botAI) : Trigger(botAI, "wants in bg") {}
+        PlayerWantsInBattlegroundTrigger(PlayerbotAI* botAI) : Trigger(botAI, "wants in bg") { }
 
         bool IsActive() override;
 };
+
+#endif

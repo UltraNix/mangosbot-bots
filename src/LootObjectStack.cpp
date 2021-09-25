@@ -152,7 +152,7 @@ bool LootObject::IsLootPossible(Player* bot)
     Creature* creature = botAI->GetCreature(guid);
     if (creature && creature->getDeathState() == CORPSE)
     {
-        if (creature->loot && !creature->loot->CanLoot(bot))
+        if (!creature->loot.hasItemFor(bot))
             return false;
     }
 

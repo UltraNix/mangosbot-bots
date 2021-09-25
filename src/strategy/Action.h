@@ -2,20 +2,16 @@
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
+#ifndef _PLAYERBOT_ACTION_H
+#define _PLAYERBOT_ACTION_H
+
 #include "AiObject.h"
 #include "Common.h"
+#include "Event.h"
 #include "Value.h"
 
-class Event;
 class PlayerbotAI;
 class Unit;
-
-enum ActionThreatType
-{
-    ACTION_THREAT_NONE      = 0,
-    ACTION_THREAT_SINGLE    = 1,
-    ACTION_THREAT_AOE       = 2
-};
 
 class NextAction
 {
@@ -40,11 +36,18 @@ class NextAction
 class Action : public AiNamedObject
 {
 	public:
+        enum ActionThreatType
+        {
+            ACTION_THREAT_NONE      = 0,
+            ACTION_THREAT_SINGLE    = 1,
+            ACTION_THREAT_AOE       = 2
+        };
+
         Action(PlayerbotAI* botAI, std::string name = "action") : verbose(false), AiNamedObject(botAI, name) { }
         virtual ~Action(void) { }
 
         virtual bool Execute(Event event) { return true; }
-        virtual bool isPossible() const { return true; }
+        virtual bool isPossible() { return true; }
         virtual bool isUseful() { return true; }
         virtual NextAction** getPrerequisites() { return nullptr; }
         virtual NextAction** getAlternatives() { return nullptr; }
@@ -116,3 +119,5 @@ class ActionBasket
         Event event;
         time_t created;
 };
+
+#endif

@@ -5,6 +5,7 @@
 #include "DebugAction.h"
 #include "Event.h"
 #include "Playerbot.h"
+#include "TravelMgr.h"
 
 bool DebugAction::Execute(Event event)
 {

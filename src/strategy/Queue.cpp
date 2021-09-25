@@ -20,6 +20,7 @@ void Queue::Push(ActionBasket *action)
 
 				if (ActionNode* actionNode = action->getAction())
 				    delete actionNode;
+
                 delete action;
 
                 return;

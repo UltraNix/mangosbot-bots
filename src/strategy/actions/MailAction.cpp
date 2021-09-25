@@ -178,12 +178,6 @@ class ReadMailProcessor : public MailProcessor
             out << "|cffffffff" << mail->subject;
             botAI->TellMaster(out.str());
 
-            if (mail->itemTextId)
-            {
-                body << "\n" << sObjectMgr->GetItemText(mail->itemTextId);
-                botAI->TellMaster(body.str());
-            }
-
             return true;
         }
 
@@ -239,7 +233,7 @@ bool MailAction::Execute(Event event)
 
     std::vector<Mail*> mailList;
     time_t cur_time = time(nullptr);
-    for (PlayerMails::iterator itr = bot->GetMailBegin(); itr != bot->GetMailEnd(); ++itr)
+    for (PlayerMails::const_iterator itr = bot->GetMails().begin(); itr != bot->GetMails().end(); ++itr)
     {
         if ((*itr)->state == MAIL_STATE_DELETED || cur_time < (*itr)->deliver_time)
             continue;

@@ -2,6 +2,9 @@
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
+#ifndef _PLAYERBOT_PLAYERBOTFACTORY_H
+#define _PLAYERBOT_PLAYERBOTFACTORY_H
+
 #include "InventoryAction.h"
 
 class Item;
@@ -109,6 +112,8 @@ class PlayerbotFactory : public InventoryAction
         static std::list<uint32> classQuestIds;
         void InitSkills();
 
+        static uint32 tradeSkills[];
+
     private:
         void Prepare();
         void InitSecondEquipmentSet();
@@ -152,7 +157,6 @@ class PlayerbotFactory : public InventoryAction
         void InitArenaTeam();
         void InitImmersive();
         void AddConsumables();
-        void InitStats();
         static void AddPrevQuests(uint32 questId, std::list<uint32>& questIds);
         void LoadEnchantContainer();
         void ApplyEnchantTemplate();
@@ -162,9 +166,11 @@ class PlayerbotFactory : public InventoryAction
 
         uint32 level;
         uint32 itemQuality;
-        static uint32 tradeSkills[];
         static std::list<uint32> classQuestIds;
+        static std::list<uint32> specialQuestIds;
 
     protected:
         EnchantContainer m_EnchantContainer;
 };
+
+#endif

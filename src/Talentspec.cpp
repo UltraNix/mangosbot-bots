@@ -42,12 +42,12 @@ bool TalentSpec::CheckTalentLink(std::string const& link, std::ostringstream* ou
 uint32 TalentSpec::LeveltoPoints(uint32 level) const
 {
     uint32 talentPointsForLevel = level < 10 ? 0 : level - 9;
-    return uint32(talentPointsForLevel * sWorld->getIntConfig(CONFIG_FLOAT_RATE_TALENT));
+    return uint32(talentPointsForLevel * sWorld->getRate(RATE_TALENT));
 }
 
-uint32 TalentSpec::PointstoLevel(int points) const
+uint32 TalentSpec::PointstoLevel(uint32 points) const
 {
-    return uint32(ceil(points / sWorld->getIntConfig(CONFIG_FLOAT_RATE_TALENT))) + 9;
+    return uint32(ceil(points / sWorld->getRate(RATE_TALENT))) + 9;
 }
 
 TalentSpec::TalentSpec(uint32 classMask)
@@ -230,13 +230,19 @@ void TalentSpec::SortTalents(std::vector<TalentListEntry>& talents, uint32 sortB
         case SORT_BY_DEFAULT:
         {
             uint32 tabSort[] = { 0, 1, 2 };
-            std::sort(talents.begin(), talents.end(), std::bind(sortTalentMap, _1, _2, tabSort));
+            std::sort(talents.begin(), talents.end(), [&tabSort](TalentSpec::TalentListEntry i, TalentSpec::TalentListEntry j)
+            {
+                return sortTalentMap(i, j, tabSort);
+            });
             break;
         }
         case SORT_BY_POINTS_TREE:
         {
-            int32 tabSort[] = { GetTalentPoints(talents, 0) * -100 - irand(0, 99), GetTalentPoints(talents, 1) * -100 - irand(0, 99), GetTalentPoints(talents, 2) * -100 - irand(0, 99) };
-            std::sort(talents.begin(), talents.end(), std::bind(sortTalentMap, _1, _2, tabSort));
+            uint32 tabSort[] = { GetTalentPoints(talents, 0) * 100 - urand(0, 99), GetTalentPoints(talents, 1) * 100 - urand(0, 99), GetTalentPoints(talents, 2) * 100 - urand(0, 99) };
+            std::sort(talents.begin(), talents.end(), [&tabSort](TalentSpec::TalentListEntry i, TalentSpec::TalentListEntry j)
+            {
+                return sortTalentMap(i, j, tabSort);
+            });
             break;
         }
     }
@@ -401,7 +407,7 @@ uint32 TalentSpec::highestTree()
     return 0;
 }
 
-std::string const& TalentSpec::formatSpec(Player* bot)
+std::string const TalentSpec::formatSpec(Player* bot)
 {
     uint8 cls = bot->getClass();
 
@@ -431,7 +437,7 @@ void TalentSpec::CropTalents(uint32 level)
     for (auto& entry : talents)
     {
         if (points + entry.rank > LeveltoPoints(level))
-            entry.rank = max(0, LeveltoPoints(level) - points);
+            entry.rank = std::max(0u, LeveltoPoints(level) - points);
 
         points += entry.rank;
     }
@@ -449,9 +455,9 @@ std::vector<TalentSpec::TalentListEntry> TalentSpec::SubTalentList(std::vector<T
             if (oldentry.entry == newentry.entry)
             {
                 if (reverse == ABSOLUTE_DIST)
-                    newentry.rank = std::abs(newentry.rank - oldentry.rank);
+                    newentry.rank = std::abs(int32(newentry.rank - oldentry.rank));
                 else if (reverse == ADDED_POINTS || reverse == REMOVED_POINTS)
-                    newentry.rank = std::max(0, (newentry.rank - oldentry.rank) * (reverse / 2));
+                    newentry.rank = std::max(0u, (newentry.rank - oldentry.rank) * (reverse / 2));
                 else
                     newentry.rank = (newentry.rank - oldentry.rank) * reverse;
             }
@@ -498,7 +504,7 @@ void TalentSpec::ShiftTalents(TalentSpec* currentSpec, uint32 level)
     for (auto& entry : deltaList)
     {
         if (entry.rank + points > LeveltoPoints(level)) //Running out of points. Only apply what we have left.
-            entry.rank = std:max(0, int(LeveltoPoints(level) - points));
+            entry.rank = std::max(0, std::abs(int32(LeveltoPoints(level) - points)));
 
         for (auto& subentry : talents)
             if (entry.entry == subentry.entry)

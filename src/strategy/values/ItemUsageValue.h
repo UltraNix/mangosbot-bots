@@ -2,6 +2,9 @@
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
+#ifndef _PLAYERBOT_ITEMUSAGEVALUE_H
+#define _PLAYERBOT_ITEMUSAGEVALUE_H
+
 #include "NamedObjectContext.h"
 #include "Value.h"
 
@@ -39,3 +42,5 @@ class ItemUsageValue : public CalculatedValue<ItemUsage>, public Qualified
         bool IsItemUsefulForQuest(Player const* player, uint32 itemId);
         bool IsItemUsefulForSkill(ItemTemplate const* proto);
 };
+
+#endif

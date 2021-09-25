@@ -22,7 +22,7 @@ bool PlayerHasNoFlag::IsActive()
             if (!(bg->GetFlagState(bg->GetOtherTeam(bot->GetTeam())) == BG_WS_FLAG_STATE_ON_PLAYER))
                 return true;
 
-            if (bot->GetObjectGuid() == bg->GetAllianceFlagCarrierGuid() || bot->GetObjectGuid() == bg->GetHordeFlagCarrierGuid())
+            if (bot->GetGUID() == bg->GetAllianceFlagCarrierGuid() || bot->GetGUID() == bg->GetHordeFlagCarrierGuid())
             {
                 return false;
             }
@@ -71,7 +71,7 @@ bool PlayerIsInBattlegroundWithoutFlag::IsActive()
             if (!(bg->GetFlagState(bg->GetOtherTeam(bot->GetTeam())) == BG_WS_FLAG_STATE_ON_PLAYER))
                 return true;
 
-            if (bot->GetGUIDLow() == bg->GetAllianceFlagCarrierGuid() || bot->GetGUIDLow() == bg->GetHordeFlagCarrierGuid())
+            if (bot->GetGUID() == bg->GetAllianceFlagCarrierGuid() || bot->GetGUID() == bg->GetHordeFlagCarrierGuid())
             {
                 return false;
             }
@@ -90,7 +90,7 @@ bool PlayerHasFlag::IsActive()
         if (bot->GetBattlegroundTypeId() == BattlegroundTypeId::BATTLEGROUND_WS)
         {
             BattlegroundWS *bg = (BattlegroundWS*)botAI->GetBot()->GetBattleground();
-            if (bot->GetObjectGuid() == bg->GetFlagCarrierGuid(TEAM_INDEX_ALLIANCE) || bot->GetObjectGuid() == bg->GetFlagCarrierGuid(TEAM_INDEX_HORDE))
+            if (bot->GetGUID() == bg->GetFlagPickerGUID(TEAM_INDEX_ALLIANCE) || bot->GetGUID() == bg->GetFlagPickerGUID(TEAM_INDEX_HORDE))
             {
                 return true;
             }
@@ -110,7 +110,7 @@ bool TeamHasFlag::IsActive()
         {
             BattlegroundWS *bg = (BattlegroundWS*)botAI->GetBot()->GetBattleground();
 
-            if (bot->GetObjectGuid() == bg->GetAllianceFlagCarrierGuid() || bot->GetObjectGuid() == bg->GetHordeFlagCarrierGuid())
+            if (bot->GetGUID() == bg->GetAllianceFlagCarrierGuid() || bot->GetGUID() == bg->GetHordeFlagCarrierGuid())
             {
                 return false;
             }
@@ -135,12 +135,12 @@ bool EnemyTeamHasFlag::IsActive()
 
             if (bot->GetTeam() == HORDE)
             {
-                if (!bg->GetFlagCarrierGuid(TEAM_INDEX_HORDE).IsEmpty())
+                if (!bg->GetFlagPickerGUID(TEAM_INDEX_HORDE).IsEmpty())
                     return true;
             }
             else
             {
-                if (!bg->GetFlagCarrierGuid(TEAM_INDEX_ALLIANCE).IsEmpty())
+                if (!bg->GetFlagPickerGUID(TEAM_INDEX_ALLIANCE).IsEmpty())
                     return true;
             }
         }
@@ -154,13 +154,13 @@ bool EnemyTeamHasFlag::IsActive()
 bool EnemyFlagCarrierNear::IsActive()
 {
     Unit* carrier = AI_VALUE(Unit*, "enemy flag carrier");
-    return carrier && sServerFacade->IsDistanceLessOrEqualThan(sServerFacade->GetDistance2d(bot, carrier), VISIBILITY_DISTANCE_LARGE);
+    return carrier && sServerFacade->IsDistanceLessOrEqualThan(sServerFacade->GetDistance2d(bot, carrier), 200.f);
 }
 
 bool TeamFlagCarrierNear::IsActive()
 {
     Unit* carrier = AI_VALUE(Unit*, "team flag carrier");
-    return carrier && sServerFacade->IsDistanceLessOrEqualThan(sServerFacade->GetDistance2d(bot, carrier), VISIBILITY_DISTANCE_LARGE);
+    return carrier && sServerFacade->IsDistanceLessOrEqualThan(sServerFacade->GetDistance2d(bot, carrier), 200.f);
 }
 
 bool PlayerWantsInBattlegroundTrigger::IsActive()

@@ -22,16 +22,16 @@ bool CompareSpells(std::pair<uint32, std::string>& s1, std::pair<uint32, std::st
     {
         if (SkillLineAbilityEntry const* skillLine = sSkillLineAbilityStore.LookupEntry(j))
         {
-            if (skillLine->spellId == s1.first)
+            if (skillLine->Spell == s1.first)
             {
-                skill1 = skillLine->skillId;
-                skillValue1 = skillLine->min_value;
+                skill1 = skillLine->SkillLine;
+                skillValue1 = skillLine->TrivialSkillLineRankLow;
             }
 
-            if (skillLine->spellId == s2.first)
+            if (skillLine->Spell == s2.first)
             {
-                skill2 = skillLine->skillId;
-                skillValue2 = skillLine->min_value;
+                skill2 = skillLine->SkillLine;
+                skillValue2 = skillLine->TrivialSkillLineRankLow;
             }
         }
 
@@ -139,7 +139,7 @@ bool ListSpellsAction::Execute(Event event)
             continue;
 
         SkillLineAbilityEntry const* skillLine = skillSpells[itr->first];
-        if (skill != SKILL_NONE && (!skillLine || skillLine->skillId != skill))
+        if (skill != SKILL_NONE && (!skillLine || skillLine->SkillLine != skill))
             continue;
 
         std::string const& comp = spellInfo->SpellName[0];
@@ -238,12 +238,12 @@ bool ListSpellsAction::Execute(Event event)
 
         out << materials.str();
 
-        if (skillLine && skillLine->skillId)
+        if (skillLine && skillLine->SkillLine)
         {
-            uint32 GrayLevel = skillLine->max_value;
-            uint32 GreenLevel = (skillLine->max_value + skillLine->min_value) / 2;
-            uint32 YellowLevel = skillLine->min_value;
-            uint32 SkillValue = bot->GetSkillValue(skillLine->skillId);
+            uint32 GrayLevel = skillLine->TrivialSkillLineRankHigh;
+            uint32 GreenLevel = (skillLine->TrivialSkillLineRankHigh + skillLine->MinSkillLineRank) / 2;
+            uint32 YellowLevel = skillLine->MinSkillLineRank;
+            uint32 SkillValue = bot->GetSkillValue(skillLine->SkillLine);
 
             out << " - ";
             if (SkillValue >= GrayLevel)

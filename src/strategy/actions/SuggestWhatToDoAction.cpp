@@ -18,7 +18,6 @@ SuggestWhatToDoAction::SuggestWhatToDoAction(PlayerbotAI* botAI, std::string con
 {
     suggestions.push_back(&SuggestWhatToDoAction::instance);
     suggestions.push_back(&SuggestWhatToDoAction::specificQuest);
-    suggestions.push_back(&SuggestWhatToDoAction::grindMaterials);
     suggestions.push_back(&SuggestWhatToDoAction::grindReputation);
     suggestions.push_back(&SuggestWhatToDoAction::something);
 }
@@ -139,55 +138,6 @@ void SuggestWhatToDoAction::specificQuest()
     placeholders["%quest"] = chat->formatQuest(quest);
 
     spam(sPlayerbotTextMgr->Format("suggest_quest", placeholders));
-}
-
-void SuggestWhatToDoAction::grindMaterials()
-{
-    if (bot->getLevel() <= 5)
-        return;
-
-    // Ultranix
-    //QueryResult result = PlayerbotDatabase.PQuery("SELECT DISTINCT category, multiplier FROM ahbot_category WHERE category NOT IN ('other', 'quest', 'trade', 'reagent') "
-        //"AND multiplier > 3 ORDER BY multiplier DESC LIMIT 10");
-    if (!result)
-        return;
-
-    std::map<std::string, double> categories;
-    do
-    {
-        Field* fields = result->Fetch();
-        categories[fields[0].GetString()] = fields[1].GetFloat();
-    } while (result->NextRow());
-
-    for (std::map<std::string, double>::iterator i = categories.begin(); i != categories.end(); ++i)
-    {
-        if (urand(0, 10) < 3)
-        {
-            std::string const& name = i->first;
-            double multiplier = i->second;
-
-            for (uint32 j = 0; j < ahbot::CategoryList::instance.size(); j++)
-            {
-                ahbot::Category* category = ahbot::CategoryList::instance[j];
-                if (name == category->GetName())
-                {
-                    std::string item = category->GetLabel();
-                    transform(item.begin(), item.end(), item.begin(), ::tolower);
-
-                    std::ostringstream itemout;
-                    itemout << "|c0000b000" << item << "|r";
-                    item = itemout.str();
-
-                    std::map<std::string, std::string> placeholders;
-                    placeholders["%role"] = chat->formatClass(bot, AiFactory::GetPlayerSpecTab(bot));
-                    placeholders["%category"] = item;
-
-                    spam(sPlayerbotTextMgr->Format("suggest_trade", placeholders));
-                    return;
-                }
-            }
-        }
-    }
 }
 
 void SuggestWhatToDoAction::grindReputation()
@@ -390,7 +340,7 @@ bool SuggestTradeAction::Execute(Event event)
     if (!proto)
         return false;
 
-    uint32 price = PricingStrategy::RoundPrice(auctionbot.GetSellPrice(proto) * sRandomPlayerbotMgr->GetSellMultiplier(bot) * count);
+    uint32 price = proto->SellPrice * sRandomPlayerbotMgr->GetSellMultiplier(bot) * count);
     if (!price)
         return false;
 

@@ -25,9 +25,13 @@ bool CastSpellAction::Execute(Event event)
                 continue;
 
             std::string namepart = pSpellInfo->SpellName[0];
-            strToLower(namepart);
+            std::wstring wnamepart;
+            if (!Utf8toWStr(namepart, wnamepart))
+                return false;
 
-            if (namepart.find(spell) == std::string::npos)
+            wstrToLower(wnamepart);
+
+            if (!Utf8FitTo(spell, wnamepart))
                 continue;
 
             if (pSpellInfo->Effects[0].Effect != SPELL_EFFECT_CREATE_ITEM)
@@ -51,7 +55,7 @@ bool CastSpellAction::Execute(Event event)
     return botAI->CastSpell(spell, GetTarget());
 }
 
-bool CastSpellAction::isPossible() const
+bool CastSpellAction::isPossible()
 {
     if (spell == "mount" && !bot->IsMounted() && !bot->IsInCombat())
         return true;
@@ -63,7 +67,7 @@ bool CastSpellAction::isPossible() const
     }
 
     Spell* currentSpell = bot->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-    return botAI->CanCastSpell(spell, GetTarget(), true) && (!currentSpell || currentSpell->getState() != SPELL_STATE_CASTING);
+    return botAI->CanCastSpell(spell, GetTarget()) && (!currentSpell || currentSpell->getState() != SPELL_STATE_CASTING);
 }
 
 bool CastSpellAction::isUseful()
@@ -85,7 +89,7 @@ bool CastAuraSpellAction::isUseful()
 	return CastSpellAction::isUseful() && !botAI->HasAura(spell, GetTarget(), true);
 }
 
-bool CastEnchantItemAction::isPossible() const
+bool CastEnchantItemAction::isPossible()
 {
     if (!CastSpellAction::isPossible())
         return false;

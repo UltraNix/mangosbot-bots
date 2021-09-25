@@ -2,6 +2,9 @@
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
+#ifndef _PLAYERBOT_TALKTOQUESTGIVERACTION_H
+#define _PLAYERBOT_TALKTOQUESTGIVERACTION_H
+
 #include "QuestAction.h"
 
 class Event;
@@ -25,3 +28,5 @@ class TalkToQuestGiverAction : public QuestAction
         void RewardMultipleItem(Quest const* quest, WorldObject* questGiver, std::ostringstream& out);
         void AskToSelectReward(Quest const* quest, std::ostringstream& out, bool forEquip);
 };
+
+#endif

@@ -5,6 +5,7 @@
 #include "TravelAction.h"
 #include "GridNotifiers.h"
 #include "Playerbot.h"
+#include "TravelMgr.h"
 
 bool TravelAction::Execute(Event event)
 {
@@ -19,7 +20,7 @@ bool TravelAction::Execute(Event event)
     std::list<Unit*> targets;
     Acore::AnyUnitInObjectRangeCheck u_check(bot, sPlayerbotAIConfig->sightDistance * 2);
     Acore::UnitListSearcher<Acore::AnyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
-    bot->VisitNearbyObject(sPlayerbotAIConfig->sightDistance * 2, searcher);
+    Cell::VisitAllObjects(bot, searcher, sPlayerbotAIConfig->sightDistance);
 
     for (Unit* unit : targets)
     {
@@ -71,23 +72,23 @@ bool MoveToDarkPortalAction::Execute(Event event)
                 if (bot->GetTeamId() == TEAM_ALLIANCE)
                 {
                     Quest const* quest = sObjectMgr->GetQuestTemplate(10119);
-                    CreatureData const* dataPair = sRandomPlayerbotMgr->GetCreatureDataByEntry(16841);
-                    if (quest && dataPair)
+                    CreatureData const* creatureData = sRandomPlayerbotMgr->GetCreatureDataByEntry(16841);
+                    if (quest && creatureData)
                     {
-                        ObjectGuid npcGuid = ObjectGuid(HIGHGUID_UNIT, 16841, dataPair->first);
-                        Creature* npc = bot->GetMap()->GetCreature(npcGuid);
-                        bot->AddQuest(quest, npc);
+                        auto creatureBounds = bot->GetMap()->GetCreatureBySpawnIdStore().equal_range(creatureData->guid);
+                        if (creatureBounds.first != creatureBounds.second)
+                            bot->AddQuest(quest, creatureBounds.first->second);
                     }
                 }
                 else
                 {
                     Quest const* quest = sObjectMgr->GetQuestTemplate(9407);
-                    CreatureData const* dataPair = sRandomPlayerbotMgr->GetCreatureDataByEntry(19254);
-                    if (quest && dataPair)
+                    CreatureData const* creatureData = sRandomPlayerbotMgr->GetCreatureDataByEntry(19254);
+                    if (quest && creatureData)
                     {
-                        ObjectGuid npcGuid = ObjectGuid(HIGHGUID_UNIT, 19254, dataPair->first);
-                        Creature* npc = bot->GetMap()->GetCreature(npcGuid);
-                        bot->AddQuest(quest, npc);
+                        auto creatureBounds = bot->GetMap()->GetCreatureBySpawnIdStore().equal_range(creatureData->guid);
+                        if (creatureBounds.first != creatureBounds.second)
+                            bot->AddQuest(quest, creatureBounds.first->second);
                     }
                 }
             }
@@ -126,7 +127,7 @@ bool DarkPortalAzerothAction::isUseful()
 
 bool MoveFromDarkPortalAction::Execute(Event event)
 {
-    context->GetValue<ObjectGuid>("rpg target")->Set(ObjectGuid());
+    context->GetValue<ObjectGuid>("rpg target")->Set(ObjectGuid::Empty);
 
     if (bot->GetTeamId() == TEAM_ALLIANCE)
         return MoveTo(530, -319.261f, 1027.213, 54.172638f, false, true);

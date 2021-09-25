@@ -5,7 +5,7 @@
 #include "DruidShapeshiftActions.h"
 #include "Playerbot.h"
 
-bool CastBearFormAction::isPossible() const
+bool CastBearFormAction::isPossible()
 {
     return CastBuffSpellAction::isPossible() && !botAI->HasAura("dire bear form", GetTarget());
 }

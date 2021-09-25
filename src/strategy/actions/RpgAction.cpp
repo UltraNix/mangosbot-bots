@@ -3,6 +3,7 @@
  */
 
 #include "RpgAction.h"
+#include "BattlegroundMgr.h"
 #include "ChatHelper.h"
 #include "ChooseRpgTargetAction.h"
 #include "EmoteAction.h"
@@ -32,7 +33,7 @@ bool RpgAction::Execute(Event event)
         return false;
     }
 
-    if (!wo->IsInFront(sPlayerbotAIConfig->sightDistance, CAST_ANGLE_IN_FRONT) && !bot->HasUnitState(UNIT_STATE_IN_FLIGHT) && !bot->IsFlying())
+    if (!wo->HasInArc(CAST_ANGLE_IN_FRONT, bot, sPlayerbotAIConfig->sightDistance) && !bot->HasUnitState(UNIT_STATE_IN_FLIGHT) && !bot->IsFlying())
     {
         bot->SetFacingToObject(wo);
         botAI->SetNextCheckDelay(sPlayerbotAIConfig->globalCoolDown);
@@ -58,10 +59,10 @@ bool RpgAction::Execute(Event event)
     }
 
     std::vector<RpgElement> elements;
-    if (bot->GetSession()->getDialogStatus(bot, wo, DIALOG_STATUS_NONE) == DIALOG_STATUS_REWARD2 ||
-        bot->GetSession()->getDialogStatus(bot, wo, DIALOG_STATUS_NONE) == DIALOG_STATUS_REWARD ||
-        bot->GetSession()->getDialogStatus(bot, wo, DIALOG_STATUS_NONE) == DIALOG_STATUS_REWARD_REP ||
-        bot->GetSession()->getDialogStatus(bot, wo, DIALOG_STATUS_NONE) == DIALOG_STATUS_AVAILABLE)
+    if (bot->GetQuestDialogStatus(wo) == DIALOG_STATUS_REWARD2 ||
+        bot->GetQuestDialogStatus(wo) == DIALOG_STATUS_REWARD ||
+        bot->GetQuestDialogStatus(wo) == DIALOG_STATUS_REWARD_REP ||
+        bot->GetQuestDialogStatus(wo) == DIALOG_STATUS_AVAILABLE)
         elements.push_back(&RpgAction::quest);
     if (unit)
     {
@@ -73,9 +74,9 @@ bool RpgAction::Execute(Event event)
             elements.push_back(&RpgAction::train);
         if (unit->GetHealthPct() < 100 && (bot->getClass() == CLASS_PRIEST || bot->getClass() == CLASS_DRUID || bot->getClass() == CLASS_PALADIN || bot->getClass() == CLASS_SHAMAN))
             elements.push_back(&RpgAction::heal);
-        if (unit->isInnkeeper() && AI_VALUE2(float, "distance", "home bind") > 1000.0f)
+        if (unit->IsInnkeeper() && AI_VALUE2(float, "distance", "home bind") > 1000.0f)
             elements.push_back(&RpgAction::homebind);
-        if (unit->isBattleMaster() && CanQueueBg(guid))
+        if (unit->IsBattleMaster() && CanQueueBg(guid))
             elements.push_back(&RpgAction::queuebg);
     }
     else
@@ -124,7 +125,7 @@ bool RpgAction::AddIgnore(ObjectGuid guid)
     if (ignoreList.size() > 50)
         ignoreList.erase(ignoreList.begin());
 
-    context->GetValue<set<ObjectGuid>&>("ignore rpg target")->Set(ignoreList);
+    context->GetValue<GuidSet&>("ignore rpg target")->Set(ignoreList);
 
     return true;
 }
@@ -136,7 +137,7 @@ bool RpgAction::RemIgnore(ObjectGuid guid)
     GuidSet& ignoreList = context->GetValue<GuidSet&>("ignore rpg target")->Get();
     ignoreList.erase(ignoreList.find(guid));
 
-    context->GetValue<set<ObjectGuid>&>("ignore rpg target")->Set(ignoreList);
+    context->GetValue<GuidSet&>("ignore rpg target")->Set(ignoreList);
 
     return true;
 }
@@ -263,13 +264,13 @@ void RpgAction::quest(ObjectGuid guid)
 
     bool retVal = false;
 
-    if (bot->GetSession()->getDialogStatus(bot, wo, DIALOG_STATUS_NONE) == DIALOG_STATUS_AVAILABLE ||
-        bot->GetSession()->getDialogStatus(bot, wo, DIALOG_STATUS_NONE) == DIALOG_STATUS_REWARD_REP)
+    if (bot->GetQuestDialogStatus(wo) == DIALOG_STATUS_AVAILABLE ||
+        bot->GetQuestDialogStatus(wo) == DIALOG_STATUS_REWARD_REP)
         retVal = botAI->DoSpecificAction("accept all quests", Event("rpg action", p));
 
-    if (bot->GetSession()->getDialogStatus(bot, wo, DIALOG_STATUS_NONE) == DIALOG_STATUS_REWARD2 ||
-        bot->GetSession()->getDialogStatus(bot, wo, DIALOG_STATUS_NONE) == DIALOG_STATUS_REWARD ||
-        bot->GetSession()->getDialogStatus(bot, wo, DIALOG_STATUS_NONE) == DIALOG_STATUS_REWARD_REP)
+    if (bot->GetQuestDialogStatus(wo) == DIALOG_STATUS_REWARD2 ||
+        bot->GetQuestDialogStatus(wo) == DIALOG_STATUS_REWARD ||
+        bot->GetQuestDialogStatus(wo) == DIALOG_STATUS_REWARD_REP)
         retVal = botAI->DoSpecificAction("talk to quest giver", Event("rpg action", p));
 
     if (!retVal)
@@ -388,9 +389,9 @@ void RpgAction::heal(ObjectGuid guid)
 
 void RpgAction::use(ObjectGuid guid)
 {
-    ObjectGuid oldSelection = bot->GetSelectionGuid();
+    ObjectGuid oldSelection = bot->GetTarget();
 
-    bot->SetSelectionGuid(guid);
+    bot->SetTarget(guid);
 
     WorldObject* wo = botAI->GetWorldObject(guid);
 
@@ -405,9 +406,9 @@ void RpgAction::use(ObjectGuid guid)
 
 void RpgAction::spell(ObjectGuid guid)
 {
-    ObjectGuid oldSelection = bot->GetSelectionGuid();
+    ObjectGuid oldSelection = bot->GetTarget();
 
-    bot->SetSelectionGuid(guid);
+    bot->SetTarget(guid);
 
     WorldObject* wo = botAI->GetWorldObject(guid);
 
@@ -418,7 +419,7 @@ void RpgAction::spell(ObjectGuid guid)
         unit->SetFacingTo(unit->GetAngle(bot));
 
     if (oldSelection)
-        bot->SetSelectionGuid(oldSelection);
+        bot->SetTarget(oldSelection);
 
     if (!botAI->HasRealPlayerMaster())
         botAI->SetNextCheckDelay(sPlayerbotAIConfig->rpgDelay);
@@ -426,9 +427,9 @@ void RpgAction::spell(ObjectGuid guid)
 
 void RpgAction::craft(ObjectGuid guid)
 {
-    ObjectGuid oldSelection = bot->GetSelectionGuid();
+    ObjectGuid oldSelection = bot->GetTarget();
 
-    bot->SetSelectionGuid(guid);
+    bot->SetTarget(guid);
 
     WorldObject* wo = botAI->GetWorldObject(guid);
 
@@ -439,7 +440,7 @@ void RpgAction::craft(ObjectGuid guid)
         unit->SetFacingTo(unit->GetAngle(bot));
 
     if (oldSelection)
-        bot->SetSelectionGuid(oldSelection);
+        bot->SetTarget(oldSelection);
 
     if (crafted)
         RemIgnore(guid);
@@ -450,9 +451,9 @@ void RpgAction::craft(ObjectGuid guid)
 
 void RpgAction::homebind(ObjectGuid guid)
 {
-    ObjectGuid oldSelection = bot->GetSelectionGuid();
+    ObjectGuid oldSelection = bot->GetTarget();
 
-    bot->SetSelectionGuid(guid);
+    bot->SetTarget(guid);
 
     botAI->DoSpecificAction("home");
 
@@ -461,7 +462,7 @@ void RpgAction::homebind(ObjectGuid guid)
         unit->SetFacingTo(unit->GetAngle(bot));
 
     if (oldSelection)
-        bot->SetSelectionGuid(oldSelection);
+        bot->SetTarget(oldSelection);
 
     if (!botAI->HasRealPlayerMaster())
         botAI->SetNextCheckDelay(sPlayerbotAIConfig->rpgDelay);
@@ -469,9 +470,9 @@ void RpgAction::homebind(ObjectGuid guid)
 
 void RpgAction::queuebg(ObjectGuid guid)
 {
-    ObjectGuid oldSelection = bot->GetSelectionGuid();
+    ObjectGuid oldSelection = bot->GetTarget();
 
-    bot->SetSelectionGuid(guid);
+    bot->SetTarget(guid);
 
     BattlegroundTypeId bgTypeId = CanQueueBg(guid);
 
@@ -483,7 +484,7 @@ void RpgAction::queuebg(ObjectGuid guid)
         unit->SetFacingTo(unit->GetAngle(bot));
 
     if (oldSelection)
-        bot->SetSelectionGuid(oldSelection);
+        bot->SetTarget(oldSelection);
 
     if (!botAI->HasRealPlayerMaster())
         botAI->SetNextCheckDelay(sPlayerbotAIConfig->rpgDelay);
@@ -546,7 +547,7 @@ BattlegroundTypeId RpgAction::CanQueueBg(ObjectGuid guid)
     {
         BattlegroundQueueTypeId queueTypeId = (BattlegroundQueueTypeId)i;
 
-        BattlegroundTypeId bgTypeId = sServerFacade->BgTemplateId(queueTypeId);
+        BattlegroundTypeId bgTypeId = BattlegroundMgr::BGTemplateId(queueTypeId);
 
         Battleground* bg = sBattlegroundMgr->GetBattlegroundTemplate(bgTypeId);
         if (!bg)
@@ -559,13 +560,13 @@ BattlegroundTypeId RpgAction::CanQueueBg(ObjectGuid guid)
         if (bot->InBattlegroundQueueForBattlegroundQueueType(queueTypeId))
             continue;
 
-        std::map<Team, std::map<BattlegroundTypeId, std::vector<uint32>>> battleMastersCache = sRandomPlayerbotMgr->getBattleMastersCache();
+        std::map<TeamId, std::map<BattlegroundTypeId, std::vector<uint32>>> battleMastersCache = sRandomPlayerbotMgr->getBattleMastersCache();
 
-        for (auto& entry : battleMastersCache[TEAM_BOTH_ALLOWED][bgTypeId])
+        for (auto& entry : battleMastersCache[TEAM_NEUTRAL][bgTypeId])
             if (entry == guid.GetEntry())
                 return bgTypeId;
 
-        for (auto& entry : battleMastersCache[bot->GetTeam()][bgTypeId])
+        for (auto& entry : battleMastersCache[bot->GetTeamId()][bgTypeId])
             if (entry == guid.GetEntry())
                 return bgTypeId;
     }

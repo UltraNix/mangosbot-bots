@@ -2,6 +2,9 @@
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
+#ifndef _PLAYERBOT_SUGGESTWHATTODOACTION_H
+#define _PLAYERBOT_SUGGESTWHATTODOACTION_H
+
 #include "InventoryAction.h"
 
 class Event;
@@ -20,7 +23,6 @@ class SuggestWhatToDoAction : public InventoryAction
         std::vector<Suggestion> suggestions;
         void instance();
         void specificQuest();
-        void grindMaterials();
         void grindReputation();
         void something();
         void spam(std::string const& msg, uint32 channelId = 1);
@@ -40,3 +42,5 @@ class SuggestTradeAction : public SuggestWhatToDoAction
         bool Execute(Event event) override;
         bool isUseful() override { return true; }
 };
+
+#endif

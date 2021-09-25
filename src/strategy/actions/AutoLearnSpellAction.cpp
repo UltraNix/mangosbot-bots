@@ -39,7 +39,8 @@ void AutoLearnSpellAction::LearnSpells(std::ostringstream* out)
 
 void AutoLearnSpellAction::LearnTrainerSpells(std::ostringstream* out)
 {
-    bot->learnDefaultSpells();
+    bot->LearnDefaultSkills();
+    bot->LearnCustomSpells();
 
     CreatureTemplateContainer const* creaturetemplates = sObjectMgr->GetCreatureTemplates();
     for (auto const& itr : *creaturetemplates)

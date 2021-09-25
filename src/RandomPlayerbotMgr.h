@@ -2,8 +2,8 @@
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
-#ifndef _RandomPlayerbotMgr_H
-#define _RandomPlayerbotMgr_H
+#ifndef _PLAYERBOT_RANDOMPLAYERBOTMGR_H
+#define _PLAYERBOT_RANDOMPLAYERBOTMGR_H
 
 #include "PlayerbotMgr.h"
 
@@ -77,18 +77,19 @@ class RandomPlayerbotMgr : public PlayerbotHolder
         CreatureData const* GetCreatureDataByEntry(uint32 entry);
         uint32 GetCreatureGuidByEntry(uint32 entry);
         void LoadBattleMastersCache();
-        std::map<uint32, std::map<uint32, std::map<uint32, bool>>> NeedBots;
-        std::map<uint32, std::map<uint32, std::map<uint32, uint32>>> BgBots;
-        std::map<uint32, std::map<uint32, std::map<uint32, uint32>>> VisualBots;
-        std::map<uint32, std::map<uint32, std::map<uint32, uint32>>> BgPlayers;
-        std::map<uint32, std::map<uint32, std::map<uint32, std::map<uint32, uint32>>>> ArenaBots;
+        std::map<uint32, std::map<uint32, std::map<TeamId, bool>>> NeedBots;
+        std::map<uint32, std::map<uint32, std::map<TeamId, uint32>>> BgBots;
+        std::map<uint32, std::map<uint32, std::map<TeamId, uint32>>> VisualBots;
+        std::map<uint32, std::map<uint32, std::map<TeamId, uint32>>> BgPlayers;
+        std::map<uint32, std::map<uint32, std::map<TeamId, std::map<TeamId, uint32>>>> ArenaBots;
         std::map<uint32, std::map<uint32, std::map<uint32, uint32>>> Rating;
         std::map<uint32, std::map<uint32, std::map<uint32, uint32>>> Supporters;
+        std::map<TeamId, std::vector<uint32>> LfgDungeons;
         void CheckBgQueue();
         void CheckLfgQueue();
         void CheckPlayers();
 
-        std::map<Team, std::map<BattlegroundTypeId, std::vector<uint32>>> getBattleMastersCache() { return BattleMastersCache; }
+        std::map<TeamId, std::map<BattlegroundTypeId, std::vector<uint32>>> getBattleMastersCache() { return BattleMastersCache; }
 
 	protected:
 	    void OnBotLoginInternal(Player* const bot) override;

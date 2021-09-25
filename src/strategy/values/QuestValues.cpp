@@ -9,7 +9,7 @@
 //Get all the objective entries for a specific quest.
 void FindQuestObjectData::GetObjectiveEntries()
 {
-	ObjectMgr::QuestMap const& questMap = sObjectMgr.GetQuestTemplates();
+	ObjectMgr::QuestMap const& questMap = sObjectMgr->GetQuestTemplates();
 
 	for (auto& quest : questMap)
 	{
@@ -31,14 +31,14 @@ bool FindQuestObjectData::operator()(CreatureDataPair const& dataPair)
 {
 	uint32 entry = dataPair.second.id;
 
-	QuestRelationsMapBounds	rbounds = sObjectMgr.GetCreatureQuestRelationsMapBounds(entry);
+	QuestRelationsMapBounds	rbounds = sObjectMgr->GetCreatureQuestRelationsMapBounds(entry);
 
 	for (QuestRelationsMap::const_iterator itr = rbounds.first; itr != rbounds.second; ++itr)
 	{
 		data[itr->second][QuestRelationType::questGiver].push_back(GuidPosition(&dataPair));
 	}
 
-	QuestRelationsMapBounds	ibounds = sObjectMgr.GetCreatureQuestInvolvedRelationsMapBounds(entry);
+	QuestRelationsMapBounds	ibounds = sObjectMgr->GetCreatureQuestInvolvedRelationsMapBounds(entry);
 
 	for (QuestRelationsMap::const_iterator itr = ibounds.first; itr != ibounds.second; ++itr)
 	{
@@ -50,7 +50,7 @@ bool FindQuestObjectData::operator()(CreatureDataPair const& dataPair)
 		data[entryPair.first][entryPair.second].push_back(GuidPosition(&dataPair));
 	}
 
-	CreatureInfo const* info = sObjectMgr.GetCreatureTemplate(entry);
+	CreatureInfo const* info = sObjectMgr->GetCreatureTemplate(entry);
 
 	if (!info || info->LootId == 0)
 		return false;
@@ -78,14 +78,14 @@ bool FindQuestObjectData::operator()(GameObjectDataPair const& dataPair)
 {
 	int32 entry = dataPair.second.id;
 
-	QuestRelationsMapBounds	rbounds = sObjectMgr.GetGOQuestRelationsMapBounds(entry);
+	QuestRelationsMapBounds	rbounds = sObjectMgr->GetGOQuestRelationsMapBounds(entry);
 
 	for (QuestRelationsMap::const_iterator itr = rbounds.first; itr != rbounds.second; ++itr)
 	{
 		data[itr->second][QuestRelationType::questGiver].push_back(GuidPosition(&dataPair));
 	}
 
-	QuestRelationsMapBounds	ibounds = sObjectMgr.GetGOQuestInvolvedRelationsMapBounds(entry);
+	QuestRelationsMapBounds	ibounds = sObjectMgr->GetGOQuestInvolvedRelationsMapBounds(entry);
 
 	for (QuestRelationsMap::const_iterator itr = ibounds.first; itr != ibounds.second; ++itr)
 	{
@@ -97,7 +97,7 @@ bool FindQuestObjectData::operator()(GameObjectDataPair const& dataPair)
 		data[entryPair.first][entryPair.second].push_back(GuidPosition(&dataPair));
 	}
 
-	GameObjectInfo const* info = sObjectMgr.GetGameObjectInfo(entry);
+	GameObjectInfo const* info = sObjectMgr->GetGameObjectInfo(entry);
 
 	if (!info || info->GetLootId() == 0)
 		return false;
@@ -124,8 +124,8 @@ bool FindQuestObjectData::operator()(GameObjectDataPair const& dataPair)
 questGuidpMap QuestGuidpMapValue::Calculate()
 {
 	FindQuestObjectData worker;
-	sObjectMgr.DoCreatureData(worker);
-	sObjectMgr.DoGOData(worker);
+	sObjectMgr->DoCreatureData(worker);
+	sObjectMgr->DoGOData(worker);
 	return worker.GetResult();
 }
 
@@ -151,7 +151,7 @@ questGivers QuestGiversValue::Calculate()
 
 			if (hasQualifier)
 			{
-				Quest const* quest = sObjectMgr.GetQuestTemplate(questId);
+				Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
 
 				if (quest && (level < quest->GetMinLevel() || level > quest->GetQuestLevel() + 10))
 					continue;
@@ -173,7 +173,7 @@ list<GuidPosition> ActiveQuestGiversValue::Calculate()
 	for (auto& qGiver : qGivers)
 	{
 		uint32 questId = qGiver.first;
-		Quest const* quest = sObjectMgr.GetQuestTemplate(questId);
+		Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
 
 		if (!quest || !quest->IsActive())
 		{
@@ -220,7 +220,7 @@ list<GuidPosition> ActiveQuestTakersValue::Calculate()
 	{
 		uint32 questId = questStatus.first;
 
-		Quest const* quest = sObjectMgr.GetQuestTemplate(questId);
+		Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
 
 		if (!quest || !quest->IsActive())
 		{
@@ -274,7 +274,7 @@ list<GuidPosition> ActiveQuestObjectivesValue::Calculate()
 	{
 		uint32 questId = questStatus.first;
 
-		Quest const* quest = sObjectMgr.GetQuestTemplate(questId);
+		Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
 
 		if (!quest || !quest->IsActive())
 		{
@@ -338,7 +338,7 @@ uint8 FreeQuestLogSlotValue::Calculate()
 		if (!questId)
 			continue;
 
-		Quest const* quest = sObjectMgr.GetQuestTemplate(questId);
+		Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
 		if (!quest)
 			continue;
 

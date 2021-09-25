@@ -2,6 +2,9 @@
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
+#ifndef _PLAYERBOT_TRAVELTRIGGERS_H
+#define _PLAYERBOT_TRAVELTRIGGERS_H
+
 #include "Trigger.h"
 
 class PlayerbotAI;
@@ -9,7 +12,7 @@ class PlayerbotAI;
 class NoTravelTargetTrigger : public Trigger
 {
     public:
-        NoTravelTargetTrigger(PlayerbotAI* botAI) : Trigger(botAI, "no travel target") {}
+        NoTravelTargetTrigger(PlayerbotAI* botAI) : Trigger(botAI, "no travel target") { }
 
         bool IsActive() override;
 };
@@ -45,3 +48,5 @@ class AtDarkPortalOutlandTrigger : public Trigger
 
         bool IsActive() override;
 };
+
+#endif

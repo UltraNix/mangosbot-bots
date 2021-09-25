@@ -10,7 +10,7 @@ bool InvalidTargetValue::Calculate()
 {
     Unit* target = AI_VALUE(Unit*, qualifier);
     Unit* enemy = AI_VALUE(Unit*, "enemy player target");
-    if (target && enemy && target == enemy && sServerFacade->IsAlive(target))
+    if (target && enemy && target == enemy && target->IsAlive())
         return false;
 
     if (target && qualifier == "current target")

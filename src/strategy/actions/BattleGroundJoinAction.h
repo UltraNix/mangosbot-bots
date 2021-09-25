@@ -2,12 +2,17 @@
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
+#ifndef _PLAYERBOT_BATTLEGROUNDJOINACTION_H
+#define _PLAYERBOT_BATTLEGROUNDJOINACTION_H
+
 #include "Action.h"
 
 class Event;
 class PlayerbotAI;
 
 struct CreatureData;
+
+enum ArenaType : uint8;
 
 class BGJoinAction : public Action
 {
@@ -29,7 +34,7 @@ class BGJoinAction : public Action
 class FreeBGJoinAction : public BGJoinAction
 {
     public:
-        FreeBGJoinAction(PlayerbotAI* botAI, std::string const& name = "free bg join") : BGJoinAction(botAI, name) {}
+        FreeBGJoinAction(PlayerbotAI* botAI, std::string const& name = "free bg join") : BGJoinAction(botAI, name) { }
 
         bool shouldJoinBg(BattlegroundQueueTypeId queueTypeId, BattlegroundBracketId bracketId) override;
 };
@@ -59,3 +64,5 @@ class BGStatusCheckAction : public Action
         bool Execute(Event event) override;
         bool isUseful() override;
 };
+
+#endif

@@ -30,7 +30,7 @@ bool GossipHelloAction::Execute(Event event)
 	Creature* pCreature = bot->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_NONE);
 	if (!pCreature)
 	{
-		LOG_DEBUG("[PlayerbotMgr]: HandleMasterIncomingPacket - Received  CMSG_GOSSIP_HELLO %s not found or you can't interact with him.", guid.GetString().c_str());
+		LOG_DEBUG("playerbots", "[PlayerbotMgr]: HandleMasterIncomingPacket - Received  CMSG_GOSSIP_HELLO %s not found or you can't interact with him.", guid.ToString().c_str());
 		return false;
 	}
 
@@ -45,7 +45,7 @@ bool GossipHelloAction::Execute(Event event)
         WorldPacket p1;
         p1 << guid;
         bot->GetSession()->HandleGossipHelloOpcode(p1);
-        sServerFacade->SetFacingTo(bot, pCreature);
+        bot->SetFacingToObject(pCreature);
 
         std::ostringstream out;
         out << "--- " << pCreature->GetName() << " ---";

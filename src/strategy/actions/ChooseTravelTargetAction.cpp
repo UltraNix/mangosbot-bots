@@ -55,8 +55,8 @@ bool ChooseTravelTargetAction::Execute(Event event)
         target->setExpireIn(10 * 1000);
 
     //Clear rpg and pull/grind target. We want to travel, not hang around some more.
-    context->GetValue<ObjectGuid>("rpg target")->Set(ObjectGuid());
-    context->GetValue<ObjectGuid>("pull target")->Set(ObjectGuid());
+    context->GetValue<ObjectGuid>("rpg target")->Set(ObjectGuid::Empty);
+    context->GetValue<ObjectGuid>("pull target")->Set(ObjectGuid::Empty);
 
     return true;
 }
@@ -348,7 +348,7 @@ bool ChooseTravelTargetAction::SetQuestTarget(TravelTarget* target, bool onlyCom
     //Find destinations related to the active quests.
     for (auto& quest : questMap)
     {
-        if (quest.second.m_rewarded)
+        if (bot->IsQuestRewarded(quest.first))
             continue;
 
         uint32 questId = quest.first;

@@ -22,7 +22,7 @@ void split(std::vector<std::string>& dest, std::string const& str, char const* d
     free(pTempStr);
 }
 
-std::vector<std::string>& split(string const& s, char delim, std::vector<std::string>& elems)
+std::vector<std::string>& split(std::string const& s, char delim, std::vector<std::string>& elems)
 {
     std::stringstream ss(s);
     std::string item;
@@ -35,7 +35,7 @@ std::vector<std::string>& split(string const& s, char delim, std::vector<std::st
     return elems;
 }
 
-std::vector<std::string> split(string const&s, char delim)
+std::vector<std::string> split(std::string const&s, char delim)
 {
     std::vector<std::string> elems;
     return split(s, delim, elems);

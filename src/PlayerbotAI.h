@@ -2,19 +2,23 @@
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
+#ifndef _PLAYERBOT_PLAYERBOTAI_H
+#define _PLAYERBOT_PLAYERBOTAI_H
+
 #include "Chat.h"
+#include "ChatHelper.h"
+#include "ChatFilter.h"
 #include "Common.h"
 #include "Event.h"
 #include "PlayerbotAIBase.h"
 #include "PlayerbotAIConfig.h"
+#include "PlayerbotSecurity.h"
 #include "WorldPacket.h"
 
 #include <stack>
 #include <queue>
 
 class AiObjectContext;
-class ChatHelper;
-class CompositeChatFilter;
 class Creature;
 class Engine;
 class ExternalEventHelper;
@@ -23,7 +27,6 @@ class Item;
 class ObjectGuid;
 class Player;
 class PlayerbotMgr;
-class PlayerbotSecurity;
 class Spell;
 class SpellInfo;
 class Unit;
@@ -33,7 +36,6 @@ class WorldPosition;
 struct CreatureData;
 struct GameObjectData;
 
-enum PlayerbotSecurityLevel : uint32;
 enum StrategyType : uint32;
 
 enum HealingItemDisplayId
@@ -183,7 +185,7 @@ enum ActivityType
     ALL_ACTIVITY            = 7
 };
 
-enum BotRoles
+enum BotRoles : uint8
 {
     BOT_ROLE_NONE   = 0x00,
     BOT_ROLE_TANK   = 0x01,
@@ -228,7 +230,7 @@ class PlayerbotAI : public PlayerbotAIBase
 	    PlayerbotAI(Player* bot);
 	    virtual ~PlayerbotAI();
 
-	    virtual void UpdateAIInternal(uint32 elapsed);
+	    void UpdateAIInternal(uint32 elapsed) override;
         std::string HandleRemoteCommand(std::string command);
         void HandleCommand(uint32 type, std::string const& text, Player* fromPlayer);
 	    void HandleBotOutgoingPacket(WorldPacket const& packet);
@@ -251,9 +253,9 @@ class PlayerbotAI : public PlayerbotAIBase
         bool IsRanged(Player* player);
         Creature* GetCreature(ObjectGuid guid);
         Unit* GetUnit(ObjectGuid guid);
-        static Unit* GetUnit(CreatureData const* creatureDataPair);
+        static Unit* GetUnit(CreatureData const* creatureData);
         GameObject* GetGameObject(ObjectGuid guid);
-        static GameObject* GetGameObject(GameObjectData const* gameObjectDataPair);
+        static GameObject* GetGameObject(GameObjectData const* gameObjectData);
         WorldObject* GetWorldObject(ObjectGuid guid);
         bool TellMaster(std::ostringstream& stream, PlayerbotSecurityLevel securityLevel = PLAYERBOT_SECURITY_ALLOW_ALL);
         bool TellMaster(std::string text, PlayerbotSecurityLevel securityLevel = PLAYERBOT_SECURITY_ALLOW_ALL);
@@ -263,7 +265,7 @@ class PlayerbotAI : public PlayerbotAIBase
         void SpellInterrupted(uint32 spellid);
         int32 CalculateGlobalCooldown(uint32 spellid);
         void InterruptSpell();
-        void RemoveAura(std::string name);
+        void RemoveAura(std::string const& name);
         void RemoveShapeshift();
         void WaitForSpellCast(Spell* spell);
         bool PlaySound(uint32 emote);
@@ -285,7 +287,7 @@ class PlayerbotAI : public PlayerbotAIBase
         virtual bool HasAura(std::string spellName, Unit* player, bool maxStack = false);
         virtual bool HasAnyAuraOf(Unit* player, ...);
 
-        virtual bool IsInterruptableSpellCasting(Unit* player, std::string spell);
+        virtual bool IsInterruptableSpellCasting(Unit* player, std::string const& spell);
         virtual bool HasAuraToDispel(Unit* player, uint32 dispelType);
         bool CanCastSpell(uint32 spellid, Unit* target, bool checkHasSpell = true, Item* itemTarget = nullptr);
         bool CanCastSpell(uint32 spellid, float x, float y, float z, uint8 effectMask, bool checkHasSpell = true, Item* itemTarget = nullptr);
@@ -298,7 +300,7 @@ class PlayerbotAI : public PlayerbotAIBase
         uint32 GetEquipGearScore(Player* player, bool withBags, bool withBank);
         bool HasSkill(SkillType skill);
         bool IsAllowedCommand(std::string text);
-        float GetRange(std::string type);
+        float GetRange(std::string const& type);
 
         Player* GetBot() { return bot; }
         Player* GetMaster() { return master; }
@@ -349,3 +351,4 @@ class PlayerbotAI : public PlayerbotAIBase
         static std::set<std::string> unsecuredCommands;
 };
 
+#endif

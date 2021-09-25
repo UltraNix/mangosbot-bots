@@ -6,6 +6,7 @@
 #include "Event.h"
 #include "ItemUsageValue.h"
 #include "Playerbot.h"
+#include "LootAction.h"
 
 bool LootRollAction::Execute(Event event)
 {
@@ -31,12 +32,12 @@ bool LootRollAction::Execute(Event event)
         {
             case ITEM_CLASS_WEAPON:
             case ITEM_CLASS_ARMOR:
-                if (QueryItemUsage(proto))
-                    vote = ROLL_NEED;
+                if (!QueryItemUsage(proto).empty())
+                    vote = NEED;
                 break;
             default:
                 if (StoreLootAction::IsLootAllowed(guid.GetEntry(), botAI))
-                    vote = ROLL_NEED;
+                    vote = NEED;
                 break;
         }
     }

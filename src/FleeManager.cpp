@@ -59,10 +59,10 @@ void FleeManager::calculatePossibleDestinations(std::vector<FleePoint*> &points)
         enemyOri.push_back(ori);
     }
 
-    float distIncrement = max(sPlayerbotAIConfig->followDistance, (maxAllowedDistance - sPlayerbotAIConfig->tooCloseDistance) / 10.0f);
+    float distIncrement = std::max(sPlayerbotAIConfig->followDistance, (maxAllowedDistance - sPlayerbotAIConfig->tooCloseDistance) / 10.0f);
     for (float dist = maxAllowedDistance; dist >= sPlayerbotAIConfig->tooCloseDistance ; dist -= distIncrement)
     {
-        float angleIncrement = max(M_PI / 20, M_PI / 4 / (1.0 + dist - sPlayerbotAIConfig->tooCloseDistance));
+        float angleIncrement = std::max(M_PI / 20, M_PI / 4 / (1.0 + dist - sPlayerbotAIConfig->tooCloseDistance));
         for (float add = 0.0f; add < M_PI / 4 + angleIncrement; add += angleIncrement)
         {
             for (float angle = add; angle < add + 2 * M_PI + angleIncrement; angle += M_PI / 4)

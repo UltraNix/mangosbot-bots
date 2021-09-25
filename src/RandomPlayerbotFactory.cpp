@@ -3,7 +3,7 @@
  */
 
 #include "RandomPlayerbotFactory.h"
-#include "ArenaTeam.h"
+#include "ArenaTeamMgr.h"
 #include "AccountMgr.h"
 #include "GuildMgr.h"
 #include "Playerbot.h"
@@ -111,13 +111,13 @@ bool RandomPlayerbotFactory::CreateRandomBot(uint8 cls)
                 skinColors.push_back(entry->ColorIndex);
                 break;
             case SECTION_TYPE_FACE:
-                faces.push_back(pair<uint8,uint8>(entry->VariationIndex, entry->ColorIndex));
+                faces.push_back(std::pair<uint8,uint8>(entry->VariationIndex, entry->ColorIndex));
                 break;
             case SECTION_TYPE_FACIAL_HAIR:
                 facialHairTypes.push_back(entry->VariationIndex);
                 break;
             case SECTION_TYPE_HAIR:
-                hairs.push_back(pair<uint8,uint8>(entry->VariationIndex, entry->ColorIndex));
+                hairs.push_back(std::pair<uint8,uint8>(entry->VariationIndex, entry->ColorIndex));
                 break;
         }
     }
@@ -272,8 +272,8 @@ void RandomPlayerbotFactory::CreateRandomBots()
                             uint32 guildId = Player::GetGuildIdFromStorage(guidlow);
                             if (guildId && !delFriends)
                             {
-                                Guild* guild = sGuildMgr.GetGuildById(guildId);
-                                uint32 accountId = sObjectMgr.GetPlayerAccountIdByGUID(guild->GetLeaderGUID());
+                                Guild* guild = sGuildMgr->GetGuildById(guildId);
+                                uint32 accountId = sObjectMgr->GetPlayerAccountIdByGUID(guild->GetLeaderGUID().GetCounter());
 
                                 if (find(botAccounts.begin(), botAccounts.end(), accountId) == botAccounts.end())
                                     continue;
@@ -284,7 +284,7 @@ void RandomPlayerbotFactory::CreateRandomBots()
                     }
                 }
                 else
-                    sAccountMgr.DeleteAccount(accId);
+                    AccountMgr::DeleteAccount(accId);
 
             } while (results->NextRow());
         }
@@ -504,9 +504,9 @@ void RandomPlayerbotFactory::CreateRandomArenaTeams()
         for (std::vector<uint32>::iterator i = randomBots.begin(); i != randomBots.end(); ++i)
         {
             ObjectGuid captain = ObjectGuid::Create<HighGuid::Player>(*i);
-            ArenaTeam* arenateam = sObjectMgr.GetArenaTeamByCaptain(captain);
+            ArenaTeam* arenateam = sArenaTeamMgr->GetArenaTeamByCaptain(captain);
             if (arenateam)
-                //sObjectMgr.RemoveArenaTeam(arenateam->GetId());
+                //sObjectMgr->RemoveArenaTeam(arenateam->GetId());
                 arenateam->Disband(nullptr);
         }
 
@@ -518,7 +518,7 @@ void RandomPlayerbotFactory::CreateRandomArenaTeams()
     for (std::vector<uint32>::iterator i = randomBots.begin(); i != randomBots.end(); ++i)
     {
         ObjectGuid captain = ObjectGuid::Create<HighGuid::Player>(*i);
-        ArenaTeam* arenateam = sObjectMgr.GetArenaTeamByCaptain(captain);
+        ArenaTeam* arenateam = sArenaTeamMgr->GetArenaTeamByCaptain(captain);
         if (arenateam)
         {
             ++arenaTeamNumber;
@@ -526,7 +526,7 @@ void RandomPlayerbotFactory::CreateRandomArenaTeams()
         }
         else
         {
-            Player* player = sObjectMgr.GetPlayer(captain);
+            Player* player = ObjectAccessor::FindConnectedPlayer(captain);
 
             if (!arenateam && player && player->getLevel() >= 70)
                 availableCaptains.push_back(captain);
@@ -547,7 +547,7 @@ void RandomPlayerbotFactory::CreateRandomArenaTeams()
 
         uint32 index = urand(0, availableCaptains.size() - 1);
         ObjectGuid captain = availableCaptains[index];
-        Player* player = sObjectMgr.GetPlayer(captain);
+        Player* player = ObjectAccessor::FindConnectedPlayer(captain);
         if (!player)
         {
             LOG_ERROR("playerbots", "Cannot find player for captain %d", captain);
@@ -585,14 +585,14 @@ void RandomPlayerbotFactory::CreateRandomArenaTeams()
         }
 
         ArenaTeam* arenateam = new ArenaTeam();
-        if (!arenateam->Create(player->GetGUID(), type, arenaTeamName))
+        if (!arenateam->Create(player->GetGUID(), type, arenaTeamName, 0, 0, 0, 0, 0))
         {
             LOG_ERROR("playerbots", "Error creating arena team %s", arenaTeamName.c_str());
             continue;
         }
 
         arenateam->SetCaptain(player->GetGUID());
-        sObjectMgr.AddArenaTeam(arenateam);
+        sArenaTeamMgr->AddArenaTeam(arenateam);
         sPlayerbotAIConfig->randomBotArenaTeams.push_back(arenateam->GetId());
     }
 

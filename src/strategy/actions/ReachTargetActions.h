@@ -2,7 +2,11 @@
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
+#ifndef _PLAYERBOT_REACHTARGETACTIONS_H
+#define _PLAYERBOT_REACHTARGETACTIONS_H
+
 #include "MovementActions.h"
+#include "GenericSpellActions.h"
 
 class Event;
 class PlayerbotAI;
@@ -10,7 +14,7 @@ class PlayerbotAI;
 class ReachTargetAction : public MovementAction
 {
     public:
-        ReachTargetAction(PlayerbotAI* botAI, std::string const& name, float distance) : MovementAction(botAI, name) : distance(distance) { }
+        ReachTargetAction(PlayerbotAI* botAI, std::string const& name, float distance) : MovementAction(botAI, name), distance(distance) { }
 
         bool Execute(Event event) override;
         bool isUseful() override;
@@ -23,7 +27,7 @@ class ReachTargetAction : public MovementAction
 class CastReachTargetSpellAction : public CastSpellAction
 {
     public:
-        CastReachTargetSpellAction(PlayerbotAI* botAI, std::string const& spell, float distance) : CastSpellAction(botAI, spell) : distance(distance) { }
+        CastReachTargetSpellAction(PlayerbotAI* botAI, std::string const& spell, float distance) : CastSpellAction(botAI, spell), distance(distance) { }
 
         bool isUseful() override;
 
@@ -47,5 +51,8 @@ class ReachPartyMemberToHealAction : public ReachTargetAction
 {
     public:
         ReachPartyMemberToHealAction(PlayerbotAI* botAI) : ReachTargetAction(botAI, "reach party member to heal", botAI->GetRange("heal")) { }
+
         std::string const& GetTargetName() override;
 };
+
+#endif

@@ -97,7 +97,7 @@ bool AttackAnythingAction::isUseful()
         AI_VALUE2(bool, "combat", "self target"));                                                                                      // Bot is already in combat
 }
 
-bool AttackAnythingAction::isPossible() const
+bool AttackAnythingAction::isPossible()
 {
     return AttackAction::isPossible() && GetTarget();
 }

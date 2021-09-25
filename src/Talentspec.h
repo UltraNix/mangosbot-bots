@@ -2,10 +2,10 @@
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
-#include "Action.h"
+#ifndef _PLAYERBOT_TALENTSPEC_H
+#define _PLAYERBOT_TALENTSPEC_H
 
-class Event;
-class PlayerbotAI;
+#include "Action.h"
 
 struct TalentEntry;
 struct TalentTabEntry;
@@ -51,12 +51,12 @@ class TalentSpec
         bool isEarlierVersionOf(TalentSpec& newSpec);
 
         std::string GetTalentLink();
-        int highestTree();
-        std::string formatSpec(Player* bot);
+        uint32 highestTree();
+        std::string const formatSpec(Player* bot);
 
     protected:
-        int LeveltoPoints(uint32 level) const;
-        uint32 PointstoLevel(int points) const;
+        uint32 LeveltoPoints(uint32 level) const;
+        uint32 PointstoLevel(uint32 points) const;
         void GetTalents(uint32 classMask);
         void SortTalents(std::vector<TalentListEntry>& talents, uint32 sortBy);
         void SortTalents(uint32 sortBy);
@@ -99,3 +99,5 @@ class ClassSpecs
 
         std::vector<TalentPath> talentPath;
 };
+
+#endif

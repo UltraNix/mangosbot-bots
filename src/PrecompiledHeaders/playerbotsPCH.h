@@ -3,7 +3,7 @@
  */
 
 #include "Creature.h"
-#include "DatabaseEnvFwd.h"
+#include "DatabaseEnv.h"
 #include "Gameobject.h"
 #include "Group.h"
 #include "Guild.h"
@@ -16,9 +16,6 @@
 #include "World.h"
 #include "WorldPacket.h"
 
-#include "Event.h"
+#include "ChatFilter.h"
+#include "ChatHelper.h"
 #include "Playerbot.h"
-#include "PlayerbotAI.h"
-#include "PlayerbotAIConfig.h"
-#include "PlayerbotMgr.h"
-#include "RandomPlayerbotMgr.h"

@@ -2,8 +2,8 @@
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
-#ifndef _RandomItemMgr_H
-#define _RandomItemMgr_H
+#ifndef _PLAYERBOT_RANDOMITEMMGR_H
+#define _PLAYERBOT_RANDOMITEMMGR_H
 
 #include "Common.h"
 
@@ -85,6 +85,8 @@ class RandomItemMgr
         bool CanEquipWeapon(uint8 clazz, ItemTemplate const* proto);
         float GetItemRarity(uint32 itemId);
 
+        static bool IsUsedBySkill(ItemTemplate const* proto, uint32 skillId);
+
     private:
         void BuildRandomItemCache();
         void BuildEquipCache();
@@ -107,6 +109,8 @@ class RandomItemMgr
         std::map<uint32, std::map<uint32, std::vector<uint32> > > foodCache;
         std::map<uint32, std::vector<uint32> > tradeCache;
         std::map<uint32, float> rarityCache;
+
+        static std::set<uint32> itemCache;
 };
 
 #define sRandomItemMgr RandomItemMgr::instance()

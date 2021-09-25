@@ -11,7 +11,7 @@ void PossibleTargetsValue::FindUnits(std::list<Unit*>& targets)
 {
     Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, range);
     Acore::UnitListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
-    bot->VisitNearbyObject(range, searcher);
+    Cell::VisitAllObjects(bot, searcher, range);
 }
 
 bool PossibleTargetsValue::AcceptUnit(Unit* unit)

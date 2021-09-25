@@ -11,7 +11,7 @@ uint32 NextAction::size(NextAction** actions)
         return 0;
 
     uint32 size = 0;
-    for (size=0; actions[size];)
+    for (size = 0; actions[size];)
         ++size;
 
     return size;

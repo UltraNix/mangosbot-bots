@@ -24,7 +24,7 @@ class ActionNodeFactoryInternal : public NamedObjectFactory<ActionNode>
         }
 
     private:
-        static ActionNode* melee()
+        static ActionNode* melee(PlayerbotAI* botAI)
         {
             return new ActionNode ("melee",
                 /*P*/ nullptr,
@@ -32,7 +32,7 @@ class ActionNodeFactoryInternal : public NamedObjectFactory<ActionNode>
                 /*C*/ nullptr);
         }
 
-        static ActionNode* healthstone()
+        static ActionNode* healthstone(PlayerbotAI* botAI)
         {
             return new ActionNode ("healthstone",
                 /*P*/ nullptr,
@@ -40,7 +40,7 @@ class ActionNodeFactoryInternal : public NamedObjectFactory<ActionNode>
                 /*C*/ nullptr);
         }
 
-        static ActionNode* follow_master_random()
+        static ActionNode* follow_master_random(PlayerbotAI* botAI)
         {
             return new ActionNode ("be near",
                 /*P*/ nullptr,
@@ -48,7 +48,7 @@ class ActionNodeFactoryInternal : public NamedObjectFactory<ActionNode>
                 /*C*/ nullptr);
         }
 
-        static ActionNode* attack_anything()
+        static ActionNode* attack_anything(PlayerbotAI* botAI)
         {
             return new ActionNode ("attack anything",
                 /*P*/ nullptr,
@@ -56,7 +56,7 @@ class ActionNodeFactoryInternal : public NamedObjectFactory<ActionNode>
                 /*C*/ nullptr);
         }
 
-        static ActionNode* move_random()
+        static ActionNode* move_random(PlayerbotAI* botAI)
         {
             return new ActionNode ("move random",
                 /*P*/ nullptr,
@@ -64,7 +64,7 @@ class ActionNodeFactoryInternal : public NamedObjectFactory<ActionNode>
                 /*C*/ nullptr);
         }
 
-        static ActionNode* move_to_loot()
+        static ActionNode* move_to_loot(PlayerbotAI* botAI)
         {
             return new ActionNode ("move to loot",
                 /*P*/ nullptr,
@@ -72,7 +72,7 @@ class ActionNodeFactoryInternal : public NamedObjectFactory<ActionNode>
                 /*C*/ nullptr);
         }
 
-        static ActionNode* food()
+        static ActionNode* food(PlayerbotAI* botAI)
         {
             return new ActionNode ("food",
                 /*P*/ nullptr,
@@ -80,7 +80,7 @@ class ActionNodeFactoryInternal : public NamedObjectFactory<ActionNode>
                 /*C*/ nullptr);
         }
 
-        static ActionNode* drink()
+        static ActionNode* drink(PlayerbotAI* botAI)
         {
             return new ActionNode ("drink",
                 /*P*/ nullptr,
@@ -88,7 +88,7 @@ class ActionNodeFactoryInternal : public NamedObjectFactory<ActionNode>
                 /*C*/ nullptr);
         }
 
-        static ActionNode* mana_potion()
+        static ActionNode* mana_potion(PlayerbotAI* botAI)
         {
             return new ActionNode ("mana potion",
                 /*P*/ nullptr,
@@ -96,7 +96,7 @@ class ActionNodeFactoryInternal : public NamedObjectFactory<ActionNode>
                 /*C*/ nullptr);
         }
 
-        static ActionNode* healing_potion()
+        static ActionNode* healing_potion(PlayerbotAI* botAI)
         {
             return new ActionNode ("healing potion",
                 /*P*/ nullptr,
@@ -104,7 +104,7 @@ class ActionNodeFactoryInternal : public NamedObjectFactory<ActionNode>
                 /*C*/ nullptr);
         }
 
-        static ActionNode* flee()
+        static ActionNode* flee(PlayerbotAI* botAI)
         {
             return new ActionNode ("flee",
                 /*P*/ nullptr,
@@ -120,6 +120,6 @@ Strategy::Strategy(PlayerbotAI* botAI) : PlayerbotAIAware(botAI)
 
 ActionNode* Strategy::GetAction(std::string const& name)
 {
-    return actionNodeFactories.GetObject(name);
+    return actionNodeFactories.GetObject(name, botAI);
 }
 

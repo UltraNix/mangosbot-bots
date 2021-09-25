@@ -2,6 +2,9 @@
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
+#ifndef _PLAYERBOT_NAMEDOBJECTCONEXT_H
+#define _PLAYERBOT_NAMEDOBJECTCONEXT_H
+
 #include "Common.h"
 
 class PlayerbotAI;
@@ -38,11 +41,11 @@ template <class T>
 class NamedObjectFactory
 {
     protected:
-        typedef T*(*ActionCreator)();
+        typedef T*(*ActionCreator)(PlayerbotAI* botAI);
         std::map<std::string, ActionCreator> creators;
 
     public:
-        T* create(std::string const& name)
+        T* create(std::string const& name, PlayerbotAI* botAI)
         {
             size_t found = name.find("::");
             std::string qualifier;
@@ -84,10 +87,10 @@ class NamedObjectContext : public NamedObjectFactory<T>
         NamedObjectContext(bool shared = false, bool supportsSiblings = false) :
             NamedObjectFactory<T>(), shared(shared), supportsSiblings(supportsSiblings) { }
 
-        T* create(std::string const& name)
+        T* create(std::string const& name, PlayerbotAI* botAI)
         {
             if (created.find(name) == created.end())
-                return created[name] = NamedObjectFactory<T>::create(name);
+                return created[name] = NamedObjectFactory<T>::create(name, botAI);
 
             return created[name];
         }
@@ -163,11 +166,11 @@ class NamedObjectContextList
             contexts.push_back(context);
         }
 
-        T* GetObject(std::string const& name)
+        T* GetObject(std::string const& name, PlayerbotAI* botAI)
         {
             for (typename std::vector<NamedObjectContext<T>*>::iterator i = contexts.begin(); i != contexts.end(); i++)
             {
-                if (T* object = (*i)->create(name))
+                if (T* object = (*i)->create(name, botAI))
                     return object;
             }
 
@@ -227,7 +230,7 @@ class NamedObjectContextList
 
         std::set<std::string> GetCreated()
         {
-            std::et<std::string> result;
+            std::set<std::string> result;
 
             for (typename std::vector<NamedObjectContext<T>*>::iterator i = contexts.begin(); i != contexts.end(); i++)
             {
@@ -259,11 +262,11 @@ class NamedObjectFactoryList
             factories.push_front(context);
         }
 
-        T* GetObject(std::string const& name)
+        T* GetObject(std::string const& name, PlayerbotAI* botAI)
         {
             for (typename std::vector<NamedObjectFactory<T>*>::iterator i = factories.begin(); i != factories.end(); i++)
             {
-                if (T* object = (*i)->create(name))
+                if (T* object = (*i)->create(name, botAI))
                     return object;
             }
 
@@ -273,3 +276,5 @@ class NamedObjectFactoryList
     private:
         std::vector<NamedObjectFactory<T>*> factories;
 };
+
+#endif

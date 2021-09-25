@@ -12,8 +12,10 @@ bool CheckMailAction::Execute(Event event)
     WorldPacket p;
     bot->GetSession()->HandleQueryNextMailTime(p);
 
+    CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
+
     std::vector<uint32> ids;
-    for (PlayerMails::iterator i = bot->GetMailBegin(); i != bot->GetMailEnd(); ++i)
+    for (PlayerMails::const_iterator i = bot->GetMails().begin(); i != bot->GetMails().end(); ++i)
     {
         Mail* mail = *i;
         if (!mail || mail->state == MAIL_STATE_DELETED)
@@ -27,7 +29,7 @@ bool CheckMailAction::Execute(Event event)
         if (sPlayerbotAIConfig->IsInRandomAccountList(account))
             continue;
 
-        ProcessMail(mail, owner);
+        ProcessMail(mail, owner, trans);
         ids.push_back(mail->messageID);
         mail->state = MAIL_STATE_DELETED;
     }
@@ -35,10 +37,19 @@ bool CheckMailAction::Execute(Event event)
     for (uint32 id : ids)
     {
         bot->SendMailResult(id, MAIL_DELETED, MAIL_OK);
-        CharacterDatabase.PExecute("DELETE FROM mail WHERE id = '%u'", id);
-        CharacterDatabase.PExecute("DELETE FROM mail_items WHERE mail_id = '%u'", id);
+
+        CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_MAIL_BY_ID);
+        stmt->setUInt32(0, id);
+        trans->Append(stmt);
+
+        stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_MAIL_ITEM_BY_ID);
+        stmt->setUInt32(0, id);
+        trans->Append(stmt);
+
         bot->RemoveMail(id);
     }
+
+    CharacterDatabase.CommitTransaction(trans);
 
     return true;
 }
@@ -51,18 +62,14 @@ bool CheckMailAction::isUseful()
     return true;
 }
 
-void CheckMailAction::ProcessMail(Mail* mail, Player* owner)
+void CheckMailAction::ProcessMail(Mail* mail, Player* owner, CharacterDatabaseTransaction trans)
 {
     if (mail->items.empty())
     {
-        if (mail->itemTextId)
-        {
-            sGuildTaskMgr->CheckTaskTransfer(sObjectMgr->GetItemText(mail->itemTextId), owner, bot);
-        }
         return;
     }
 
-    if (mail->subject.find("Item(s) you asked for") != string::npos)
+    if (mail->subject.find("Item(s) you asked for") != std::string::npos)
         return;
 
     for (MailItemInfoVec::iterator i = mail->items.begin(); i != mail->items.end(); ++i)
@@ -84,7 +91,7 @@ void CheckMailAction::ProcessMail(Mail* mail, Player* owner)
             MailDraft draft("Item(s) you've sent me", body.str());
             draft.AddItem(item);
             bot->RemoveMItem(i->item_guid);
-            draft.SendMailTo(MailReceiver(owner), MailSender(bot));
+            draft.SendMailTo(trans, MailReceiver(owner), MailSender(bot));
             return;
         }
 

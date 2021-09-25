@@ -38,7 +38,6 @@ void TalkToQuestGiverAction::ProcessQuest(Quest const* quest, WorldObject* quest
     switch (status)
     {
         case QUEST_STATUS_COMPLETE:
-        case QUEST_STATUS_FORCE_COMPLETE:
             TurnInQuest(quest, questGiver, out);
             break;
         case QUEST_STATUS_INCOMPLETE:
@@ -164,7 +163,7 @@ void TalkToQuestGiverAction::RewardMultipleItem(Quest const* quest, WorldObject*
         else
         {
             //Pick the first item
-            ItemTemplate const* item = sObjectMgr.GetItemTemplate(quest->RewardChoiceItemId[*bestIds.begin()]);
+            ItemTemplate const* item = sObjectMgr->GetItemTemplate(quest->RewardChoiceItemId[*bestIds.begin()]);
             bot->RewardQuest(quest, *bestIds.begin(), questGiver, true);
 
             out << "Rewarded " << chat->formatItem(item);

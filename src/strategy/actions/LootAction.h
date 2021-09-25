@@ -2,6 +2,9 @@
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
+#ifndef _PLAYERBOT_LOOTACTION_H
+#define _PLAYERBOT_LOOTACTION_H
+
 #include "InventoryAction.h"
 #include "MovementActions.h"
 
@@ -11,10 +14,10 @@ class LootObject;
 class PlayerbotAI;
 class SpellInfo;
 
-class LootAction : public InventoryAction
+class LootAction : public MovementAction
 {
     public:
-        LootAction(PlayerbotAI* botAI) : InventoryAction(botAI, "loot") { }
+        LootAction(PlayerbotAI* botAI) : MovementAction(botAI, "loot") { }
 
         bool Execute(Event event) override;
 };
@@ -34,19 +37,21 @@ class OpenLootAction : public MovementAction
         bool CanOpenLock(uint32 skillId, uint32 reqSkillValue);
 };
 
-class StoreLootAction : public MovementAction
+class StoreLootAction : public InventoryAction
 {
     public:
-        StoreLootAction(PlayerbotAI* botAI) : MovementAction(botAI, "store loot") { }
+        StoreLootAction(PlayerbotAI* botAI) : InventoryAction(botAI, "store loot") { }
 
         bool Execute(Event event) override;
         static bool IsLootAllowed(uint32 itemid, PlayerbotAI* botAI);
 };
 
-class ReleaseLootAction : public MovementAction
+class ReleaseLootAction : public InventoryAction
 {
     public:
-        ReleaseLootAction(PlayerbotAI* botAI) : MovementAction(botAI, "release loot") { }
+        ReleaseLootAction(PlayerbotAI* botAI) : InventoryAction(botAI, "release loot") { }
 
         bool Execute(Event event) override;
 };
+
+#endif

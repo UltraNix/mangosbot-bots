@@ -152,7 +152,7 @@ RandomItemList RandomItemMgr::Query(uint32 level, RandomItemType type, RandomIte
     RandomItemList& list = randomItemCache[(level - 1) / 10][type];
 
     RandomItemList result;
-    for (RandomItemList::iterator i = list.begin; i != list.end(); ++i)
+    for (RandomItemList::iterator i = list.begin(); i != list.end(); ++i)
     {
         uint32 itemId = *i;
         ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
@@ -197,14 +197,11 @@ void RandomItemMgr::BuildRandomItemCache()
 
         for (auto const& itr : *itemTemplates)
         {
-            ItemTemplate const* proto = itr.second;
+            ItemTemplate const* proto = &itr.second;
             if (!proto)
                 continue;
 
             if (proto->Duration & 0x80000000)
-                continue;
-
-            if (sAhBotConfig.ignoreItemIds.find(proto->ItemId) != sAhBotConfig.ignoreItemIds.end())
                 continue;
 
             if (strstri(proto->Name1.c_str(), "qa") || strstri(proto->Name1.c_str(), "test") || strstri(proto->Name1.c_str(), "deprecated"))
@@ -213,7 +210,7 @@ void RandomItemMgr::BuildRandomItemCache()
             if (!proto->ItemLevel)
                 continue;
 
-            if (!auctionbot.GetSellPrice(proto))
+            if (!proto->SellPrice)
                 continue;
 
             uint32 level = proto->ItemLevel;
@@ -240,7 +237,7 @@ void RandomItemMgr::BuildRandomItemCache()
                 RandomItemList list = randomItemCache[level][(RandomItemType)type];
                 LOG_INFO("playerbots", "    Level %d..%d Type %d - %zu random items cached", level * 10, level * 10 + 9, type, list.size());
 
-                for (RandomItemList::iterator i = list.begin; i != list.end(); ++i)
+                for (RandomItemList::iterator i = list.begin(); i != list.end(); ++i)
                 {
                     uint32 itemId = *i;
                     ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
@@ -878,9 +875,9 @@ void RandomItemMgr::BuildRarityCache()
     }
     else
     {
-        LOG_INFO("playerbots", "Building item rarity cache from %u items", sItemStorage.GetMaxEntry());
-
         ItemTemplateContainer const* itemTemplates = sObjectMgr->GetItemTemplateStore();
+        LOG_INFO("playerbots", "Building item rarity cache from %u items", itemTemplates->size());
+
         for (auto const& itr : *itemTemplates)
         {
             ItemTemplate const* proto = &itr.second;
@@ -991,11 +988,161 @@ void RandomItemMgr::BuildRarityCache()
             }
         }
 
-        LOG_INFO("playerbots", "Item rarity cache built from %u items", sItemStorage.GetMaxEntry());
+        LOG_INFO("playerbots", "Item rarity cache built from %u items", itemTemplates->size());
     }
 }
 
 float RandomItemMgr::GetItemRarity(uint32 itemId)
 {
     return rarityCache[itemId];
+}
+
+inline bool IsCraftedBySpell(ItemTemplate const* proto, uint32 spellId)
+{
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+    if (!spellInfo)
+        return false;
+
+    return IsCraftedBySpell(proto, spellInfo);
+}
+
+inline bool IsCraftedBySpell(ItemTemplate const* proto, SpellInfo const* spellInfo)
+{
+    for (uint32 x = 0; x < MAX_SPELL_REAGENTS; ++x)
+    {
+        if (spellInfo->Reagent[x] <= 0)
+        {
+            continue;
+        }
+
+        if (proto->ItemId == spellInfo->Reagent[x])
+        {
+            return true;
+        }
+    }
+
+    for (uint8 i = 0; i < 3; ++i)
+    {
+        if (spellInfo->Effects[i].Effect == SPELL_EFFECT_CREATE_ITEM)
+        {
+            if (spellInfo->Effects[i].ItemType == proto->ItemId)
+            {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+inline bool IsCraftedBy(ItemTemplate const* proto, uint32 spellId)
+{
+    if (IsCraftedBySpell(proto, spellId))
+        return true;
+
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+    if (!spellInfo)
+        return false;
+
+    for (uint32 effect = 0; effect < 3; ++effect)
+    {
+        uint32 craftId = spellInfo->Effects[effect].TriggerSpell;
+        SpellInfo const* craftSpellInfo = sSpellMgr->GetSpellInfo(craftId);
+        if (!craftSpellInfo)
+            continue;
+
+        if (IsCraftedBySpell(proto, craftSpellInfo))
+            return true;
+    }
+
+    return false;
+}
+
+inline bool ContainsInternal(ItemTemplate const* proto, uint32 skillId)
+{
+    for (uint32 j = 0; j < sSkillLineAbilityStore.GetNumRows(); ++j)
+    {
+        SkillLineAbilityEntry const* skillLine = sSkillLineAbilityStore.LookupEntry(j);
+        if (!skillLine || skillLine->ID != skillId)
+            continue;
+
+        if (IsCraftedBy(proto, skillLine->Spell))
+            return true;
+    }
+
+    CreatureTemplateContainer const* creatureTemplates = sObjectMgr->GetCreatureTemplates();
+    for (auto const& itr : *creatureTemplates)
+    {
+        CreatureTemplate const* co = &itr.second;
+        if (!co || co->trainer_type != TRAINER_TYPE_TRADESKILLS)
+            continue;
+
+        uint32 trainerId = co->Entry;
+        TrainerSpellData const* trainer_spells = sObjectMgr->GetNpcTrainerSpells(trainerId);
+        if (!trainer_spells)
+            continue;
+
+        for (TrainerSpellMap::const_iterator itr = trainer_spells->spellList.begin(); itr != trainer_spells->spellList.end(); ++itr)
+        {
+            TrainerSpell const* tSpell = &itr->second;
+
+            if (!tSpell || tSpell->reqSkill != skillId)
+                continue;
+
+            if (IsCraftedBy(proto, tSpell->spell))
+                return true;
+        }
+    }
+
+    std::vector<ItemTemplate*> const* itemTemplates = sObjectMgr->GetItemTemplateStoreFast();
+    for (ItemTemplate const* recipe : *itemTemplates)
+    {
+        if (!recipe)
+            continue;
+
+        if (recipe->Class == ITEM_CLASS_RECIPE && (
+            (recipe->SubClass == ITEM_SUBCLASS_LEATHERWORKING_PATTERN && skillId == SKILL_LEATHERWORKING) ||
+            (recipe->SubClass == ITEM_SUBCLASS_TAILORING_PATTERN && skillId == SKILL_TAILORING) ||
+            (recipe->SubClass == ITEM_SUBCLASS_ENGINEERING_SCHEMATIC && skillId == SKILL_ENGINEERING) ||
+            (recipe->SubClass == ITEM_SUBCLASS_BLACKSMITHING && skillId == SKILL_BLACKSMITHING) ||
+            (recipe->SubClass == ITEM_SUBCLASS_COOKING_RECIPE && skillId == SKILL_COOKING) ||
+            (recipe->SubClass == ITEM_SUBCLASS_ALCHEMY_RECIPE && skillId == SKILL_ALCHEMY) ||
+            (recipe->SubClass == ITEM_SUBCLASS_FIRST_AID_MANUAL && skillId == SKILL_FIRST_AID) ||
+            (recipe->SubClass == ITEM_SUBCLASS_ENCHANTING_FORMULA && skillId == SKILL_ENCHANTING) ||
+            (recipe->SubClass == ITEM_SUBCLASS_JEWELCRAFTING_RECIPE && skillId == SKILL_JEWELCRAFTING) ||
+            (recipe->SubClass == ITEM_SUBCLASS_FISHING_MANUAL && skillId == SKILL_FISHING)
+            ))
+        {
+            for (uint32 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
+            {
+                if (IsCraftedBy(proto, recipe->Spells[i].SpellId))
+                    return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+bool RandomItemMgr::IsUsedBySkill(ItemTemplate const* proto, uint32 skillId)
+{
+    if (itemCache.find(proto->ItemId) != itemCache.end())
+        return true;
+
+    switch (proto->Class)
+    {
+        case ITEM_CLASS_TRADE_GOODS:
+        case ITEM_CLASS_MISC:
+        case ITEM_CLASS_REAGENT:
+        case ITEM_CLASS_GEM:
+            break;
+        default:
+            return false;
+    }
+
+    bool contains = ContainsInternal(proto, skillId);
+    if (contains)
+        itemCache.insert(proto->ItemId);
+
+    return contains;
 }

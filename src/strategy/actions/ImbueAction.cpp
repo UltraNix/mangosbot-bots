@@ -12,12 +12,12 @@ ImbueWithPoisonAction::ImbueWithPoisonAction(PlayerbotAI* botAI) : Action(botAI,
 
 bool ImbueWithPoisonAction::Execute(Event event)
 {
-    if (bot->isInCombat())
+    if (bot->IsInCombat())
         return false;
 
     // remove stealth
     if (bot->HasAura(SPELL_AURA_MOD_STEALTH))
-        bot->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
+        bot->RemoveAurasByType(SPELL_AURA_MOD_STEALTH);
 
     // hp check
     if (bot->getStandState() != UNIT_STAND_STATE_STAND)
@@ -69,12 +69,12 @@ ImbueWithStoneAction::ImbueWithStoneAction(PlayerbotAI* botAI) : Action(botAI, "
 
 bool ImbueWithStoneAction::Execute(Event event)
 {
-    if (bot->isInCombat())
+    if (bot->IsInCombat())
         return false;
 
     // remove stealth
     if (bot->HasAura(SPELL_AURA_MOD_STEALTH))
-        bot->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
+        bot->RemoveAurasByType(SPELL_AURA_MOD_STEALTH);
 
     // hp check
     if (bot->getStandState() != UNIT_STAND_STATE_STAND)
@@ -115,12 +115,12 @@ ImbueWithOilAction::ImbueWithOilAction(PlayerbotAI* botAI) : Action(botAI, "appl
 
 bool ImbueWithOilAction::Execute(Event event)
 {
-    if (bot->isInCombat())
+    if (bot->IsInCombat())
         return false;
 
     // remove stealth
     if (bot->HasAura(SPELL_AURA_MOD_STEALTH))
-        bot->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
+        bot->RemoveAurasByType(SPELL_AURA_MOD_STEALTH);
 
     // hp check
     if (bot->getStandState() != UNIT_STAND_STATE_STAND)
@@ -154,11 +154,11 @@ TryEmergencyAction::TryEmergencyAction(PlayerbotAI* botAI) : Action(botAI, "try 
 bool TryEmergencyAction::Execute(Event event)
 {
     // Do not use consumable if bot can heal self
-    if ((botAI->IsHeal(bot)) && (botAI->GetManaPercent() > 20))
+    if ((botAI->IsHeal(bot)) && (bot->GetPowerPct(POWER_MANA) > 20))
         return false;
 
     // If bot does not have aggro: use bandage instead of potion/stone/crystal
-    if ((!AI_VALUE(uint8, "my attacker count") >= 1) && !bot->HasAura(11196)) // Recently bandaged
+    if ((!AI_VALUE(uint8, "my attacker count")) && !bot->HasAura(11196)) // Recently bandaged
     {
         if (Item* bandage = botAI->FindBandage())
         {

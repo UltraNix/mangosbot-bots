@@ -2,6 +2,9 @@
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
+#ifndef _PLAYERBOT_STATSVALUE_H
+#define _PLAYERBOT_STATSVALUE_H
+
 #include "NamedObjectContext.h"
 #include "Value.h"
 
@@ -149,5 +152,7 @@ class IsInGroupValue : public BoolCalculatedValue
 class DeathCountValue : public ManualSetValue<uint32>
 {
     public:
-        DeathCountValue(PlayerbotAI* botAI) : ManualSetValue<uint32>(botAI, 0, "death_count") {}
+        DeathCountValue(PlayerbotAI* botAI) : ManualSetValue<uint32>(botAI, 0, "death_count") { }
 };
+
+#endif

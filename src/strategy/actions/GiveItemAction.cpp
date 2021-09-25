@@ -44,13 +44,13 @@ bool GiveItemAction::Execute(Event event)
 
             std::ostringstream out;
             out << "Got " << chat->formatItem(item->GetTemplate(), item->GetCount()) << " from " << bot->GetName();
-            receiverbotAI->TellMasterNoFacing(out.str());
+            receiverAi->TellMasterNoFacing(out.str());
         }
         else
         {
             std::ostringstream out;
             out << "Cannot get " << chat->formatItem(item->GetTemplate(), item->GetCount()) << " from " << bot->GetName() << "- my bags are full";
-            receiverbotAI->TellError(out.str());
+            receiverAi->TellError(out.str());
         }
     }
 

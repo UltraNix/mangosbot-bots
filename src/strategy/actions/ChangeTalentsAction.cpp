@@ -103,7 +103,7 @@ bool ChangeTalentsAction::Execute(Event event)
     }
     else
     {
-        uint32 specId = sRandomPlayerbotMgr->GetValue(bot->GetGUIDLow(), "specNo") - 1;
+        uint32 specId = sRandomPlayerbotMgr->GetValue(bot->GetGUID().GetCounter(), "specNo") - 1;
         std::string specName = "";
         TalentPath* specPath;
         if (specId)

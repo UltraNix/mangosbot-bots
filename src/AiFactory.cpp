@@ -6,6 +6,7 @@
 #include "BattlegroundMgr.h"
 #include "Playerbot.h"
 #include "Engine.h"
+#include "Group.h"
 #include "DKAiObjectContext.h"
 #include "PriestAiObjectContext.h"
 #include "MageAiObjectContext.h"

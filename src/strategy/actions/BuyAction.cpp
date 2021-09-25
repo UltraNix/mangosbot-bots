@@ -53,14 +53,14 @@ bool BuyAction::Execute(Event event)
                 }
                 else if (usage == ITEM_USAGE_SKILL)
                 {
-                    ItemPrototype const* proto = sObjectMgr.GetItemPrototype(tItem->item);
+                    ItemTemplate const* proto = sObjectMgr->GetItemTemplate(tItem->item);
 
                     if (!bot->HasItemCount(tItem->item, proto->Stackable))
                         itemIds.insert(tItem->item);
                 }
                 else
                 {
-                    ItemPrototype const* proto = sObjectMgr.GetItemPrototype(tItem->item);
+                    ItemTemplate const* proto = sObjectMgr->GetItemTemplate(tItem->item);
                     if (!proto)
                         continue;
 
@@ -68,7 +68,7 @@ bool BuyAction::Execute(Event event)
                     for (uint8 slot = 0; slot < MAX_QUEST_LOG_SIZE; ++slot)
                     {
                         uint32 entry = botAI->GetBot()->GetQuestSlotQuestId(slot);
-                        Quest const* quest = sObjectMgr.GetQuestTemplate(entry);
+                        Quest const* quest = sObjectMgr->GetQuestTemplate(entry);
                         if (!quest)
                             continue;
 
@@ -133,7 +133,7 @@ bool BuyAction::BuyItem(VendorItemData const* tItems, ObjectGuid vendorguid, Ite
         if (tItems->GetItem(slot)->item == itemId)
         {
             bool couldBuy = false;
-            couldBuy = bot->BuyItemFromVendor(vendorguid, itemId, 1, NULL_BAG, NULL_SLOT);
+            couldBuy = bot->BuyItemFromVendorSlot(vendorguid, slot, itemId, 1, NULL_BAG, NULL_SLOT);
 
             if (couldBuy)
             {

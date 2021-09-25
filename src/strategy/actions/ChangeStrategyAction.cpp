@@ -5,12 +5,13 @@
 #include "ChangeStrategyAction.h"
 #include "Event.h"
 #include "Playerbot.h"
+#include "PlayerbotDbStore.h"
 
 bool ChangeCombatStrategyAction::Execute(Event event)
 {
     std::string const& text = event.getParam();
     botAI->ChangeStrategy(text.empty() ? getName() : text, BOT_STATE_COMBAT);
-    sPlayerbotDbStore.Save(botAI);
+    sPlayerbotDbStore->Save(botAI);
     return true;
 }
 
@@ -18,7 +19,7 @@ bool ChangeNonCombatStrategyAction::Execute(Event event)
 {
     std::string const& text = event.getParam();
 
-    uint32 account = sObjectMgr->GetPlayerAccountIdByGUID(bot->GetGUID());
+    uint32 account = sObjectMgr->GetPlayerAccountIdByGUID(bot->GetGUID().GetCounter());
     if (sPlayerbotAIConfig->IsInRandomAccountList(account) && botAI->GetMaster() && botAI->GetMaster()->GetSession()->GetSecurity() < SEC_GAMEMASTER)
     {
         if (text.find("loot") != std::string::npos || text.find("gather") != std::string::npos)
@@ -29,7 +30,7 @@ bool ChangeNonCombatStrategyAction::Execute(Event event)
     }
 
     botAI->ChangeStrategy(text, BOT_STATE_NON_COMBAT);
-    sPlayerbotDbStore.Save(botAI);
+    sPlayerbotDbStore->Save(botAI);
     return true;
 }
 

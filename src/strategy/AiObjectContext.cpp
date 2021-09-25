@@ -3,9 +3,7 @@
  */
 
 #include "AiObjectContext.h"
-#include "Action.h"
 #include "StrategyContext.h"
-#include "Trigger.h"
 #include "ActionContext.h"
 #include "ChatActionContext.h"
 #include "WorldPacketActionContext.h"

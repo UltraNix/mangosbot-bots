@@ -20,7 +20,7 @@ bool GoAction::Execute(Event event)
     if (!master)
         return false;
 
-    string param = event.getParam();
+    std::string const& param = event.getParam();
     if (param == "?")
     {
         float x = bot->GetPositionX();
@@ -39,19 +39,19 @@ bool GoAction::Execute(Event event)
 
         std::vector<TravelDestination*> dests;
 
-        for (auto& d : sTravelMgr.getExploreTravelDestinations(bot, true, true))
+        for (auto& d : sTravelMgr->getExploreTravelDestinations(bot, true, true))
         {
             if (strstri(d->getTitle().c_str(), param.substr(7).c_str()))
                 dests.push_back(d);
         }
 
-        for (auto& d : sTravelMgr.getRpgTravelDestinations(bot, true, true))
+        for (auto& d : sTravelMgr->getRpgTravelDestinations(bot, true, true))
         {
             if (strstri(d->getTitle().c_str(), param.substr(7).c_str()))
                 dests.push_back(d);
         }
 
-        for (auto& d : sTravelMgr.getGrindTravelDestinations(bot, true, true))
+        for (auto& d : sTravelMgr->getGrindTravelDestinations(bot, true, true))
         {
             if (strstri(d->getTitle().c_str(), param.substr(7).c_str()))
                 dests.push_back(d);
@@ -78,7 +78,7 @@ bool GoAction::Execute(Event event)
         else
         {
             botAI->TellMasterNoFacing("Clearing travel target");
-            target->setTarget(sTravelMgr.nullTravelDestination, sTravelMgr.nullWorldPosition);
+            target->setTarget(sTravelMgr->nullTravelDestination, sTravelMgr->nullWorldPosition);
             target->setForced(false);
             return true;
         }
@@ -197,9 +197,9 @@ bool GoAction::Execute(Event event)
             return false;
         }
 
-        if (map->IsUnderWater(x, y, z) || map->IsInWater(x, y, z))
+        if (map->IsInWater(bot->GetPhaseMask(), x, y, z, bot->GetCollisionHeight()))
         {
-            botAI->TellError("It is under water");
+            botAI->TellError("It is in water");
             return false;
         }
 

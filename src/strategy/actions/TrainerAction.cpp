@@ -116,8 +116,8 @@ bool TrainerAction::Execute(Event event)
     if (spell)
         spells.insert(spell);
 
-    if (text.find("learn") != string::npos || sRandomPlayerbotMgr->IsRandomBot(bot) || (sPlayerbotAIConfig->autoTrainSpells != "no" &&
-        (creature->GetCreatureInfo()->TrainerType != TRAINER_TYPE_TRADESKILLS || botAI->IsRealPlayer()))) //Todo rewrite to only exclude start primary profession skills and make config dependent.
+    if (text.find("learn") != std::string::npos || sRandomPlayerbotMgr->IsRandomBot(bot) || (sPlayerbotAIConfig->autoTrainSpells != "no" &&
+        (creature->GetCreatureTemplate()->trainer_type != TRAINER_TYPE_TRADESKILLS || botAI->IsRealPlayer()))) //Todo rewrite to only exclude start primary profession skills and make config dependent.
         Iterate(creature, &TrainerAction::Learn, spells);
     else
         Iterate(creature, nullptr, spells);

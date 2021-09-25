@@ -42,7 +42,7 @@ class FindBuffVisitor : public IterateItemsVisitor
                     return true;
 
                 if (items.find(proto->SubClass) == items.end())
-                    items[proto->SubClass] = std::list<Item*>();
+                    items[proto->SubClass] = std::vector<Item*>();
 
                 items[proto->SubClass].push_back(item);
                 break;

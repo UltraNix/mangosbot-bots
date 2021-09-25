@@ -5,7 +5,6 @@
 #include "AiObject.h"
 #include "Playerbot.h"
 
-
 AiObject::AiObject(PlayerbotAI* botAI) : PlayerbotAIAware(botAI), bot(botAI->GetBot()), context(botAI->GetAiObjectContext()), chat(botAI->GetChatHelper())
 {
 }

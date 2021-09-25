@@ -93,7 +93,7 @@ void Engine::Reset()
 
     triggers.clear();
 
-    for (std::list<Multiplier*>::iterator i = multipliers.begin(); i != multipliers.end(); i++)
+    for (std::vector<Multiplier*>::iterator i = multipliers.begin(); i != multipliers.end(); i++)
     {
         Multiplier* multiplier = *i;
         delete multiplier;
@@ -494,7 +494,7 @@ std::string Engine::ListStrategies()
 {
     std::string s = "Strategies: ";
 
-    if (std::strategies.empty())
+    if (strategies.empty())
         return std::move(s);
 
     for (std::map<std::string, Strategy*>::iterator i = strategies.begin(); i != strategies.end(); i++)

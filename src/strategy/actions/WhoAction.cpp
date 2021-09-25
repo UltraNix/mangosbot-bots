@@ -69,7 +69,7 @@ std::string const& WhoAction::QueryTrade(std::string const& text)
     std::list<Item*> items = InventoryAction::parseItems(text);
     for (Item* sell : items)
     {
-        int32 sellPrice = auctionbot.GetSellPrice(sell->GetTemplate()) * sRandomPlayerbotMgr->GetSellMultiplier(bot) * sell->GetCount();
+        int32 sellPrice = sell->GetTemplate()->SellPrice * sRandomPlayerbotMgr->GetSellMultiplier(bot) * sell->GetCount();
         if (!sellPrice)
             continue;
 
@@ -87,7 +87,7 @@ std::string const& WhoAction::QuerySkill(std::string const& text)
     if (!skill || !botAI->HasSkill((SkillType)skill))
         return "";
 
-    string skillName = chat->formatSkill(skill);
+    std::string const& skillName = chat->formatSkill(skill);
     uint32 spellId = AI_VALUE2(uint32, "spell id", skillName);
     uint16 value = bot->GetSkillValue(skill);
     uint16 maxSkill = bot->GetMaxSkillValue(skill);

@@ -2,6 +2,9 @@
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
+#ifndef _PLAYERBOT_NEARESTUNITSVALUE_H
+#define _PLAYERBOT_NEARESTUNITSVALUE_H
+
 #include "Unit.h"
 #include "Value.h"
 #include "PlayerbotAIConfig.h"
@@ -24,3 +27,5 @@ class NearestUnitsValue : public ObjectGuidListCalculatedValue
         float range;
         bool ignoreLos;
 };
+
+#endif

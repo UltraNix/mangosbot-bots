@@ -2,6 +2,9 @@
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
+#ifndef _PLAYERBOT_DRUIDSHAPESHIFTACTIONS_H
+#define _PLAYERBOT_DRUIDSHAPESHIFTACTIONS_H
+
 #include "GenericSpellActions.h"
 
 class Event;
@@ -12,7 +15,7 @@ class CastBearFormAction : public CastBuffSpellAction
 	public:
 		CastBearFormAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "bear form") { }
 
-        bool isPossible() const override;
+        bool isPossible() override;
         bool isUseful() override;
 };
 
@@ -45,13 +48,13 @@ class CastMoonkinFormAction : public CastBuffSpellAction
 class CastAquaticFormAction : public CastBuffSpellAction
 {
     public:
-        CastAquaticFormAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "aquatic form") {}
+        CastAquaticFormAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "aquatic form") { }
 };
 
 class CastTravelFormAction : public CastBuffSpellAction
 {
     public:
-        CastTravelFormAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "travel form") {}
+        CastTravelFormAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "travel form") { }
 
         bool isUseful() override;
 };
@@ -62,6 +65,8 @@ class CastCasterFormAction : public CastBuffSpellAction
 		CastCasterFormAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "caster form") { }
 
         bool isUseful() override;
-        bool isPossible() const override { return true; }
+        bool isPossible() override { return true; }
 		bool Execute(Event event) override;
 };
+
+#endif

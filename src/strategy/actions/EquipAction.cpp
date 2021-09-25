@@ -53,7 +53,7 @@ void EquipAction::EquipItem(FindItemVisitor* visitor)
     IterateItems(visitor);
     std::vector<Item*> items = visitor->GetResult();
 	if (!items.empty())
-        EquipItem(**items.begin());
+        EquipItem(*items.begin());
 }
 
 void EquipAction::EquipItem(Item* item)
@@ -69,7 +69,7 @@ void EquipAction::EquipItem(Item* item)
     else
     {
         bool equipedBag = false;
-        if (item->GetProto()->Class == ITEM_CLASS_CONTAINER)
+        if (item->GetTemplate()->Class == ITEM_CLASS_CONTAINER)
         {
             Bag* pBag = (Bag*)&item;
             uint8 newBagSlot = GetSmallestBagSlot();

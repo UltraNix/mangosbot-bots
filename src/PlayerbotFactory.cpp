@@ -5,10 +5,11 @@
 #include "PlayerbotFactory.h"
 #include "AccountMgr.h"
 #include "AiFactory.h"
-#include "ArenaTeam.h"
+#include "ArenaTeamMgr.h"
 #include "GuildMgr.h"
 #include "MapManager.h"
 #include "Playerbot.h"
+#include "PerformanceMonitor.h"
 #include "PlayerbotDbStore.h"
 #include "RandomItemMgr.h"
 #include "RandomPlayerbotFactory.h"
@@ -32,7 +33,8 @@ uint32 PlayerbotFactory::tradeSkills[] =
     SKILL_BLACKSMITHING,
     SKILL_COOKING,
     SKILL_FIRST_AID,
-    SKILL_FISHING
+    SKILL_FISHING,
+    SKILL_JEWELCRAFTING
 };
 
 std::list<uint32> PlayerbotFactory::classQuestIds;
@@ -130,7 +132,7 @@ void PlayerbotFactory::Randomize(bool incremental)
     ClearSpells();
     ClearInventory();
     CancelAuras();
-    bot->SaveToDB();
+    bot->SaveToDB(false, false);
     if (pmo)
         pmo->finish();
 
@@ -138,7 +140,6 @@ void PlayerbotFactory::Randomize(bool incremental)
     pmo = sPerformanceMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Immersive");
     LOG_INFO("playerbots", "Initializing immersive...");
     InitImmersive();
-    InitStats();
     if (pmo)
         pmo->finish();
     */
@@ -163,7 +164,7 @@ void PlayerbotFactory::Randomize(bool incremental)
         ClearInventory();
         bot->SetUInt32Value(PLAYER_XP, 0);
         CancelAuras();
-        bot->SaveToDB();
+        bot->SaveToDB(false, false);
         if (pmo)
             pmo->finish();
     }
@@ -207,7 +208,7 @@ void PlayerbotFactory::Randomize(bool incremental)
     pmo = sPerformanceMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Skills2");
     LOG_INFO("playerbots", "Initializing skills (step 2)...");
     UpdateTradeSkills();
-    bot->SaveToDB();
+    bot->SaveToDB(false, false);
     if (pmo)
         pmo->finish();
 
@@ -229,7 +230,7 @@ void PlayerbotFactory::Randomize(bool incremental)
     pmo = sPerformanceMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Bags");
     LOG_INFO("playerbots", "Initializing bags...");
     InitBags();
-    bot->SaveToDB();
+    bot->SaveToDB(false, false);
     if (pmo)
         pmo->finish();
 
@@ -251,7 +252,7 @@ void PlayerbotFactory::Randomize(bool incremental)
     if (pmo)
         pmo->finish();
 
-    pmo = sPerformanceMonitor.start(PERF_MON_RNDBOT, "PlayerbotFactory_Reagents");
+    pmo = sPerformanceMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Reagents");
     LOG_INFO("playerbots", "Initializing reagents...");
     InitReagents();
     if (pmo)
@@ -286,7 +287,7 @@ void PlayerbotFactory::Randomize(bool incremental)
 
     pmo = sPerformanceMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Guilds");
     LOG_INFO("playerbots", "Initializing guilds...");
-    bot->SaveToDB(); //thesawolf - save save save (hopefully avoids dupes)
+    bot->SaveToDB(false, false); //thesawolf - save save save (hopefully avoids dupes)
     InitGuild();
     if (pmo)
         pmo->finish();
@@ -320,7 +321,7 @@ void PlayerbotFactory::Randomize(bool incremental)
     {
         bot->SetMoney(10000 * sqrt(urand(1, level * 5)));
     }
-    bot->SaveToDB();
+    bot->SaveToDB(false, false);
     LOG_INFO("playerbots", "Done.");
     if (pmo)
         pmo->finish();
@@ -333,7 +334,6 @@ void PlayerbotFactory::Refresh()
     InitFood();
     InitPotions();
     InitReagents();
-    InitStats();
     //bot->SaveToDB();
 }
 
@@ -503,7 +503,7 @@ void PlayerbotFactory::InitPet()
 			if (!co)
 				continue;
 
-            if (!co->IsTameable())
+            if (!co->IsTameable(bot->CanTameExoticPets()))
                 continue;
 
             if (co->minlevel > bot->getLevel())
@@ -543,15 +543,11 @@ void PlayerbotFactory::InitPet()
             pet->InitStatsForLevel(bot->getLevel());
             pet->SetPower(POWER_HAPPINESS, HAPPINESS_LEVEL_SIZE * 2);
             pet->GetCharmInfo()->SetPetNumber(sObjectMgr->GeneratePetNumber(), true);
-            pet->AIM_Initialize();
             pet->GetMap()->AddToMap(pet);
-            pet->AIM_Initialize();
             pet->InitPetCreateSpells();
             pet->LearnPetPassives();
             pet->CastPetAuras(true);
             pet->UpdateAllStats();
-            bot->SetPet(pet);
-            bot->SetPetGuid(pet->GetGUID());
 
             LOG_DEBUG("playerbots",   "Bot %s: assign pet %d (%d level)", bot->GetName().c_str(), co->Entry, bot->getLevel());
             pet->SavePetToDB(PET_SAVE_AS_CURRENT, false);
@@ -957,8 +953,8 @@ void PlayerbotFactory::InitEquipment(bool incremental)
             std::vector<uint32> ids = sRandomItemMgr->Query(level, bot->getClass(), slot, quality);
             if (!ids.empty())
             {
+                Acore::Containers::RandomShuffle(ids);
                 std::random_device rd;
-                std::shuffle(ids.begin(), ids.end(), std::default_random_engine{ rd() });
             }
 
             for (uint32 index = 0; index < ids.size(); ++index)
@@ -1271,6 +1267,7 @@ void PlayerbotFactory::InitTradeSkills()
                 firstSkills.push_back(SKILL_MINING);
                 secondSkills.push_back(SKILL_BLACKSMITHING);
                 secondSkills.push_back(SKILL_ENGINEERING);
+                secondSkills.push_back(SKILL_JEWELCRAFTING);
                 break;
             case CLASS_SHAMAN:
             case CLASS_DRUID:
@@ -1334,16 +1331,18 @@ void PlayerbotFactory::InitSkills()
     uint32 maxValue = level * 5;
     SetRandomSkill(SKILL_DEFENSE);
 
+    uint16 step = bot->GetSkillValue(SKILL_RIDING) ? bot->GetSkillStep(SKILL_RIDING) : 1;
+
     if (bot->getLevel() >= 70)
-        bot->SetSkill(SKILL_RIDING, 300, 300);
+        bot->SetSkill(SKILL_RIDING, step, 300, 300);
     else if (bot->getLevel() >= 60)
-        bot->SetSkill(SKILL_RIDING, 225, 225);
+        bot->SetSkill(SKILL_RIDING, step, 225, 225);
     else if (bot->getLevel() >= 40)
-        bot->SetSkill(SKILL_RIDING, 150, 150);
+        bot->SetSkill(SKILL_RIDING, step, 150, 150);
     else if (bot->getLevel() >= 20)
-        bot->SetSkill(SKILL_RIDING, 75, 75);
+        bot->SetSkill(SKILL_RIDING, step, 75, 75);
     else
-        bot->SetSkill(SKILL_RIDING, 0, 0);
+        bot->SetSkill(SKILL_RIDING, 0, 0, 0);
 
     uint32 skillLevel = bot->getLevel() < 40 ? 0 : 1;
 
@@ -1453,11 +1452,11 @@ void PlayerbotFactory::InitSkills()
     {
         case CLASS_WARRIOR:
         case CLASS_PALADIN:
-            bot->SetSkill(SKILL_PLATE_MAIL, skillLevel, skillLevel);
+            bot->SetSkill(SKILL_PLATE_MAIL, 1, skillLevel, skillLevel);
             break;
         case CLASS_SHAMAN:
         case CLASS_HUNTER:
-            bot->SetSkill(SKILL_MAIL, skillLevel, skillLevel);
+            bot->SetSkill(SKILL_MAIL, 1, skillLevel, skillLevel);
             break;
         default:
             break;
@@ -1477,13 +1476,17 @@ void PlayerbotFactory::SetRandomSkill(uint16 id)
     uint32 value = urand(maxValue - level, maxValue);
     uint32 curValue = bot->GetSkillValue(id);
 
+    uint16 step = bot->GetSkillValue(id) ? bot->GetSkillStep(id) : 1;
+
     if (!bot->HasSkill(id) || value > curValue)
-        bot->SetSkill(id, value, maxValue);
+        bot->SetSkill(id, step, value, maxValue);
 }
 
 void PlayerbotFactory::InitAvailableSpells()
 {
-    bot->learnDefaultSpells();
+    bot->LearnDefaultSkills();
+    bot->LearnCustomSpells();
+    bot->learnQuestRewardedSpells();
 
     CreatureTemplateContainer const* creatureTemplates = sObjectMgr->GetCreatureTemplates();
     for (auto const& itr : *creatureTemplates)
@@ -1550,18 +1553,17 @@ void PlayerbotFactory::InitAvailableSpells()
             }
 
             if (!learned)
-                bot->learnSpell(tSpell->spell, false);
+                bot->learnSpell(tSpell->spell);
 		}
     }
 }
-
 
 void PlayerbotFactory::InitSpecialSpells()
 {
     for (std::vector<uint32>::iterator i = sPlayerbotAIConfig->randomBotSpellIds.begin(); i != sPlayerbotAIConfig->randomBotSpellIds.end(); ++i)
     {
         uint32 spellId = *i;
-        bot->learnSpell(spellId, false);
+        bot->learnSpell(spellId);
     }
 }
 
@@ -1607,8 +1609,13 @@ void PlayerbotFactory::InitTalents(uint32 specNo)
                 if (!spellId)
                     continue;
 
-                bot->learnSpell(spellId, false);
-                bot->UpdateFreeTalentPoints(false);
+                bot->learnSpell(spellId);
+
+                if (uint32 talentCost = GetTalentSpellCost(spellId))
+                {
+                    uint32 free_points = freePoints - talentCost;
+                    bot->SetFreeTalentPoints(free_points > 0 ? free_points : 0);
+                }
             }
             spells.erase(spells.begin() + index);
         }
@@ -1962,7 +1969,7 @@ void PlayerbotFactory::InitReagents()
         ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemID);
         if (!proto)
         {
-            LOG_ERROR("playerbots", "No reagent (ItemId %d) found for bot %d (Class:%d)", i, bot->GetGUIDLow(), bot->getClass());
+            LOG_ERROR("playerbots", "No reagent (ItemId %d) found for bot %s (Class:%d)", i, bot->GetGUID().ToString().c_str(), bot->getClass());
             continue;
         }
 
@@ -1978,7 +1985,7 @@ void PlayerbotFactory::InitReagents()
         if (newItem)
             newItem->AddToUpdateQueueOf(bot);
 
-        LOG_INFO("playerbots", "Bot %d got reagent %s x%d", bot->GetGUIDLow(), proto->Name1.c_str(), randCount);
+        LOG_INFO("playerbots", "Bot %s got reagent %s x%d", bot->GetGUID().ToString().c_str(), proto->Name1.c_str(), randCount);
     }*/
 
     for (PlayerSpellMap::iterator itr = bot->GetSpellMap().begin(); itr != bot->GetSpellMap().end(); ++itr)
@@ -2001,7 +2008,7 @@ void PlayerbotFactory::InitReagents()
                 ItemTemplate const* proto = sObjectMgr->GetItemTemplate(reagent);
                 if (!proto)
                 {
-                    LOG_ERROR("playerbots", "No reagent (ItemId %d) found for bot %d (Class:%d)", reagent, bot->GetGUIDLow(), bot->getClass());
+                    LOG_ERROR("playerbots", "No reagent (ItemId %d) found for bot %s (Class:%d)", reagent, bot->GetGUID().ToString().c_str(), bot->getClass());
                     continue;
                 }
 
@@ -2017,7 +2024,7 @@ void PlayerbotFactory::InitReagents()
                 if (newItem)
                     newItem->AddToUpdateQueueOf(bot);
 
-                LOG_INFO("playerbots", "Bot %d got reagent %s x%d", bot->GetGUIDLow(), proto->Name1.c_str(), randCount);
+                LOG_INFO("playerbots", "Bot %s got reagent %s x%d", bot->GetGUID().ToString().c_str(), proto->Name1.c_str(), randCount);
             }
         }
 
@@ -2025,10 +2032,10 @@ void PlayerbotFactory::InitReagents()
         {
             if (totem && !bot->HasItemCount(totem, 1))
             {
-                ItemPrototype const* proto = sObjectMgr.GetItemPrototype(totem);
+                ItemTemplate const* proto = sObjectMgr->GetItemTemplate(totem);
                 if (!proto)
                 {
-                    LOG_ERROR("playerbots", "No totem (ItemId %d) found for bot %d (Class:%d)", totem, bot->GetGUIDLow(), bot->getClass());
+                    LOG_ERROR("playerbots", "No totem (ItemId %d) found for bot %s (Class:%d)", totem, bot->GetGUID().ToString().c_str(), bot->getClass());
                     continue;
                 }
 
@@ -2036,7 +2043,7 @@ void PlayerbotFactory::InitReagents()
                 if (newItem)
                     newItem->AddToUpdateQueueOf(bot);
 
-                LOG_INFO("playerbots", "Bot %d got totem %s x%d", bot->GetGUIDLow(), proto->Name1.c_str(), 1);
+                LOG_INFO("playerbots", "Bot %s got totem %s x%d", bot->GetGUID().ToString().c_str(), proto->Name1.c_str(), 1);
             }
         }
     }
@@ -2111,7 +2118,7 @@ void PlayerbotFactory::InitInventoryTrade()
     {
         case ITEM_QUALITY_NORMAL:
             count = proto->GetMaxStackSize();
-            stacks = urand(1, 3) / auctionbot.GetRarityPriceMultiplier(proto);
+            stacks = urand(1, 3);
             break;
         case ITEM_QUALITY_UNCOMMON:
             stacks = 1;
@@ -2171,7 +2178,7 @@ void PlayerbotFactory::InitInventoryEquip()
 
 void PlayerbotFactory::InitGuild()
 {
-    bot->SaveToDB();
+    bot->SaveToDB(false, false);
 
     // add guild tabard
     if (bot->GetGuildId() && !bot->HasItemCount(5976, 1))
@@ -2209,7 +2216,7 @@ void PlayerbotFactory::InitGuild()
     if (bot->GetGuildId() && bot->getLevel() > 9 && urand(0, 4) && !bot->HasItemCount(5976, 1))
         StoreItem(5976, 1);
 
-    bot->SaveToDB();
+    bot->SaveToDB(false, false);
 }
 
 void PlayerbotFactory::InitImmersive()
@@ -2303,12 +2310,6 @@ void PlayerbotFactory::InitImmersive()
     }
 }
 
-void PlayerbotFactory::InitStats()
-{
-    bot->InitStatsForLevel(true);
-    bot->UpdateAllStats();
-}
-
 void PlayerbotFactory::InitArenaTeam()
 {
     if (!sPlayerbotAIConfig->IsInRandomAccountList(bot->GetSession()->GetAccountId()))
@@ -2329,7 +2330,7 @@ void PlayerbotFactory::InitArenaTeam()
 
     int index = urand(0, arenateams.size() - 1);
     uint32 arenateamID = arenateams[index];
-    ArenaTeam* arenateam = sObjectMgr.GetArenaTeamById(arenateamID);
+    ArenaTeam* arenateam = sArenaTeamMgr->GetArenaTeamById(arenateamID);
     if (!arenateam)
     {
         LOG_ERROR("playerbots", "Invalid arena team %u", arenateamID);
@@ -2339,7 +2340,7 @@ void PlayerbotFactory::InitArenaTeam()
     if (arenateam->GetMembersSize() < ((uint32)arenateam->GetType() * 2) && bot->getLevel() >= 70)
     {
         ObjectGuid capt = arenateam->GetCaptain();
-        Player* botcaptain = sObjectMgr.GetPlayer(capt);
+        Player* botcaptain = sObjectMgr->GetPlayer(capt);
 
         if (botcaptain && botcaptain->GetTeamId() == bot->GetTeamId()) //need?
         {

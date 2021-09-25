@@ -2,6 +2,9 @@
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
+#ifndef _PLAYERBOT_WORLDPACKETACTIONCONTEXT_H
+#define _PLAYERBOT_WORLDPACKETACTIONCONTEXT_H
+
 #include "AcceptBattlegroundInvitationAction.h"
 #include "AcceptDuelAction.h"
 #include "AcceptInvitationAction.h"
@@ -131,3 +134,5 @@ class WorldPacketActionContext : public NamedObjectContext<Action>
         static Action* see_spell(PlayerbotAI* botAI) { return new SeeSpellAction(botAI); }
         static Action* arena_team_accept(PlayerbotAI* botAI) { return new ArenaTeamAcceptAction(botAI); }
 };
+
+#endif

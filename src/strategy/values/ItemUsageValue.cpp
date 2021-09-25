@@ -292,33 +292,34 @@ bool ItemUsageValue::IsItemUsefulForSkill(ItemTemplate const*  proto)
         case ITEM_CLASS_TRADE_GOODS:
         case ITEM_CLASS_MISC:
         case ITEM_CLASS_REAGENT:
+        case ITEM_CLASS_GEM:
         {
-            if (botAI->HasSkill(SKILL_TAILORING) && auctionbot.IsUsedBySkill(proto, SKILL_TAILORING))
+            if (botAI->HasSkill(SKILL_TAILORING) && RandomItemMgr::IsUsedBySkill(proto, SKILL_TAILORING))
                 return true;
-            if (botAI->HasSkill(SKILL_LEATHERWORKING) && auctionbot.IsUsedBySkill(proto, SKILL_LEATHERWORKING))
+            if (botAI->HasSkill(SKILL_LEATHERWORKING) && RandomItemMgr::IsUsedBySkill(proto, SKILL_LEATHERWORKING))
                 return true;
-            if (botAI->HasSkill(SKILL_ENGINEERING) && auctionbot.IsUsedBySkill(proto, SKILL_ENGINEERING))
+            if (botAI->HasSkill(SKILL_ENGINEERING) && RandomItemMgr::IsUsedBySkill(proto, SKILL_ENGINEERING))
                 return true;
-            if (botAI->HasSkill(SKILL_BLACKSMITHING) && auctionbot.IsUsedBySkill(proto, SKILL_BLACKSMITHING))
+            if (botAI->HasSkill(SKILL_BLACKSMITHING) && RandomItemMgr::IsUsedBySkill(proto, SKILL_BLACKSMITHING))
                 return true;
-            if (botAI->HasSkill(SKILL_ALCHEMY) && auctionbot.IsUsedBySkill(proto, SKILL_ALCHEMY))
+            if (botAI->HasSkill(SKILL_ALCHEMY) && RandomItemMgr::IsUsedBySkill(proto, SKILL_ALCHEMY))
                 return true;
-            if (botAI->HasSkill(SKILL_ENCHANTING) && auctionbot.IsUsedBySkill(proto, SKILL_ENCHANTING))
+            if (botAI->HasSkill(SKILL_ENCHANTING) && RandomItemMgr::IsUsedBySkill(proto, SKILL_ENCHANTING))
                 return true;
-            if (botAI->HasSkill(SKILL_FISHING) && auctionbot.IsUsedBySkill(proto, SKILL_FISHING))
+            if (botAI->HasSkill(SKILL_FISHING) && RandomItemMgr::IsUsedBySkill(proto, SKILL_FISHING))
                 return true;
-            if (botAI->HasSkill(SKILL_FIRST_AID) && auctionbot.IsUsedBySkill(proto, SKILL_FIRST_AID))
+            if (botAI->HasSkill(SKILL_FIRST_AID) && RandomItemMgr::IsUsedBySkill(proto, SKILL_FIRST_AID))
                 return true;
-            if (botAI->HasSkill(SKILL_COOKING) && auctionbot.IsUsedBySkill(proto, SKILL_COOKING))
+            if (botAI->HasSkill(SKILL_COOKING) && RandomItemMgr::IsUsedBySkill(proto, SKILL_COOKING))
                 return true;
-            if (botAI->HasSkill(SKILL_JEWELCRAFTING) && auctionbot.IsUsedBySkill(proto, SKILL_JEWELCRAFTING))
+            if (botAI->HasSkill(SKILL_JEWELCRAFTING) && RandomItemMgr::IsUsedBySkill(proto, SKILL_JEWELCRAFTING))
                 return true;
-            if (botAI->HasSkill(SKILL_MINING) && (auctionbot.IsUsedBySkill(proto, SKILL_MINING) || auctionbot.IsUsedBySkill(proto, SKILL_BLACKSMITHING) ||
-                auctionbot.IsUsedBySkill(proto, SKILL_JEWELCRAFTING) || auctionbot.IsUsedBySkill(proto, SKILL_ENGINEERING)))
+            if (botAI->HasSkill(SKILL_MINING) && (RandomItemMgr::IsUsedBySkill(proto, SKILL_MINING) || RandomItemMgr::IsUsedBySkill(proto, SKILL_BLACKSMITHING) ||
+                RandomItemMgr::IsUsedBySkill(proto, SKILL_JEWELCRAFTING) || RandomItemMgr::IsUsedBySkill(proto, SKILL_ENGINEERING)))
                 return true;
-            if (botAI->HasSkill(SKILL_SKINNING) && (auctionbot.IsUsedBySkill(proto, SKILL_SKINNING) || auctionbot.IsUsedBySkill(proto, SKILL_LEATHERWORKING)))
+            if (botAI->HasSkill(SKILL_SKINNING) && (RandomItemMgr::IsUsedBySkill(proto, SKILL_SKINNING) || RandomItemMgr::IsUsedBySkill(proto, SKILL_LEATHERWORKING)))
                 return true;
-            if (botAI->HasSkill(SKILL_HERBALISM) && (auctionbot.IsUsedBySkill(proto, SKILL_HERBALISM) || auctionbot.IsUsedBySkill(proto, SKILL_ALCHEMY)))
+            if (botAI->HasSkill(SKILL_HERBALISM) && (RandomItemMgr::IsUsedBySkill(proto, SKILL_HERBALISM) || RandomItemMgr::IsUsedBySkill(proto, SKILL_ALCHEMY)))
                 return true;
 
             return false;

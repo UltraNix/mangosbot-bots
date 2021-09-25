@@ -36,8 +36,8 @@ bool BankAction::Execute(std::string const& text, Unit* bank)
     bool result = false;
     if (text[0] == '-')
     {
-        std::vector<Item*> found = parseItems(text.substr(1), ITERATE_ITEMS_IN_BANK);
-        for (std::vector<Item*>::iterator i = found.begin(); i != found.end(); i++)
+        std::list<Item*> found = parseItems(text.substr(1), ITERATE_ITEMS_IN_BANK);
+        for (std::list<Item*>::iterator i = found.begin(); i != found.end(); i++)
         {
             Item* item = *i;
             result &= Withdraw(item->GetTemplate()->ItemId);
@@ -45,11 +45,11 @@ bool BankAction::Execute(std::string const& text, Unit* bank)
     }
     else
     {
-        std::vector<Item*> found = parseItems(text, ITERATE_ITEMS_IN_BAGS);
+        std::list<Item*> found = parseItems(text, ITERATE_ITEMS_IN_BAGS);
         if (found.empty())
             return false;
 
-        for (std::vector<Item*>::iterator i = found.begin(); i != found.end(); i++)
+        for (std::list<Item*>::iterator i = found.begin(); i != found.end(); i++)
         {
             Item* item = *i;
             if (!item)
@@ -109,7 +109,7 @@ void BankAction::ListItems()
 {
     botAI->TellMaster("=== Bank ===");
 
-    std::map<uint32, int> items;
+    std::map<uint32, uint32> items;
     std::map<uint32, bool> soulbound;
     for (uint32 i = BANK_SLOT_ITEM_START; i < BANK_SLOT_ITEM_END; ++i)
         if (Item* pItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, i))

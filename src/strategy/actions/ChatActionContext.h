@@ -2,6 +2,9 @@
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
+#ifndef _PLAYERBOT_CHATACTIONCONTEXTACTION_H
+#define _PLAYERBOT_CHATACTIONCONTEXTACTION_H
+
 #include "AddLootAction.h"
 #include "AttackAction.h"
 #include "BankAction.h"
@@ -150,81 +153,83 @@ class ChatActionContext : public NamedObjectContext<Action>
         }
 
     private:
-        static Action* range() { return new RangeAction(); }
-        static Action* flag() { return new FlagAction(); }
-        static Action* craft() { return new SetCraftAction(); }
-        static Action* hire() { return new HireAction(); }
-        static Action* wts() { return new WtsAction(); }
-        static Action* cs() { return new CustomStrategyEditAction(); }
-        static Action* debug() { return new DebugAction(); }
-        static Action* mail() { return new MailAction(); }
-        static Action* go() { return new GoAction(); }
-        static Action* sendmail() { return new SendMailAction(); }
-        static Action* formation() { return new SetFormationAction(); }
-        static Action* stance() { return new SetStanceAction(); }
-        static Action* tell_attackers() { return new TellAttackersAction(); }
-        static Action* max_dps_chat_shortcut() { return new MaxDpsChatShortcutAction(); }
-        static Action* save_mana() { return new SaveManaAction(); }
-        static Action* who() { return new WhoAction(); }
-        static Action* summon() { return new SummonAction(); }
-        static Action* tell_target() { return new TellTargetAction(); }
-        static Action* position() { return new PositionAction(); }
-        static Action* spirit_healer() { return new SpiritHealerAction(); }
-        static Action* rti() { return new RtiAction(); }
-        static Action* invite() { return new InviteToGroupAction(); }
-        static Action* spell() { return new TellSpellAction(); }
-        static Action* cast_custom_spell() { return new CastCustomSpellAction(); }
+        static Action* range(PlayerbotAI* botAI) { return new RangeAction(botAI); }
+        static Action* flag(PlayerbotAI* botAI) { return new FlagAction(botAI); }
+        static Action* craft(PlayerbotAI* botAI) { return new SetCraftAction(botAI); }
+        static Action* hire(PlayerbotAI* botAI) { return new HireAction(botAI); }
+        static Action* wts(PlayerbotAI* botAI) { return new WtsAction(botAI); }
+        static Action* cs(PlayerbotAI* botAI) { return new CustomStrategyEditAction(botAI); }
+        static Action* debug(PlayerbotAI* botAI) { return new DebugAction(botAI); }
+        static Action* mail(PlayerbotAI* botAI) { return new MailAction(botAI); }
+        static Action* go(PlayerbotAI* botAI) { return new GoAction(botAI); }
+        static Action* sendmail(PlayerbotAI* botAI) { return new SendMailAction(botAI); }
+        static Action* formation(PlayerbotAI* botAI) { return new SetFormationAction(botAI); }
+        static Action* stance(PlayerbotAI* botAI) { return new SetStanceAction(botAI); }
+        static Action* tell_attackers(PlayerbotAI* botAI) { return new TellAttackersAction(botAI); }
+        static Action* max_dps_chat_shortcut(PlayerbotAI* botAI) { return new MaxDpsChatShortcutAction(botAI); }
+        static Action* save_mana(PlayerbotAI* botAI) { return new SaveManaAction(botAI); }
+        static Action* who(PlayerbotAI* botAI) { return new WhoAction(botAI); }
+        static Action* summon(PlayerbotAI* botAI) { return new SummonAction(botAI); }
+        static Action* tell_target(PlayerbotAI* botAI) { return new TellTargetAction(botAI); }
+        static Action* position(PlayerbotAI* botAI) { return new PositionAction(botAI); }
+        static Action* spirit_healer(PlayerbotAI* botAI) { return new SpiritHealerAction(botAI); }
+        static Action* rti(PlayerbotAI* botAI) { return new RtiAction(botAI); }
+        static Action* invite(PlayerbotAI* botAI) { return new InviteToGroupAction(botAI); }
+        static Action* spell(PlayerbotAI* botAI) { return new TellSpellAction(botAI); }
+        static Action* cast_custom_spell(PlayerbotAI* botAI) { return new CastCustomSpellAction(botAI); }
         static Action* cast_custom_nc_spell(PlayerbotAI* botAI) { return new CastCustomNcSpellAction(botAI); }
-        static Action* tank_attack_chat_shortcut() { return new TankAttackChatShortcutAction(); }
-        static Action* grind_chat_shortcut() { return new GrindChatShortcutAction(); }
-        static Action* flee_chat_shortcut() { return new FleeChatShortcutAction(); }
-        static Action* runaway_chat_shortcut() { return new GoawayChatShortcutAction(); }
-        static Action* stay_chat_shortcut() { return new StayChatShortcutAction(); }
-        static Action* follow_chat_shortcut() { return new FollowChatShortcutAction(); }
-        static Action* gb() { return new GuildBankAction(); }
-        static Action* bank() { return new BankAction(); }
-        static Action* help() { return new HelpAction(); }
-        static Action* buff() { return new BuffAction(); }
-        static Action* destroy() { return new DestroyItemAction(); }
-        static Action* home() { return new SetHomeAction(); }
-        static Action* chat() { return new ChangeChatAction(); }
-        static Action* attack_my_target() { return new AttackMyTargetAction(); }
-        static Action* trainer() { return new TrainerAction(); }
-        static Action* co() { return new ChangeCombatStrategyAction(); }
-        static Action* nc() { return new ChangeNonCombatStrategyAction(); }
-        static Action* dead() { return new ChangeDeadStrategyAction(); }
-        static Action* spells() { return new ListSpellsAction(); }
-        static Action* talents() { return new ChangeTalentsAction(); }
+        static Action* tank_attack_chat_shortcut(PlayerbotAI* botAI) { return new TankAttackChatShortcutAction(botAI); }
+        static Action* grind_chat_shortcut(PlayerbotAI* botAI) { return new GrindChatShortcutAction(botAI); }
+        static Action* flee_chat_shortcut(PlayerbotAI* botAI) { return new FleeChatShortcutAction(botAI); }
+        static Action* runaway_chat_shortcut(PlayerbotAI* botAI) { return new GoawayChatShortcutAction(botAI); }
+        static Action* stay_chat_shortcut(PlayerbotAI* botAI) { return new StayChatShortcutAction(botAI); }
+        static Action* follow_chat_shortcut(PlayerbotAI* botAI) { return new FollowChatShortcutAction(botAI); }
+        static Action* gb(PlayerbotAI* botAI) { return new GuildBankAction(botAI); }
+        static Action* bank(PlayerbotAI* botAI) { return new BankAction(botAI); }
+        static Action* help(PlayerbotAI* botAI) { return new HelpAction(botAI); }
+        static Action* buff(PlayerbotAI* botAI) { return new BuffAction(botAI); }
+        static Action* destroy(PlayerbotAI* botAI) { return new DestroyItemAction(botAI); }
+        static Action* home(PlayerbotAI* botAI) { return new SetHomeAction(botAI); }
+        static Action* chat(PlayerbotAI* botAI) { return new ChangeChatAction(botAI); }
+        static Action* attack_my_target(PlayerbotAI* botAI) { return new AttackMyTargetAction(botAI); }
+        static Action* trainer(PlayerbotAI* botAI) { return new TrainerAction(botAI); }
+        static Action* co(PlayerbotAI* botAI) { return new ChangeCombatStrategyAction(botAI); }
+        static Action* nc(PlayerbotAI* botAI) { return new ChangeNonCombatStrategyAction(botAI); }
+        static Action* dead(PlayerbotAI* botAI) { return new ChangeDeadStrategyAction(botAI); }
+        static Action* spells(PlayerbotAI* botAI) { return new ListSpellsAction(botAI); }
+        static Action* talents(PlayerbotAI* botAI) { return new ChangeTalentsAction(botAI); }
 
-        static Action* equip() { return new EquipAction(); }
+        static Action* equip(PlayerbotAI* botAI) { return new EquipAction(botAI); }
         static Action* equip_upgrades(PlayerbotAI* botAI) { return new EquipUpgradesAction(botAI); }
-        static Action* unequip() { return new UnequipAction(); }
-        static Action* sell() { return new SellAction(); }
-        static Action* buy() { return new BuyAction(); }
-        static Action* reward() { return new RewardAction(); }
-        static Action* trade() { return new TradeAction(); }
+        static Action* unequip(PlayerbotAI* botAI) { return new UnequipAction(botAI); }
+        static Action* sell(PlayerbotAI* botAI) { return new SellAction(botAI); }
+        static Action* buy(PlayerbotAI* botAI) { return new BuyAction(botAI); }
+        static Action* reward(PlayerbotAI* botAI) { return new RewardAction(botAI); }
+        static Action* trade(PlayerbotAI* botAI) { return new TradeAction(botAI); }
 
-        static Action* item_count() { return new TellItemCountAction(); }
-        static Action* use() { return new UseItemAction(); }
-        static Action* repair() { return new RepairAllAction(); }
-        static Action* taxi() { return new TaxiAction(); }
-        static Action* teleport() { return new TeleportAction(); }
-        static Action* release() { return new ReleaseSpiritAction(); }
+        static Action* item_count(PlayerbotAI* botAI) { return new TellItemCountAction(botAI); }
+        static Action* use(PlayerbotAI* botAI) { return new UseItemAction(botAI); }
+        static Action* repair(PlayerbotAI* botAI) { return new RepairAllAction(botAI); }
+        static Action* taxi(PlayerbotAI* botAI) { return new TaxiAction(botAI); }
+        static Action* teleport(PlayerbotAI* botAI) { return new TeleportAction(botAI); }
+        static Action* release(PlayerbotAI* botAI) { return new ReleaseSpiritAction(botAI); }
         static Action* repop(PlayerbotAI* botAI) { return new RepopAction(botAI); }
-        static Action* query_item_usage() { return new QueryItemUsageAction(); }
-        static Action* query_quest() { return new QueryQuestAction(); }
-        static Action* drop() { return new DropQuestAction(); }
+        static Action* query_item_usage(PlayerbotAI* botAI) { return new QueryItemUsageAction(botAI); }
+        static Action* query_quest(PlayerbotAI* botAI) { return new QueryQuestAction(botAI); }
+        static Action* drop(PlayerbotAI* botAI) { return new DropQuestAction(botAI); }
         static Action* clean_quest_log(PlayerbotAI* botAI) { return new CleanQuestLogAction(botAI); }
-        static Action* share() { return new ShareQuestAction(); }
-        static Action* stats() { return new StatsAction(); }
-        static Action* quests() { return new ListQuestsAction(); }
-        static Action* leave() { return new LeaveGroupAction(); }
-        static Action* reputation() { return new TellReputationAction(); }
-        static Action* log() { return new LogLevelAction(); }
-        static Action* los() { return new TellLosAction(); }
-        static Action* ll() { return new LootStrategyAction(); }
-        static Action* ss() { return new SkipSpellsListAction(); }
-        static Action* add_all_loot() { return new AddAllLootAction(); }
-        static Action* reset_ai() { return new ResetAiAction(); }
-        static Action* gossip_hello() { return new GossipHelloAction(); }
+        static Action* share(PlayerbotAI* botAI) { return new ShareQuestAction(botAI); }
+        static Action* stats(PlayerbotAI* botAI) { return new StatsAction(botAI); }
+        static Action* quests(PlayerbotAI* botAI) { return new ListQuestsAction(botAI); }
+        static Action* leave(PlayerbotAI* botAI) { return new LeaveGroupAction(botAI); }
+        static Action* reputation(PlayerbotAI* botAI) { return new TellReputationAction(botAI); }
+        static Action* log(PlayerbotAI* botAI) { return new LogLevelAction(botAI); }
+        static Action* los(PlayerbotAI* botAI) { return new TellLosAction(botAI); }
+        static Action* ll(PlayerbotAI* botAI) { return new LootStrategyAction(botAI); }
+        static Action* ss(PlayerbotAI* botAI) { return new SkipSpellsListAction(botAI); }
+        static Action* add_all_loot(PlayerbotAI* botAI) { return new AddAllLootAction(botAI); }
+        static Action* reset_ai(PlayerbotAI* botAI) { return new ResetAiAction(botAI); }
+        static Action* gossip_hello(PlayerbotAI* botAI) { return new GossipHelloAction(botAI); }
 };
+
+#endif

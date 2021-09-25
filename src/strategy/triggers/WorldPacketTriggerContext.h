@@ -2,6 +2,9 @@
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
+#ifndef _PLAYERBOT_WORLDPACKETTRIGGERCONTEXT_H
+#define _PLAYERBOT_WORLDPACKETTRIGGERCONTEXT_H
+
 #include "WorldPacketTrigger.h"
 #include "WithinAreaTrigger.h"
 #include "NamedObjectContext.h"
@@ -107,3 +110,5 @@ class WorldPacketTriggerContext : public NamedObjectContext<Trigger>
         static Trigger* receive_text_emote(PlayerbotAI* botAI) { return new WorldPacketTrigger(botAI, "receive text emote"); }
         static Trigger* arena_team_invite(PlayerbotAI* botAI) { return new WorldPacketTrigger(botAI, "arena team invite"); }
 };
+
+#endif

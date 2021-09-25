@@ -70,7 +70,7 @@ bool AddGatheringLootAction::AddLoot(ObjectGuid guid)
         std::list<Unit*> targets;
         Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, sPlayerbotAIConfig->lootDistance);
         Acore::UnitListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
-        wo->VisitNearbyObject(sPlayerbotAIConfig->spellDistance, searcher);
+        Cell::VisitAllObjects(bot, searcher, sPlayerbotAIConfig->lootDistance);
         if (!targets.empty())
         {
             std::ostringstream out;

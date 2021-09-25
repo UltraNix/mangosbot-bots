@@ -5,13 +5,15 @@
 #include "GuildTaskMgr.h"
 #include "ChatHelper.h"
 #include "GuildMgr.h"
+#include "Group.h"
 #include "Mail.h"
 #include "MapManager.h"
 #include "Playerbot.h"
+#include "PlayerbotFactory.h"
 #include "RandomItemMgr.h"
 #include "ServerFacade.h"
 
-char *strstri(char const* str1, char const* str2);
+char* strstri(char const* str1, char const* str2);
 
 enum GuildTaskType
 {
@@ -152,9 +154,12 @@ public:
 
     bool Apply(ItemTemplate const* proto) override
     {
-        for (uint32 skill = SKILL_NONE; skill < MAX_SKILL_TYPE; ++skill)
+        uint32* tradeSkills = PlayerbotFactory::tradeSkills;
+
+        for (uint32 i = 0; i < 13; ++i)
         {
-            if (player->HasSkill(skill) && auctionbot.IsUsedBySkill(proto, skill))
+            uint32 skillId = PlayerbotFactory::tradeSkills[i];
+            if (player->HasSkill(skillId) && RandomItemMgr::IsUsedBySkill(proto, skillId))
                 return true;
         }
 
@@ -285,17 +290,17 @@ std::string formatTime(uint32 secs)
     return out.str();
 }
 
-string formatDateTime(uint32 secs)
+std::string const& formatDateTime(uint32 secs)
 {
     time_t rawtime = time(nullptr) + secs;
     tm* timeinfo = localtime (&rawtime);
 
     char buffer[256];
     strftime(buffer, sizeof(buffer), "%b %d, %H:%M", timeinfo);
-    return string(buffer);
+    return std::string(buffer);
 }
 
-string GetHelloText(uint32 owner)
+std::string const& GetHelloText(uint32 owner)
 {
     std::ostringstream body;
     body << "Hello";
@@ -738,8 +743,8 @@ bool GuildTaskMgr::HandleConsoleCommand(ChatHandler* handler, char const* args)
         return true;
     }
 
-    bool reward = cmd.find("reward ") != string::npos;
-    bool advert = cmd.find("advert ") != string::npos;
+    bool reward = cmd.find("reward ") != std::string::npos;
+    bool advert = cmd.find("advert ") != std::string::npos;
     if (reward || advert)
     {
         std::string charName;
@@ -829,7 +834,7 @@ bool GuildTaskMgr::CheckItemTask(uint32 itemId, uint32 obtained, Player* ownerPl
             return false;
 
         uint32 money = GetTaskValue(owner, guildId, "payment");
-        SetTaskValue(owner, guildId, "payment", money + auctionbot.GetBuyPrice(proto) * obtained, rewardTime + 300);
+        SetTaskValue(owner, guildId, "payment", money + proto->BuyPrice * obtained, rewardTime + 300);
     }
 
     if (obtained >= count)
@@ -1124,8 +1129,6 @@ bool GuildTaskMgr::CheckTaskTransfer(std::string text, Player* ownerPlayer, Play
     if (text.empty())
         return false;
 
-    strToLower(text);
-
     LOG_DEBUG("playerbots", "%s / %s: checking guild task transfer", guild->GetName().c_str(), ownerPlayer->GetName().c_str());
 
     uint32 account = sObjectMgr->GetPlayerAccountIdByGUID(owner);
@@ -1136,13 +1139,17 @@ bool GuildTaskMgr::CheckTaskTransfer(std::string text, Player* ownerPlayer, Play
         {
             Field* fields = results->Fetch();
             uint32 newOwner = fields[0].GetUInt32();
-            string name = fields[1].GetString();
+            std::string name = fields[1].GetString();
             if (newOwner == bot->GetGUID().GetCounter())
                 continue;
 
-            strToLower(name);
+            std::wstring wnamepart;
+            if (!Utf8toWStr(name, wnamepart))
+                return false;
 
-            if (text.find(name) != string::npos)
+            wstrToLower(wnamepart);
+
+            if (Utf8FitTo(text, wnamepart))
             {
                 uint32 validIn;
                 uint32 activeTask = GetTaskValue(owner, guildId, "activeTask", &validIn);

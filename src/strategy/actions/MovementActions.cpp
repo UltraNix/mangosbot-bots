@@ -83,27 +83,27 @@ bool MovementAction::MoveToLOS(WorldObject* target, bool ranged)
     float y = target->GetPositionY();
     float z = target->GetPositionZ();
 
-    //Use standard pathfinder to find a route.
-    PathFinder path(bot);
-    path.calculate(x, y, z, false);
-    PathType type = path.getPathType();
+    //Use standard PathGenerator to find a route.
+    PathGenerator path(bot);
+    path.CalculatePath(x, y, z, false);
+    PathType type = path.GetPathType();
     if (type != PATHFIND_NORMAL && type != PATHFIND_INCOMPLETE)
         return false;
 
     if (!ranged)
-        return MoveTo((Unit*)target, target->GetObjectBoundingRadius());
+        return MoveTo((Unit*)target, target->GetCombatReach());
 
     float dist = FLT_MAX;
     PositionInfo dest;
 
-    if (!path.getPath().empty())
+    if (!path.GetPath().empty())
     {
-        for (auto& point : path.getPath())
+        for (auto& point : path.GetPath())
         {
             if (botAI->HasStrategy("debug", BOT_STATE_NON_COMBAT))
                 CreateWp(bot, point.x, point.y, point.z, 0.0, 15631);
 
-            float distPoint = target->GetDistance(point.x, point.y, point.z, DIST_CALC_NONE);
+            float distPoint = target->GetDistance(point.x, point.y, point.z);
             if (distPoint < dist && target->IsWithinLOS(point.x, point.y, point.z + bot->GetCollisionHeight()))
             {
                 dist = distPoint;
@@ -187,16 +187,16 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
 
         if (totalDistance > maxDist)
         {
-            if (!sTravelNodeMap.getNodes().empty())
+            if (!sTravelNodeMap->getNodes().empty())
             {
                 //[[Node pathfinding system]]
                 //We try to find nodes near the bot and near the end position that have a route between them.
                 //Then bot has to move towards/along the route.
-                sTravelNodeMap.m_nMapMtx.lock_shared();
+                sTravelNodeMap->m_nMapMtx.lock_shared();
 
                 //Find the route of nodes starting at a node closest to the start position and ending at a node closest to the endposition.
                 //Also returns longPath: The path from the start position to the first node in the route.
-                TravelNodeRoute route = sTravelNodeMap.getRoute(&startPosition, &endPosition, beginPath, bot);
+                TravelNodeRoute route = sTravelNodeMap->getRoute(&startPosition, &endPosition, beginPath, bot);
                 if (sPlayerbotAIConfig->hasLog("bot_pathfinding.csv"))
                 {
                     sPlayerbotAIConfig->log("bot_pathfinding.csv", route.print().str().c_str());
@@ -204,9 +204,9 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
 
                 if (route.isEmpty())
                 {
-                    sTravelNodeMap.m_nMapMtx.unlock_shared();
+                    sTravelNodeMap->m_nMapMtx.unlock_shared();
 
-                    //We have no path. Beyond 450yd the standard pathfinder will probably move the wrong way.
+                    //We have no path. Beyond 450yd the standard PathGenerator will probably move the wrong way.
                     if (sServerFacade->IsDistanceGreaterThan(totalDistance, maxDist * 3))
                     {
                         movePath.clear();
@@ -230,12 +230,12 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
                     {
                         sPlayerbotAIConfig->log("bot_pathfinding.csv", movePath.print().str().c_str());
                     }
-                    sTravelNodeMap.m_nMapMtx.unlock_shared();
+                    sTravelNodeMap->m_nMapMtx.unlock_shared();
                 }
             }
             else
             {
-                //Use standard pathfinder to find a route.
+                //Use standard PathGenerator to find a route.
                 movePosition = endPosition;
             }
         }
@@ -243,11 +243,11 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
 
     if (movePath.empty() && movePosition.distance(startPosition) > maxDist)
     {
-        //Use standard pathfinder to find a route.
-        PathFinder path(bot);
-        path.calculate(movePosition.getX(), movePosition.getY(), movePosition.getZ(), false);
-        PathType type = path.getPathType();
-        PointsArray& points = path.getPath();
+        //Use standard PathGenerator to find a route.
+        PathGenerator path(bot);
+        path.CalculatePath(movePosition.getX(), movePosition.getY(), movePosition.getZ(), false);
+        PathType type = path.GetPathType();
+        Movement::PointsArray const& points = path.GetPath();
         movePath.addPath(startPosition.fromPointsArray(points));
     }
 
@@ -279,9 +279,9 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
                 WorldPosition telePos;
                 if (entry)
                 {
-                    AreaTrigger const* at = sObjectMgr.GetAreaTrigger(entry);
+                    AreaTrigger const* at = sObjectMgr->GetAreaTrigger(entry);
                     if (at)
-                        telePos = WorldPosition(at->target_mapId, at->target_X, at->target_Y, at->target_Z, at->target_Orientation);
+                        telePos = WorldPosition(at->map, at->x, at->y, at->z, at->orientation);
                 }
                 else
                     telePos = movePosition;
@@ -381,11 +381,11 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
         else
             WaitForReach(startPosition.distance(movePosition));
 
-    bot->HandleEmoteState(0);
+    bot->HandleEmoteCommand(0);
     if (bot->IsSitState())
         bot->SetStandState(UNIT_STAND_STATE_STAND);
 
-    if (bot->IsNonMeleeSpellCasted(true))
+    if (bot->IsNonMeleeSpellCast(true))
     {
         bot->CastStop();
         botAI->InterruptSpell();
@@ -410,11 +410,14 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
     bool masterWalking = false;
     if (botAI->GetMaster())
     {
-        if (botAI->GetMaster()->m_movementInfo.HasMovementFlag(MOVEFLAG_WALK_MODE) && sServerFacade->GetDistance2d(bot, botAI->GetMaster()) < 20.0f)
+        if (botAI->GetMaster()->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_WALKING) && sServerFacade->GetDistance2d(bot, botAI->GetMaster()) < 20.0f)
             masterWalking = true;
     }
 
-    bot->GetMotionMaster()->MovePoin(movePosition.getMapId(), movePosition.getX(), movePosition.getY(), movePosition.getZ(), masterWalking ? FORCED_MOVEMENT_WALK : FORCED_MOVEMENT_RUN, generatePath);
+    if (masterWalking)
+        bot->SetWalk(true);
+
+    bot->GetMotionMaster()->MovePoint(movePosition.getMapId(), movePosition.getX(), movePosition.getY(), movePosition.getZ(), generatePath);
 
     AI_VALUE(LastMovement&, "last movement").setShort(movePosition);
 
@@ -524,7 +527,7 @@ bool MovementAction::IsMovingAllowed()
     if (bot->isFrozen() || bot->IsPolymorphed() || (bot->isDead() && !bot->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST)) || bot->IsBeingTeleported() ||
         bot->isInRoots() || bot->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION) || bot->HasAuraType(SPELL_AURA_MOD_CONFUSE) || bot->IsCharmed() ||
         bot->HasAuraType(SPELL_AURA_MOD_STUN) || bot->IsFlying() ||
-        bot->hasUnitState(UNIT_STAT_CAN_NOT_REACT_OR_LOST_CONTROL))
+        bot->HasUnitState(UNIT_STATE_LOST_CONTROL))
         return false;
 
     return bot->GetMotionMaster()->GetCurrentMovementGeneratorType() != FLIGHT_MOTION_TYPE;
@@ -599,7 +602,7 @@ bool MovementAction::Follow(Unit* target, float distance, float angle)
         if ((target->GetMap() && target->GetMap()->IsBattlegroundOrArena()) || (bot->GetMap() && bot->GetMap()->IsBattlegroundOrArena()))
             return false;
 
-        if (sServerFacade->UnitIsDead(bot) && sServerFacade->IsAlive(botAI->GetMaster()))
+        if (bot->isDead() && botAI->GetMaster()->IsAlive())
         {
             bot->ResurrectPlayer(1.0f, false);
             botAI->TellMasterNoFacing("I live, again!");
@@ -880,13 +883,13 @@ bool SetFacingTargetAction::isUseful()
 
 bool SetFacingTargetAction::isPossible()
 {
-    if (sServerFacade->IsFrozen(bot) || bot->IsPolymorphed() ||
-        (sServerFacade->UnitIsDead(bot) && !bot->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST)) ||
+    if (bot->isFrozen() || bot->IsPolymorphed() ||
+        (bot->isDead() && !bot->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST)) ||
         bot->IsBeingTeleported() ||
         bot->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION) ||
-        bot->HasAuraType(SPELL_AURA_MOD_CONFUSE) || sServerFacade->IsCharmed(bot) ||
+        bot->HasAuraType(SPELL_AURA_MOD_CONFUSE) || bot->IsCharmed() ||
         bot->HasAuraType(SPELL_AURA_MOD_STUN) || bot->IsFlying() ||
-        bot->hasUnitState(UNIT_STAT_CAN_NOT_REACT_OR_LOST_CONTROL))
+        bot->HasUnitState(UNIT_STATE_LOST_CONTROL))
         return false;
 
     return true;
@@ -914,7 +917,7 @@ bool SetBehindTargetAction::isUseful()
     return !AI_VALUE2(bool, "behind", "current target");
 }
 
-bool SetBehindTargetAction::isPossible() const
+bool SetBehindTargetAction::isPossible()
 {
     Unit* target = AI_VALUE(Unit*, "current target");
     return target && !(target->GetVictim() && target->GetVictim()->GetGUID() == bot->GetGUID());
@@ -949,6 +952,6 @@ bool MoveRandomAction::Execute(Event event)
 
 bool MoveRandomAction::isUseful()
 {
-    return !botAI->HasRealPlayerMaster() && botAI->GetAiObjectContext()->GetValue<list<ObjectGuid> >("nearest friendly players")->Get().size() > urand(25, 100);
+    return !botAI->HasRealPlayerMaster() && botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest friendly players")->Get().size() > urand(25, 100);
 }
 

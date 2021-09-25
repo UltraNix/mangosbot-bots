@@ -20,8 +20,8 @@ bool GreetAction::Execute(Event event)
     if (!player)
         return false;
 
-    if (!bot->IsInFront(player, sPlayerbotAIConfig->sightDistance, CAST_ANGLE_IN_FRONT))
-        bot->SetFacingTo(player);
+    if (!bot->HasInArc(CAST_ANGLE_IN_FRONT, player, sPlayerbotAIConfig->sightDistance))
+        bot->SetFacingToObject(player);
 
     ObjectGuid oldSel = bot->GetTarget();
     bot->SetTarget(guid);

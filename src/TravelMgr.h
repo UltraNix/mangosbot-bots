@@ -2,6 +2,9 @@
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
+#ifndef _PLAYERBOT_TRAVELMGR_H
+#define _PLAYERBOT_TRAVELMGR_H
+
 #include "AiObject.h"
 #include "CreatureData.h"
 #include "GameObject.h"
@@ -305,7 +308,7 @@ class WorldPosition
 class GuidPosition : public ObjectGuid
 {
     public:
-        GuidPosition() : ObjectGuid() {}
+        GuidPosition() : ObjectGuid::Empty { }
         GuidPosition(ObjectGuid guid) : ObjectGuid(guid)
         {
             point = WorldPosition(guid);
@@ -317,23 +320,13 @@ class GuidPosition : public ObjectGuid
             point = WorldPosition(T);
         }
 
-        GuidPosition(CreatureData const* dataPair) : ObjectGuid(HIGHGUID_UNIT, dataPair->second.id, dataPair->first)
-        {
-            point = WorldPosition(dataPair);
-        }
-
-        GuidPosition(GameObjectData const* dataPair) : ObjectGuid(HIGHGUID_GAMEOBJECT, dataPair->second.id, dataPair->first)
-        {
-            point = WorldPosition(dataPair);
-        }
-
         GuidPosition(GuidPosition const& guidp) : ObjectGuid(guidp)
         {
             point = guidp.point;
         }
 
-        CreatureData* getCreatureData();
-        CreatureInfo const* GetCreatureTemplate();
+        CreatureData const* getCreatureData();
+        CreatureTemplate const* GetCreatureTemplate();
 
         WorldPosition getPosition() { return point; }
 
@@ -524,7 +517,7 @@ class FindPointCreatureData
             entry = entry1;
         }
 
-        bool operator()(CreatureData const&  dataPair);
+        bool operator()(CreatureData const& data);
         std::vector<CreatureData const*> GetResult() const { return data; };
 
     private:
@@ -546,7 +539,7 @@ class FindPointGameObjectData
             entry = entry1;
         }
 
-        bool operator()(GameObjectData const& dataPair);
+        bool operator()(GameObjectData const& data);
         std::vector<GameObjectData const*> GetResult() const { return data; };
 
     private:
@@ -657,7 +650,7 @@ class RpgTravelDestination : public TravelDestination
         }
 
         bool isActive(Player* bot) override;
-        virtual CreatureTemplate const* getCreatureInfo();
+        virtual CreatureTemplate const* GetCreatureTemplate();
         std::string const& getName() override { return "RpgTravelDestination"; }
         uint32 getEntry() override { return 0; }
         std::string const& getTitle() override;
@@ -697,7 +690,7 @@ class GrindTravelDestination : public TravelDestination
         static uint32 moneyNeeded(Player* bot);
 
         bool isActive(Player* bot) override;
-        virtual CreatureTemplate const* getCreatureInfo();
+        virtual CreatureTemplate const* GetCreatureTemplate();
         std::string const& getName() override { return "GrindTravelDestination"; }
         uint32 getEntry() override { return entry; }
         std::string const& getTitle() override;
@@ -860,25 +853,6 @@ class TravelMgr
         void Clear();
         void LoadQuestTravelTable();
 
-        template <class D, class W, class URBG>
-        void weighted_shuffle(D first, D last, W first_weight, W last_weight, URBG&& g)
-        {
-            while (first != last && first_weight != last_weight)
-            {
-                std::discrete_distribution<int> dd(first_weight, last_weight);
-                auto i = dd(g);
-
-                if (i)
-                {
-                    swap(*first, *std::next(first, i));
-                    swap(*first_weight, *std::next(first_weight, i));
-                }
-
-                ++first;
-                ++first_weight;
-            }
-        }
-
         std::vector<WorldPosition*> getNextPoint(WorldPosition* center, std::vector<WorldPosition*> points, uint32 amount = 1);
         std::vector<WorldPosition> getNextPoint(WorldPosition center, std::vector<WorldPosition> points, uint32 amount = 1);
         QuestStatusData* getQuestStatus(Player* bot, uint32 questId);
@@ -894,6 +868,9 @@ class TravelMgr
         void addMapTransfer(WorldPosition start, WorldPosition end, float portalDistance = 0.1f, bool makeShortcuts = true);
         void loadMapTransfers();
         float mapTransDistance(WorldPosition start, WorldPosition end);
+
+        NullTravelDestination* nullTravelDestination = new NullTravelDestination();
+        WorldPosition* nullWorldPosition = new WorldPosition();
 
         void addBadVmap(uint32 mapId, uint8 x, uint8 y)
         {
@@ -932,3 +909,5 @@ class TravelMgr
 };
 
 #define sTravelMgr TravelMgr::instance()
+
+#endif

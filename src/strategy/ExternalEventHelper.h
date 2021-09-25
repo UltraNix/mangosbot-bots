@@ -2,6 +2,9 @@
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
+#ifndef _PLAYERBOT_EXTERNALEVENTHELPER_H
+#define _PLAYERBOT_EXTERNALEVENTHELPER_H
+
 #include "Common.h"
 
 class AiObjectContext;
@@ -18,3 +21,5 @@ class ExternalEventHelper
     private:
         AiObjectContext* aiObjectContext;
 };
+
+#endif

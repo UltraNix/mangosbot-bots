@@ -42,7 +42,7 @@ void PossibleRpgTargetsValue::FindUnits(std::list<Unit*> &targets)
 {
     Acore::AnyUnitInObjectRangeCheck u_check(bot, range);
     Acore::UnitListSearcher<Acore::AnyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
-    bot->VisitNearbyObject(range, searcher);
+    Cell::VisitAllObjects(bot, searcher, range);
 }
 
 bool PossibleRpgTargetsValue::AcceptUnit(Unit* unit)

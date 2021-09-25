@@ -12,11 +12,11 @@ bool ExternalEventHelper::ParseChatCommand(std::string const& command, Player* o
     if (HandleCommand(command, "", owner))
         return true;
 
-    size_t i = string::npos;
+    size_t i = std::string::npos;
     while (true)
     {
         size_t found = command.rfind(" ", i);
-        if (found == string::npos || !found)
+        if (found == std::string::npos || !found)
             break;
 
         std::string const& name = command.substr(0, found);
@@ -37,10 +37,10 @@ bool ExternalEventHelper::ParseChatCommand(std::string const& command, Player* o
     return true;
 }
 
-void ExternalEventHelperHandlePacket(std::map<uint16, std::string>& handlers, WorldPacket const& packet, Player* owner)
+void ExternalEventHelper::HandlePacket(std::map<uint16, std::string>& handlers, WorldPacket const& packet, Player* owner)
 {
     uint16 opcode = packet.GetOpcode();
-    string name = handlers[opcode];
+    std::string name = handlers[opcode];
     if (name.empty())
         return;
 
@@ -52,7 +52,7 @@ void ExternalEventHelperHandlePacket(std::map<uint16, std::string>& handlers, Wo
     trigger->ExternalEvent(p, owner);
 }
 
-bool ExternalEventHelperHandleCommand(std::string const& name, std::string const& param, Player* owner)
+bool ExternalEventHelper::HandleCommand(std::string const& name, std::string const& param, Player* owner)
 {
     Trigger* trigger = aiObjectContext->GetTrigger(name);
     if (!trigger)

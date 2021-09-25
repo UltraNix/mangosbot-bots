@@ -6,7 +6,7 @@
 #include "Playerbot.h"
 #include "ServerFacade.h"
 
-bool AdrenalineRushTrigger::IsPossible() const
+bool AdrenalineRushTrigger::isPossible()
 {
     return !botAI->HasAura("stealth", bot);
 }
@@ -53,12 +53,12 @@ bool StealthTrigger::IsActive()
     return target && sServerFacade->GetDistance2d(bot, target) < distance;
 }
 
-bool SapTrigger::IsPossible() const
+bool SapTrigger::isPossible()
 {
     return bot->getLevel() > 10 && bot->HasSpell(6770) && !bot->IsInCombat();
 }
 
-bool BuffTrigger::IsPossible() const
+bool BuffTrigger::isPossible()
 {
     return bot->HasSpell(2983);
 }

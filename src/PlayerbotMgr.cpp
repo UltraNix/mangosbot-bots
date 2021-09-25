@@ -39,7 +39,7 @@ void PlayerbotHolder::LogoutAllBots()
 
         Player* bot= itr->second;
         if (!bot->GetPlayerbotAI()->IsRealPlayer())
-            LogoutPlayerBot(bot->GetObjectGuid().GetRawValue());
+            LogoutPlayerBot(bot->GetGUID().GetRawValue());
     }
     */
 
@@ -67,7 +67,7 @@ void PlayerbotHolder::LogoutPlayerBot(ObjectGuid guid)
         }
 
         LOG_INFO("playerbots", "Bot %s logged out", bot->GetName().c_str());
-        bot->SaveToDB();
+        bot->SaveToDB(false, false);
 
         if (bot->GetPlayerbotAI()->GetAiObjectContext()) //Maybe some day re-write to delate all pointer values.
         {
@@ -95,12 +95,12 @@ void PlayerbotHolder::DisablePlayerBot(ObjectGuid guid)
         Group* group = bot->GetGroup();
         if (group && !bot->InBattleground() && !bot->InBattlegroundQueue() && (master && !master->GetPlayerbotAI()))
         {
-            sPlayerbotDbStore.Save(botAI);
+            sPlayerbotDbStore->Save(botAI);
         }
 
         LOG_DEBUG("playerbots", "Bot %s logged out", bot->GetName().c_str());
 
-        bot->SaveToDB();
+        bot->SaveToDB(false, false);
 
         if (botAI->GetAiObjectContext()) //Maybe some day re-write to delate all pointer values.
         {
@@ -130,14 +130,16 @@ void PlayerbotHolder::OnBotLogin(Player* const bot)
 
     playerBots[bot->GetGUID()] = bot;
 
-    if (Player* master = botAI->GetMaster())
+    Player* master = botAI->GetMaster();
+    if (master)
     {
         ObjectGuid masterGuid = master->GetGUID();
         if (master->GetGroup() && ! master->GetGroup()->IsLeader(masterGuid))
             master->GetGroup()->ChangeLeader(masterGuid);
     }
 
-    if (Group* group = bot->GetGroup())
+    Group* group = bot->GetGroup();
+    if (group)
     {
         bool groupValid = false;
         Group::MemberSlotList const& slots = group->GetMemberSlots();
@@ -173,7 +175,7 @@ void PlayerbotHolder::OnBotLogin(Player* const bot)
     }
     else
     {
-        botAI->ResetStrategies(!sRandomPlayerbotMgr->IsRandomBot(bot->GetGUIDLow()));
+        botAI->ResetStrategies(!sRandomPlayerbotMgr->IsRandomBot(bot->GetGUID().GetCounter()));
     }
 
     if (master && !master->HasUnitState(UNIT_STATE_IN_FLIGHT))
@@ -197,8 +199,8 @@ std::string PlayerbotHolder::ProcessBotCommand(std::string const& cmd, ObjectGui
 
     if (!isRandomAccount && !isMasterAccount && !admin && masterguid)
     {
-        Player* master = sObjectMgr.GetPlayer(masterguid);
-        if (master && (!sPlayerbotAIConfig->allowGuildBots || !masterGuildId || (masterGuildId && master->GetGuildIdFromDB(guid) != masterGuildId)))
+        Player* master = ObjectAccessor::FindConnectedPlayer(masterguid);
+        if (master && (!sPlayerbotAIConfig->allowGuildBots || !masterGuildId || (masterGuildId && master->GetGuildIdFromStorage(guid.GetCounter()) != masterGuildId)))
             return "not in your guild or account";
     }
 
@@ -480,7 +482,7 @@ uint32 PlayerbotHolder::GetAccountId(std::string const& name)
     return accountId;
 }
 
-string PlayerbotHolder::ListBots(Player* master)
+std::string PlayerbotHolder::ListBots(Player* master)
 {
     std::set<std::string> bots;
     std::map<uint8, std::string> classNames;
@@ -598,14 +600,14 @@ void PlayerbotMgr::HandleCommand(uint32 type, std::string const& text)
     for (PlayerBotMap::const_iterator it = GetPlayerBotsBegin(); it != GetPlayerBotsEnd(); ++it)
     {
         Player* const bot = it->second;
-        bot->GetPlayerbotAI()->HandleCommand(type, text, *master);
+        bot->GetPlayerbotAI()->HandleCommand(type, text, master);
     }
 
     for (PlayerBotMap::const_iterator it = sRandomPlayerbotMgr->GetPlayerBotsBegin(); it != sRandomPlayerbotMgr->GetPlayerBotsEnd(); ++it)
     {
         Player* const bot = it->second;
         if (bot->GetPlayerbotAI()->GetMaster() == master)
-            bot->GetPlayerbotAI()->HandleCommand(type, text, *master);
+            bot->GetPlayerbotAI()->HandleCommand(type, text, master);
     }
 }
 

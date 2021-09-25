@@ -7,6 +7,7 @@
 #include "LootObjectStack.h"
 #include "PathGenerator.h"
 #include "Playerbot.h"
+#include "TravelMgr.h"
 
 bool MoveToTravelTargetAction::Execute(Event event)
 {

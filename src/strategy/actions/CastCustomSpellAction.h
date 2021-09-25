@@ -2,6 +2,9 @@
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
  */
 
+#ifndef _PLAYERBOT_CASTCUSTOMSPELLACTION_H
+#define _PLAYERBOT_CASTCUSTOMSPELLACTION_H
+
 #include "InventoryAction.h"
 
 class Event;
@@ -24,7 +27,7 @@ protected:
 class CastCustomNcSpellAction : public CastCustomSpellAction
 {
     public:
-        CastCustomNcSpellAction(PlayerbotAI* botAI, std::string const name = "cast custom nc spell") : CastCustomSpellAction(botAI, name) {}
+        CastCustomNcSpellAction(PlayerbotAI* botAI, std::string const name = "cast custom nc spell") : CastCustomSpellAction(botAI, name) { }
 
         bool isUseful() override;
         std::string const& castString(WorldObject* target) override;
@@ -33,7 +36,7 @@ class CastCustomNcSpellAction : public CastCustomSpellAction
 class CastRandomSpellAction : public CastCustomSpellAction
 {
     public:
-        CastRandomSpellAction(PlayerbotAI* botAI, std::string const& name = "cast random spell") : CastCustomSpellAction(botAI, name) {}
+        CastRandomSpellAction(PlayerbotAI* botAI, std::string const& name = "cast random spell") : CastCustomSpellAction(botAI, name) { }
 
         virtual bool AcceptSpell(SpellInfo const* pSpellInfo) { return true; }
         bool Execute(Event event) override;
@@ -52,3 +55,5 @@ class CraftRandomItemAction : public CastRandomSpellAction
 
         bool AcceptSpell(SpellInfo const* pSpellInfo) override;
 };
+
+#endif
