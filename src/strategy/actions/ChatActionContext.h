@@ -15,6 +15,7 @@
 #include "ChangeTalentsAction.h"
 #include "ChangeStrategyAction.h"
 #include "ChatShortcutActions.h"
+#include "CheatAction.h"
 #include "CustomStrategyEditAction.h"
 #include "DebugAction.h"
 #include "DestroyItemAction.h"
@@ -24,6 +25,7 @@
 #include "GoAction.h"
 #include "GossipHelloAction.h"
 #include "GuildBankAction.h"
+#include "GuildManagementActions.h"
 #include "HelpAction.h"
 #include "HireAction.h"
 #include "InviteToGroupAction.h"
@@ -43,6 +45,7 @@
 #include "ReviveFromCorpseAction.h"
 #include "RewardAction.h"
 #include "RtiAction.h"
+#include "RTSCAction.h"
 #include "SaveManaAction.h"
 #include "SellAction.h"
 #include "SetCraftAction.h"
@@ -150,6 +153,14 @@ class ChatActionContext : public NamedObjectContext<Action>
             creators["hire"] = &ChatActionContext::hire;
             creators["craft"] = &ChatActionContext::craft;
             creators["flag"] = &ChatActionContext::flag;
+            creators["give leader"] = &ChatActionContext::give_leader;
+            creators["cheat"] = &ChatActionContext::cheat;
+            creators["ginvite"] = &ChatActionContext::ginvite;
+            creators["guild promote"] = &ChatActionContext::guild_promote;
+            creators["guild demote"] = &ChatActionContext::guild_demote;
+            creators["guild remove"] = &ChatActionContext::guild_remove;
+            creators["guild leave"] = &ChatActionContext::guild_leave;
+            creators["rtsc"] = &ChatActionContext::rtsc;
         }
 
     private:
@@ -230,6 +241,14 @@ class ChatActionContext : public NamedObjectContext<Action>
         static Action* add_all_loot(PlayerbotAI* botAI) { return new AddAllLootAction(botAI); }
         static Action* reset_ai(PlayerbotAI* botAI) { return new ResetAiAction(botAI); }
         static Action* gossip_hello(PlayerbotAI* botAI) { return new GossipHelloAction(botAI); }
+        static Action* give_leader(PlayerbotAI* ai) { return new GiveLeaderAction(ai); }
+        static Action* cheat(PlayerbotAI* ai) { return new CheatAction(ai); }
+        static Action* ginvite(PlayerbotAI* ai) { return new GuildInviteAction(ai); }
+        static Action* guild_promote(PlayerbotAI* ai) { return new GuildPromoteAction(ai); }
+        static Action* guild_demote(PlayerbotAI* ai) { return new GuildDemoteAction(ai); }
+        static Action* guild_remove(PlayerbotAI* ai) { return new GuildRemoveAction(ai); }
+        static Action* guild_leave(PlayerbotAI* ai) { return new GuildLeaveAction(ai); }
+        static Action* rtsc(PlayerbotAI* ai) { return new RTSCAction(ai); }
 };
 
 #endif

@@ -119,7 +119,7 @@ class ItemCountChecker : public ReadyChecker
 
         bool Check(PlayerbotAI* botAI, AiObjectContext* context) override
         {
-            return AI_VALUE2(uint8, "item count", item) > 0;
+            return AI_VALUE2(uint32, "item count", item) > 0;
         }
 
         std::string const& GetName() override { return name; }
@@ -180,21 +180,21 @@ bool ReadyCheckAction::ReadyCheck()
 
     std::ostringstream out;
 
-    uint8 hp = AI_VALUE2(uint8, "item count", "healing potion");
+    uint32 hp = AI_VALUE2(uint32, "item count", "healing potion");
     out << formatPercent("Hp", hp, 100.0 * hp / 5);
 
     out << ", ";
-    uint8 food = AI_VALUE2(uint8, "item count", "food");
+    uint32 food = AI_VALUE2(uint32, "item count", "food");
     out << formatPercent("Food", food, 100.0 * food / 20);
 
     if (AI_VALUE2(bool, "has mana", "self target"))
     {
         out << ", ";
-        uint8 mp = AI_VALUE2(uint8, "item count", "mana potion");
+        uint32 mp = AI_VALUE2(uint32, "item count", "mana potion");
         out << formatPercent("Mp", mp, 100.0 * mp / 5);
 
         out << ", ";
-        uint8 water = AI_VALUE2(uint8, "item count", "water");
+        uint32 water = AI_VALUE2(uint32, "item count", "water");
         out << formatPercent("Water", water, 100.0 * water / 20);
     }
 

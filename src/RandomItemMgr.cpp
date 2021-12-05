@@ -125,7 +125,7 @@ void RandomItemMgr::Init()
 void RandomItemMgr::InitAfterAhBot()
 {
     BuildRandomItemCache();
-    BuildRarityCache();
+    //BuildRarityCache();
 }
 
 RandomItemMgr::~RandomItemMgr()
@@ -376,6 +376,9 @@ bool RandomItemMgr::CheckItemStats(uint8 clazz, uint8 sp, uint8 ap, uint8 tank)
 
 bool RandomItemMgr::CanEquipArmor(uint8 clazz, uint32 level, ItemTemplate const* proto)
 {
+    if (proto->InventoryType == INVTYPE_TABARD)
+        return true;
+
     if ((clazz == CLASS_WARRIOR || clazz == CLASS_PALADIN || clazz == CLASS_SHAMAN) && proto->SubClass == ITEM_SUBCLASS_ARMOR_SHIELD)
         return true;
 
@@ -760,8 +763,10 @@ uint32 RandomItemMgr::GetFood(uint32 level, uint32 category)
             items = { 8950, 8952, 8957, 21023 /*21033, 21031 */ };
         else if (level < 65)
             items = { 29292, 27859, 30458, 27662 };
-        else
+        else if (level < 75)
             items = { 29450, 29451, 29452 };
+        else
+            items = { 35947 };
     }
 
     if (category == 59)
@@ -778,10 +783,12 @@ uint32 RandomItemMgr::GetFood(uint32 level, uint32 category)
             items = { 1645 };
         else if (level < 55)
             items = { 8766 };
-        else if (level < 65)
+         else if (level < 65)
             items = { 28399 };
-        else
+        else if (level < 75)
             items = { 27860 };
+        else
+            items = { 33445 };
     }
 
     food.insert(food.end(), items);

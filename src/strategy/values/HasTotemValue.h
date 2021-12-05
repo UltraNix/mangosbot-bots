@@ -13,7 +13,7 @@ class PlayerbotAI;
 class HasTotemValue : public BoolCalculatedValue, public Qualified
 {
 	public:
-        HasTotemValue(PlayerbotAI* botAI) : BoolCalculatedValue(botAI) { }
+        HasTotemValue(PlayerbotAI* botAI, string name = "has totem") : BoolCalculatedValue(ai, name) {}
 
         bool Calculate() override;
 };

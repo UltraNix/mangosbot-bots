@@ -14,7 +14,7 @@ class PlayerbotAI;
 class PartyMemberWithoutAuraValue : public PartyMemberValue, public Qualified
 {
 	public:
-        PartyMemberWithoutAuraValue(PlayerbotAI* botAI, float range = sPlayerbotAIConfig->sightDistance) : PartyMemberValue(botAI) { }
+        PartyMemberWithoutAuraValue(PlayerbotAI* botAI, string name = "party member without aura", float range = sPlayerbotAIConfig->sightDistance) : PartyMemberValue(botAI, name) { }
 
     protected:
         Unit* Calculate() override;

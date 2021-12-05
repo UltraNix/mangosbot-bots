@@ -5,7 +5,7 @@
 #include "WarriorTriggers.h"
 #include "Playerbot.h"
 
-bool BloodrageDebuffTrigger::IsActive()
+bool BloodrageBuffTrigger::IsActive()
 {
-    return AI_VALUE2(uint8, "health", "self target") >= sPlayerbotAIConfig->mediumHealth && AI_VALUE2(uint8, "rage", "self target") < 20;
+    return AI_VALUE2(uint8, "health", "self target") >= sPlayerbotAIConfig.mediumHealth && AI_VALUE2(uint8, "rage", "self target") < 20;
 }

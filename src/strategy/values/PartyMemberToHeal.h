@@ -13,11 +13,20 @@ class PlayerbotAI;
 class PartyMemberToHeal : public PartyMemberValue
 {
 	public:
-        PartyMemberToHeal(PlayerbotAI* botAI) : PartyMemberValue(botAI) { }
+        PartyMemberToHeal(PlayerbotAI* botAI, string name = "party member to heal") : PartyMemberValue(ai, name) {}
 
     protected:
         Unit* Calculate() override;
         bool Check(Unit* player) override;
+};
+
+class PartyMemberToProtect : public PartyMemberValue
+{
+    public:
+        PartyMemberToProtect(PlayerbotAI* ai, string name = "party member to protect") : PartyMemberValue(ai, name) {}
+
+    protected:
+        Unit* Calculate() override;
 };
 
 #endif

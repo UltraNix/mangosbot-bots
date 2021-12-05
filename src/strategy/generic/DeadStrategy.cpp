@@ -11,11 +11,11 @@ void DeadStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("often", NextAction::array(0, new NextAction("auto release", relevance), nullptr)));
     triggers.push_back(new TriggerNode("bg active", NextAction::array(0, new NextAction("auto release", relevance), nullptr)));
-    triggers.push_back(new TriggerNode("often", NextAction::array(0, new NextAction("leave far away", relevance), nullptr))); //If partyleader just walks away without reviving. Leave group.
     triggers.push_back(new TriggerNode("dead", NextAction::array(0, new NextAction("find corpse", relevance), nullptr)));
-    triggers.push_back(new TriggerNode("corpse near", NextAction::array(0, new NextAction("revive from corpse", relevance), nullptr)));
+    triggers.push_back(new TriggerNode("corpse near", NextAction::array(0, new NextAction("revive from corpse", relevance - 1.0f), nullptr)));
     triggers.push_back(new TriggerNode("resurrect request", NextAction::array(0, new NextAction("accept resurrect", relevance), nullptr)));
-    triggers.push_back(new TriggerNode("falling far", NextAction::array(0, new NextAction("repop", relevance), nullptr)));
+    triggers.push_back(new TriggerNode("falling far", NextAction::array(0, new NextAction("repop", relevance + 1.f), nullptr)));
+    triggers.push_back(new TriggerNode("location stuck", NextAction::array(0, new NextAction("repop", relevance + 1), NULL)));
 }
 
 DeadStrategy::DeadStrategy(PlayerbotAI* botAI) : PassTroughStrategy(botAI)

@@ -12,7 +12,7 @@ class PlayerbotAI;
 class PartyMemberToResurrect : public PartyMemberValue
 {
 	public:
-        PartyMemberToResurrect(PlayerbotAI* botAI) : PartyMemberValue(botAI) { }
+        PartyMemberToResurrect(PlayerbotAI* botAI, string name = "party member to resurrect") : PartyMemberValue(ai,name) {}
 
     protected:
         Unit* Calculate() override;

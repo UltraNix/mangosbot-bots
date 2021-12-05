@@ -39,7 +39,7 @@ void PlayerbotHolder::LogoutAllBots()
 
         Player* bot= itr->second;
         if (!bot->GetPlayerbotAI()->IsRealPlayer())
-            LogoutPlayerBot(bot->GetGUID().GetRawValue());
+            LogoutPlayerBot(bot->GetGUID());
     }
     */
 
@@ -47,6 +47,9 @@ void PlayerbotHolder::LogoutAllBots()
     for (auto& itr : bots)
     {
         Player* bot = itr.second;
+        if (!bot)
+            continue;
+
         if (!bot->GetPlayerbotAI() || bot->GetPlayerbotAI()->IsRealPlayer())
             continue;
 
@@ -54,31 +57,131 @@ void PlayerbotHolder::LogoutAllBots()
     }
 }
 
+void PlayerbotMgr::CancelLogout()
+{
+    Player* master = GetMaster();
+    if (!master)
+        return;
+
+    for (PlayerBotMap::const_iterator it = GetPlayerBotsBegin(); it != GetPlayerBotsEnd(); ++it)
+    {
+        Player* const bot = it->second;
+        PlayerbotAI* ai = bot->GetPlayerbotAI();
+        if (!ai || ai->IsRealPlayer())
+            continue;
+
+        if (bot->IsStunnedByLogout() || bot->GetSession()->isLogingOut())
+        {
+            WorldPacket p;
+            bot->GetSession()->HandleLogoutCancelOpcode(p);
+            ai->TellMaster("Logout cancelled!");
+        }
+    }
+
+    for (PlayerBotMap::const_iterator it = sRandomPlayerbotMgr.GetPlayerBotsBegin(); it != sRandomPlayerbotMgr.GetPlayerBotsEnd(); ++it)
+    {
+        Player* const bot = it->second;
+        PlayerbotAI* ai = bot->GetPlayerbotAI();
+        if (!ai || ai->IsRealPlayer())
+            continue;
+
+        if (bot->GetPlayerbotAI()->GetMaster() != master)
+            continue;
+
+        if (bot->IsStunnedByLogout() || bot->GetSession()->isLogingOut())
+        {
+            WorldPacket p;
+            bot->GetSession()->HandleLogoutCancelOpcode(p);
+        }
+    }
+}
+
 void PlayerbotHolder::LogoutPlayerBot(ObjectGuid guid)
 {
     if (Player* bot = GetPlayerBot(guid))
     {
-        bot->GetPlayerbotAI()->TellMaster("Goodbye!");
-        Player* master = bot->GetPlayerbotAI()->GetMaster();
+        PlayerbotAI* ai = bot->GetPlayerbotAI();
+        if (!ai)
+            return;
+
         Group* group = bot->GetGroup();
-        if (group && !bot->InBattleground() && !bot->InBattlegroundQueue() && (master && !master->GetPlayerbotAI()))
+        if (group && !bot->InBattleGround() && !bot->InBattleGroundQueue() && ai->HasActivePlayerMaster())
         {
-            sPlayerbotDbStore->Save(bot->GetPlayerbotAI());
+            sPlayerbotDbStore->Save(ai);
         }
 
-        LOG_INFO("playerbots", "Bot %s logged out", bot->GetName().c_str());
+        LOG_INFO("playerbots", "Bot %s logging out", bot->GetName().c_str());
         bot->SaveToDB(false, false);
 
-        if (bot->GetPlayerbotAI()->GetAiObjectContext()) //Maybe some day re-write to delate all pointer values.
+       WorldSession* botWorldSessionPtr = bot->GetSession();
+        WorldSession* masterWorldSessionPtr = nullptr;
+
+        Player* master = ai->GetMaster();
+        if (master)
+            masterWorldSessionPtr = master->GetSession();
+
+        // check for instant logout
+        bool logout = botWorldSessionPtr->ShouldLogOut(time(nullptr));
+
+        if (masterWorldSessionPtr && masterWorldSessionPtr->ShouldLogOut(time(nullptr)))
+            logout = true;
+
+        if (masterWorldSessionPtr && masterWorldSessionPtr->GetState() != WORLD_SESSION_STATE_READY)
+            logout = true;
+
+        if (bot->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING) || bot->IsTaxiFlying() ||
+            botWorldSessionPtr->GetSecurity() >= (AccountTypes)sWorld.getConfig(CONFIG_UINT32_INSTANT_LOGOUT))
         {
-            if (TravelTarget* target = bot->GetPlayerbotAI()->GetAiObjectContext()->GetValue<TravelTarget*>("travel target")->Get())
-                delete target;
+            logout = true;
         }
 
-        WorldSession* botWorldSessionPtr = bot->GetSession();
-        playerBots.erase(guid);    // deletes bot player ptr inside this WorldSession PlayerBotMap
-        botWorldSessionPtr->LogoutPlayer(true); // this will delete the bot Player object and PlayerbotAI object
-        delete botWorldSessionPtr;  // finally delete the bot's WorldSession
+        if (master && (master->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING) || master->IsTaxiFlying() ||
+            (masterWorldSessionPtr && masterWorldSessionPtr->GetSecurity() >= (AccountTypes)sWorld.getConfig(CONFIG_UINT32_INSTANT_LOGOUT))))
+        {
+            logout = true;
+        }
+
+        TravelTarget* target = nullptr;
+        if (ai->GetAiObjectContext()) //Maybe some day re-write to delate all pointer values.
+        {
+            target = ai->GetAiObjectContext()->GetValue<TravelTarget*>("travel target")->Get();
+        }
+
+        // if no instant logout, request normal logout
+        if (!logout)
+        {
+            if (bot && (bot->IsStunnedByLogout() || bot->GetSession()->isLogingOut()))
+                return;
+            else if (bot)
+            {
+                ai->TellMaster("I'm logging out!");
+                WorldPacket p;
+                botWorldSessionPtr->HandleLogoutRequestOpcode(p);
+                if (!bot)
+                {
+                    playerBots.erase(guid);
+                    delete botWorldSessionPtr;
+                    if (target)
+                        delete target;
+                }
+                return;
+            }
+            else
+            {
+                playerBots.erase(guid);    // deletes bot player ptr inside this WorldSession PlayerBotMap
+                delete botWorldSessionPtr;  // finally delete the bot's WorldSession
+                if (target)
+                    delete target;
+            }
+            return;
+        } // if instant logout possible, do it
+        else if (bot && (logout || !botWorldSessionPtr->isLogingOut()))
+        {
+            ai->TellMaster("Goodbye!");
+            playerBots.erase(guid);                 // deletes bot player ptr inside this WorldSession PlayerBotMap
+            botWorldSessionPtr->LogoutPlayer(true); // this will delete the bot Player object and PlayerbotAI object
+            delete botWorldSessionPtr;              // finally delete the bot's WorldSession
+        }
     }
 }
 
@@ -91,9 +194,8 @@ void PlayerbotHolder::DisablePlayerBot(ObjectGuid guid)
         bot->StopMoving();
         bot->GetMotionMaster()->Clear();
 
-        Player* master = botAI->GetMaster();
         Group* group = bot->GetGroup();
-        if (group && !bot->InBattleground() && !bot->InBattlegroundQueue() && (master && !master->GetPlayerbotAI()))
+        if (group && !bot->InBattleGround() && !bot->InBattleGroundQueue() && bot->GetPlayerbotAI()->HasActivePlayerMaster())
         {
             sPlayerbotDbStore->Save(botAI);
         }
@@ -146,11 +248,22 @@ void PlayerbotHolder::OnBotLogin(Player* const bot)
         for (Group::MemberSlotList::const_iterator i = slots.begin(); i != slots.end(); ++i)
         {
             ObjectGuid member = i->guid;
-            uint32 account = sObjectMgr->GetPlayerAccountIdByGUID(member.GetCounter());
-            if (!sPlayerbotAIConfig->IsInRandomAccountList(account))
+            if (master)
             {
-                groupValid = true;
-                break;
+                if (master->GetObjectGuid() == member)
+                {
+                    groupValid = true;
+                    break;
+                }
+            }
+            else
+            {
+                uint32 account = sObjectMgr.GetPlayerAccountIdByGUID(member);
+                if (!sPlayerbotAIConfig.IsInRandomAccountList(account))
+                {
+                    groupValid = true;
+                    break;
+                }
             }
         }
 
@@ -163,15 +276,10 @@ void PlayerbotHolder::OnBotLogin(Player* const bot)
         }
     }
 
+    group = bot->GetGroup();
     if (group)
     {
         botAI->ResetStrategies();
-
-        if (master && !master->GetPlayerbotAI())
-        {
-            botAI->ChangeStrategy("-rpg", BOT_STATE_NON_COMBAT);
-            botAI->ChangeStrategy("-grind", BOT_STATE_NON_COMBAT);
-        }
     }
     else
     {
@@ -183,6 +291,12 @@ void PlayerbotHolder::OnBotLogin(Player* const bot)
         bot->GetMotionMaster()->MovementExpired();
         bot->m_taxi.ClearTaxiDestinations();
     }
+
+    // check activity
+    ai->AllowActivity(ALL_ACTIVITY, true);
+
+    // set delay on login
+    ai->SetNextCheckDelay(urand(2000, 4000));
 
     botAI->TellMaster("Hello!");
 }
@@ -355,6 +469,16 @@ std::vector<std::string> PlayerbotHolder::HandlePlayerbotCommand(char const* arg
         return messages;
     }
 
+    if (!strcmp(cmd, "tweak"))
+    {
+        sPlayerbotAIConfig.tweakValue = sPlayerbotAIConfig.tweakValue++;
+        if (sPlayerbotAIConfig.tweakValue > 2)
+            sPlayerbotAIConfig.tweakValue = 0;
+
+        messages.push_back("Set tweakvalue to " + to_string(sPlayerbotAIConfig.tweakValue));
+        return messages;
+    }
+
     if (!strcmp(cmd, "self"))
     {
         if (master->GetPlayerbotAI())
@@ -497,6 +621,7 @@ std::string PlayerbotHolder::ListBots(Player* master)
     classNames[CLASS_SHAMAN] = "Shaman";
     classNames[CLASS_WARLOCK] = "Warlock";
     classNames[CLASS_WARRIOR] = "Warrior";
+    classNames[CLASS_DEATH_KNIGHT] = "DeathKnight";
 
     std::map<std::string, std::string> online;
     std::list<std::string> names;
@@ -573,7 +698,7 @@ PlayerbotMgr::PlayerbotMgr(Player* const master) : PlayerbotHolder(),  master(ma
 {
 }
 
-void PlayerbotMgr::UpdateAIInternal(uint32 elapsed)
+void PlayerbotMgr::UpdateAIInternal(uint32 elapsed, bool /*minimal*/)
 {
     SetNextCheckDelay(sPlayerbotAIConfig->reactDelay);
     CheckTellErrors(elapsed);
@@ -616,6 +741,9 @@ void PlayerbotMgr::HandleMasterIncomingPacket(WorldPacket const& packet)
     for (PlayerBotMap::const_iterator it = GetPlayerBotsBegin(); it != GetPlayerBotsEnd(); ++it)
     {
         Player* const bot = it->second;
+        if (!bot)
+            continue;
+
         bot->GetPlayerbotAI()->HandleMasterIncomingPacket(packet);
     }
 
@@ -632,10 +760,17 @@ void PlayerbotMgr::HandleMasterIncomingPacket(WorldPacket const& packet)
         case CMSG_LOGOUT_REQUEST:
         {
             LogoutAllBots();
-            return;
+            break;
+        }
+        // if master cancelled logout, cancel too
+        case CMSG_LOGOUT_CANCEL:
+        {
+            CancelLogout();
+            break;
         }
     }
 }
+
 void PlayerbotMgr::HandleMasterOutgoingPacket(WorldPacket const& packet)
 {
     for (PlayerBotMap::const_iterator it = GetPlayerBotsBegin(); it != GetPlayerBotsEnd(); ++it)

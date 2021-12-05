@@ -13,7 +13,7 @@ class Unit;
 class CurrentTargetValue : public UnitManualSetValue
 {
 	public:
-        CurrentTargetValue(PlayerbotAI* botAI) : UnitManualSetValue(botAI, nullptr) { }
+        CurrentTargetValue(PlayerbotAI* botAI, string name = "current target") : UnitManualSetValue(ai, NULL, name) {}
 
         Unit* Get() override;
         void Set(Unit* unit) override;

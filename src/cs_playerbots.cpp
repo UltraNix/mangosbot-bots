@@ -66,6 +66,18 @@ public:
             return true;
         }
 
+        if (!strcmp(args, "tick"))
+        {
+            sPerformanceMonitor.PrintStats(true, false);
+            return true;
+        }
+
+        if (!strcmp(args, "stack"))
+        {
+            sPerformanceMonitor.PrintStats(false, true);
+            return true;
+        }
+
         sPerformanceMonitor->PrintStats();
         return true;
     }

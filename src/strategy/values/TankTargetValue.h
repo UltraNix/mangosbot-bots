@@ -12,7 +12,7 @@ class PlayerbotAI;
 class TankTargetValue : public TargetValue
 {
 	public:
-        TankTargetValue(PlayerbotAI* botAI) : TargetValue(botAI) { }
+        TankTargetValue(PlayerbotAI* botAI, string name = "tank target") : TargetValue(ai, name) {}
 
         Unit* Calculate() override;
 };

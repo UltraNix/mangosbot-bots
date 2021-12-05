@@ -29,48 +29,10 @@ class Value
 {
     public:
         virtual T Get() = 0;
+        virtual T LazyGet() = 0;
+        virtual void Reset() {}
         virtual void Set(T value) = 0;
         operator T() { return Get(); }
-};
-
-template <class T>
-class SingleCalculatedValue : public UntypedValue, public Value<T>
-{
-    public:
-        SingleCalculatedValue(PlayerbotAI* botAI, std::string const& name = "value") : UntypedValue(botAI, name)
-        {
-            Reset();
-        }
-
-        virtual ~SingleCalculatedValue() { }
-
-        T Get() override
-        {
-            if (!calculated)
-            {
-                value = Calculate();
-                calculated = true;
-            }
-
-            return value;
-        }
-
-        void Set(T val) override
-        {
-            value = val;
-        }
-
-        void Update() override { }
-
-        void Reset() override
-        {
-            calculated = false;
-        }
-
-    protected:
-        virtual T Calculate() = 0;
-        T value;
-        bool calculated;
 };
 
 template<class T>
@@ -78,13 +40,22 @@ class CalculatedValue : public UntypedValue, public Value<T>
 {
 	public:
         CalculatedValue(PlayerbotAI* botAI, std::string const& name = "value", uint32 checkInterval = 1) : UntypedValue(botAI, name),
-            checkInterval(checkInterval), lastCheckTime(time(nullptr) - rand() % checkInterval) { }
+            checkInterval(checkInterval), lastCheckTime(0) { }
 
         virtual ~CalculatedValue() { }
 
         T Get() override;
-        void Set(T val) { value = val; }
+        T LazyGet() override
+        {
+            if (!lastCheckTime)
+                return Get();
+
+            return value;
+        }
+
+        void Set(T val) override { value = val; }
         void Update() override { }
+        virtual void Reset() { lastCheckTime = 0; }
 
     protected:
         virtual T Calculate() = 0;
@@ -94,6 +65,112 @@ class CalculatedValue : public UntypedValue, public Value<T>
 		time_t lastCheckTime;
         T value;
 };
+
+template <class T> class SingleCalculatedValue : public CalculatedValue<T>
+{
+public:
+        SingleCalculatedValue(PlayerbotAI* ai, string name = "value") : CalculatedValue(ai, name)
+        {
+            Reset();
+        }
+
+        T Get() override;
+};
+
+template<class T>
+class MemoryCalculatedValue : public CalculatedValue<T>
+{
+    public:
+        MemoryCalculatedValue(PlayerbotAI* ai, string name = "value", int32 checkInterval = 1) : CalculatedValue<T>(ai, name,checkInterval)
+        {
+            lastChangeTime = time(0);
+        }
+
+        virtual bool EqualToLast(T value) = 0;
+        virtual bool CanCheckChange()
+        {
+            return time(0) - lastChangeTime < minChangeInterval || EqualToLast(value);
+        }
+
+        virtual bool UpdateChange()
+        {
+            if (CanCheckChange())
+                return false;
+
+            lastChangeTime = time(0);
+            lastValue = value;
+            return true;
+        }
+
+        void Set(T value) override
+        {
+            CalculatedValue<T>::Set(value);
+            UpdateChange();
+        }
+
+        T Get() override
+        {
+            value = CalculatedValue<T>::Get();
+            UpdateChange();
+            return value;
+        }
+
+        T LazyGet() override
+        {
+            return value;
+        }
+
+        time_t LastChangeOn()
+        {
+            Get();
+            UpdateChange();
+            return lastChangeTime;
+        }
+
+        uint32 LastChangeDelay() { return time(0) - LastChangeOn(); }
+
+        void Reset() override
+        {
+            CalculatedValue::Reset();
+            lastChangeTime = time(0);
+        }
+
+    protected:
+        T lastValue;
+        uint32 minChangeInterval = 0;
+        time_t lastChangeTime;
+};
+
+template<class T>
+class LogCalculatedValue : public MemoryCalculatedValue<T>
+{
+    public:
+        LogCalculatedValue(PlayerbotAI* ai, string name = "value", int32 checkInterval = 1) : MemoryCalculatedValue<T>(ai, name, checkInterval) {}
+
+        bool UpdateChange() override
+        {
+            if (MemoryCalculatedValue::UpdateChange())
+                return false;
+
+            valueLog.push_back(make_pair(value, time(0)));
+
+            if (valueLog.size() > logLength)
+                valueLog.pop_front();
+            return true;
+        }
+
+        list<pair<T, time_t>> ValueLog() { return valueLog; }
+
+        void Reset() override
+        {
+            MemoryCalculatedValue::Reset();
+            valueLog.clear();
+        }
+
+    protected:
+        list<pair<T, time_t>> valueLog;
+        uint8 logLength = 10;
+    };
 
 class Uint8CalculatedValue : public CalculatedValue<uint8>
 {

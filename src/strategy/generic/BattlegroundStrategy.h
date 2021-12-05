@@ -57,6 +57,16 @@ class ArathiStrategy : public Strategy
         std::string const& getName() override { return "arathi"; }
 };
 
+class EyeStrategy : public Strategy
+{
+    public:
+        EyeStrategy(PlayerbotAI* ai) : Strategy(ai) {};
+
+        uint32 GetType() const override { return STRATEGY_TYPE_GENERIC; }
+        void InitTriggers(std::vector<TriggerNode*>& triggers) override;
+        std::string const& getName() override { return "eye"; }
+};
+
 class ArenaStrategy : public Strategy
 {
     public:

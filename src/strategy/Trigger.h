@@ -13,20 +13,6 @@ class Event;
 class PlayerbotAI;
 class Unit;
 
-#define NEXT_TRIGGERS(name, relevance) \
-    virtual NextAction* getNextAction() { return new NextAction(name, relevance); }
-
-#define BEGIN_TRIGGER(clazz, super) \
-class clazz : public super \
-{ \
-    public: \
-        clazz(PlayerbotAI* botAI) : super(botAI) { } \
-    public: \
-        bool IsActive() override;
-
-#define END_TRIGGER() \
-};
-
 class Trigger : public AiNamedObject
 {
 	public:
@@ -83,6 +69,11 @@ class TriggerNode
         NextAction** getHandlers()
         {
             return NextAction::merge(NextAction::clone(handlers), trigger->getHandlers());
+        }
+
+        float getFirstRelevance()
+        {
+            return handlers[0] ? handlers[0]->getRelevance() : -1;
         }
 
     private:

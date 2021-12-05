@@ -29,8 +29,9 @@ class FleePoint
 class FleeManager
 {
 	public:
-        FleeManager(Player* bot, float maxAllowedDistance, float followAngle, bool forceMaxDistance = false) : bot(bot),
-            maxAllowedDistance(maxAllowedDistance), followAngle(followAngle), forceMaxDistance(forceMaxDistance) { }
+        FleeManager(Player* bot, float maxAllowedDistance, float followAngle, bool forceMaxDistance = false, WorldPosition startPosition = WorldPosition()) :
+            bot(bot), maxAllowedDistance(maxAllowedDistance), followAngle(followAngle), forceMaxDistance(forceMaxDistance), startPosition(startPosition ? startPosition : WorldPosition(bot))
+        { }
 
 		bool CalculateDestination(float* rx, float* ry, float* rz);
 		bool isUseful();
@@ -46,6 +47,7 @@ class FleeManager
 		float maxAllowedDistance;
 		float followAngle;
 		bool forceMaxDistance;
+        WorldPosition startPosition;
 };
 
 #endif

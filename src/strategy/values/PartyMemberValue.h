@@ -25,7 +25,7 @@ class SpellEntryPredicate
 class PartyMemberValue : public UnitCalculatedValue
 {
 	public:
-        PartyMemberValue(PlayerbotAI* botAI) : UnitCalculatedValue(botAI) { }
+        PartyMemberValue(PlayerbotAI* botAI, string name = "party member") : UnitCalculatedValue(ai, name) {}
 
         bool IsTargetOfSpellCast(Player* target, SpellEntryPredicate& predicate);
 

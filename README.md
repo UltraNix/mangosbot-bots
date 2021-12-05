@@ -1,25 +1,28 @@
-# SKELETON - Module template
+# mangosbot-bots
+Bot AI Core from ike3 for cmangos/mangos classic/tbc/wotlk
 
-[English](README.md) | [Español](README_ES.md)
+Want to build CMaNGOS + bots on your own? You can! (currently only on MS Windows)
 
+💡  To build CMaNGOS + ike3 bots you should use a a fork of CMaNGOS with ike3 bots module
+Vanilla - https://github.com/celguar/mangos-classic
+TBC - https://github.com/celguar/mangos-tbc
+WotLK - https://github.com/celguar/mangos-wotlk
 
-## How to create your own module
+Important: use --recursive tag when you clone any of these repos, e.g.:
+git clone https://github.com/celguar/mangos-classic.git --recursive
 
-1. Use the script `create_module.sh` located in [`modules/`](https://github.com/azerothcore/azerothcore-wotlk/tree/master/modules) to start quickly with all the files you need and your git repo configured correctly (heavily recommended).
-1. You can then use these scripts to start your project: https://github.com/azerothcore/azerothcore-boilerplates
-1. Do not hesitate to compare with some of our newer/bigger/famous modules.
-1. Edit the `README.md` and other files (`include.sh` etc...) to fit your module. Note: the README is automatically created from `README_example.md` when you use the script `create_module.sh`.
-1. Publish your module to our [catalogue](https://github.com/azerothcore/modules-catalogue).
+💡  If you're new to building CMaNGOS, check the official Windows guide
+https://github.com/cmangos/issues/wiki/Detailed-installation-guide-for-Microsoft-Windows
 
+Important: to enable ike3 bots you need to check it in cmake ( BUILD_IKE3_BOTS ✅ )
 
-## How to test your module?
+💡  After successful build get aiplayerbot.conf file from "src/modules/Bots/playerbot/aiplayerbot%expansion.conf.dist" (based on expansion you use) and put it to the same folder where mangosd.conf and realmd.conf are, and remove ".dist" from its name
 
-Disable PCH (precompiled headers) and try to compile. To disable PCH, set `-DNOPCH=1` with Cmake (more info [here](http://www.azerothcore.org/wiki/CMake-options)).
+💡  DB modifications:
+  a)  Go to "src/modules/Bots/sql"
+  b)  Apply .sql files from "characters" folder to characters database
+  c)  Apply .sql files from "world" folder to world database
+  d)  Create a new database named "%expansion%playerbots", e.g. "classicplayerbots" for classic
+  e)  Apply .sql files from "playerbot" folder to this new DB
 
-If you forgot some headers, it is time to add them!
-
-## Licensing
-
-The default license of the skeleton-module template is the AGPL but you can use a different license for your own modules.
-
-So modules can also be kept private. However, if you need to add new hooks to the core, as well as improving existing ones, you have to share your improvements because the main core is released under the AGPL license. Please [provide a PR](https://www.azerothcore.org/wiki/How-to-create-a-PR) if that is the case.
+After you complete all steps above you can check bots config and start your server. It'll take some time for the first time, as gear/characters for bots will be generated at first launch. Have fun! 🥳

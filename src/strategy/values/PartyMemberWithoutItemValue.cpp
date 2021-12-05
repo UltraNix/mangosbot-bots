@@ -26,7 +26,7 @@ class PlayerWithoutItemPredicate : public FindPlayerPredicate, public PlayerbotA
             if (!memberBotAI)
                 return false;
 
-            return !memberBotAI->GetAiObjectContext()->GetValue<uint8>("item count", item)->Get();
+            return !memberBotAI->GetAiObjectContext()->GetValue<uint32>("item count", item)->Get();
         }
 
     private:

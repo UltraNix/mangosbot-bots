@@ -8,6 +8,9 @@
 
 float ServerFacade::GetDistance2d(Unit* unit, WorldObject* wo)
 {
+    ASSERT_NOTNULL(unit);
+    ASSERT_NOTNULL(wo);
+
     float dist = unit->GetDistance2d(wo);
     return std::round(dist * 10.0f) / 10.0f;
 }

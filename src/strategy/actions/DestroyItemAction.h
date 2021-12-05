@@ -14,12 +14,21 @@ class PlayerbotAI;
 class DestroyItemAction : public InventoryAction
 {
     public:
-        DestroyItemAction(PlayerbotAI* botAI) : InventoryAction(botAI, "destroy") { }
+        DestroyItemAction(PlayerbotAI* botAI, string name = "destroy") : InventoryAction(botAI, name) { }
 
         bool Execute(Event event) override;
 
-    private:
+    protected:
         void DestroyItem(FindItemVisitor* visitor);
+};
+
+class SmartDestroyItemAction : public DestroyItemAction
+{
+    public:
+        SmartDestroyItemAction(PlayerbotAI* ai) : DestroyItemAction(ai, "smart destroy") {}
+
+        bool Execute(Event event) override;
+        bool isUseful() override;
 };
 
 #endif

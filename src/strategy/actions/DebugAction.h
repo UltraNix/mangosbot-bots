@@ -6,9 +6,12 @@
 #define _PLAYERBOT_DEBUGACTION_H
 
 #include "Action.h"
+#include "ObjectGuid.h"
 
 class Event;
 class PlayerbotAI;
+class Unit;
+class WorldPosition;
 
 class DebugAction : public Action
 {
@@ -16,6 +19,9 @@ class DebugAction : public Action
         DebugAction(PlayerbotAI* botAI) : Action(botAI, "Debug") { }
 
         bool Execute(Event event) override;
+
+        void FakeSpell(uint32 spellId, Unit* truecaster, Unit* caster, ObjectGuid target = ObjectGuid(), list<ObjectGuid> otherTargets = {}, list<ObjectGuid> missTargets = {}, WorldPosition source = WorldPosition(), WorldPosition dest = WorldPosition(), bool forceDest = false);
+        void addAura(uint32 spellId, Unit* target);
 };
 
 #endif

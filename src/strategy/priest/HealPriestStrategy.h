@@ -12,7 +12,7 @@ class PlayerbotAI;
 class HealPriestStrategy : public GenericPriestStrategy
 {
     public:
-        HealPriestStrategy(PlayerbotAI* botAI) : GenericPriestStrategy(botAI) { }
+        HealPriestStrategy(PlayerbotAI* botAI);
 
         void InitTriggers(std::vector<TriggerNode*>& triggers) override;
         NextAction** getDefaultActions() override;

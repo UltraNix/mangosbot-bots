@@ -57,12 +57,19 @@ bool MarkRtiAction::Execute(Event event)
     if (!group)
         return false;
 
+    if (bot->InBattleGround())
+        return false;
+
     Unit* target = nullptr;
     GuidVector attackers = botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get();
     for (ObjectGuid const guid : attackers)
     {
         Unit* unit = botAI->GetUnit(guid);
         if (!unit)
+            continue;
+
+        // do not mark players
+        if (unit->IsPlayer())
             continue;
 
         bool marked = false;

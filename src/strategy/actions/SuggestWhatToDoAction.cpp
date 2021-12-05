@@ -241,13 +241,14 @@ void SuggestWhatToDoAction::spam(std::string const& msg, uint32 channelId)
             if (said.find(channelName) != said.end())
                 continue;
 
+            said.insert(channelName);
+
             if (ChannelMgr* cMgr = ChannelMgr::forTeam(bot->GetTeamId()))
             {
                 if (Channel* chn = cMgr->GetJoinChannel(channelName, channel->ChannelID))
                 {
                     chn->JoinChannel(bot, "");
                     chn->Say(bot->GetGUID(), msg.c_str(), LANG_UNIVERSAL);
-                    said.insert(channelName);
                 }
             }
         }

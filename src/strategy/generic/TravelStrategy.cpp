@@ -16,6 +16,6 @@ NextAction** TravelStrategy::getDefaultActions()
 
 void TravelStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
 {
-    triggers.push_back(new TriggerNode("no travel target", NextAction::array(0, new NextAction("choose travel target", 1), nullptr)));
+    triggers.push_back(new TriggerNode("no travel target", NextAction::array(0, new NextAction("choose travel target", 6.f), nullptr)));
     triggers.push_back(new TriggerNode("far from travel target", NextAction::array(0, new NextAction("move to travel target", 1), nullptr)));
 }

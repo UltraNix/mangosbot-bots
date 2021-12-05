@@ -5,35 +5,6 @@
 #include "EnemyPlayerValue.h"
 #include "Playerbot.h"
 
-/*class FindEnemyPlayerStrategy : public FindTargetStrategy
-{
-    public:
-        FindEnemyPlayerStrategy(PlayerbotAI* botAI) : FindTargetStrategy(botAI) { }
-
-        void CheckAttacker(Unit* attacker, ThreatManager* threatManager) override
-        {
-            if (!result)
-            {
-                if (Player* enemy = attacker->ToPlayer())
-                {
-                    if (botAI->IsOpposing(enemy) && enemy->IsPvP() && !sPlayerbotAIConfig->IsInPvpProhibitedZone(enemy->GetAreaId()) &&
-                        !enemy->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE) && !enemy->HasStealthAura() && !enemy->HasInvisibilityAura() &&
-                        !(enemy->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION)))
-                    {
-                        result = attacker;
-                    }
-                }
-            }
-        }
-};
-
-Unit* EnemyPlayerValue::Calculate()
-{
-    FindEnemyPlayerStrategy strategy(botAI);
-    return FindTarget(&strategy);
-}
-*/
-
 bool NearestEnemyPlayersValue::AcceptUnit(Unit* unit)
 {
     Player* enemy = dynamic_cast<Player*>(unit);

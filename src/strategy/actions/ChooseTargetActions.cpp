@@ -3,7 +3,9 @@
  */
 
 #include "ChooseTargetActions.h"
+#include "ChooseRpgTargetAction.h"
 #include "Event.h"
+#include "LootObjectStack.h"
 #include "PossibleRpgTargetsValue.h"
 #include "Playerbot.h"
 #include "TravelMgr.h"
@@ -12,7 +14,7 @@
 bool AttackEnemyPlayerAction::isUseful()
 {
     // if carry flag, do not start fight
-    if (bot->HasAura(23333) || bot->HasAura(23335))
+    if (bot->HasAura(23333) || bot->HasAura(23335) || bot->HasAura(34976))
         return false;
 
     return !sPlayerbotAIConfig->IsInPvpProhibitedZone(bot->GetAreaId());
@@ -21,14 +23,47 @@ bool AttackEnemyPlayerAction::isUseful()
 bool AttackEnemyFlagCarrierAction::isUseful()
 {
     Unit* target = context->GetValue<Unit*>("enemy flag carrier")->Get();
-    return target && sServerFacade->IsDistanceLessOrEqualThan(sServerFacade->GetDistance2d(bot, target), 75.0f) && (bot->HasAura(23333) || bot->HasAura(23335));
+    return target && sServerFacade->IsDistanceLessOrEqualThan(sServerFacade->GetDistance2d(bot, target), 75.0f) && (bot->HasAura(23333) || bot->HasAura(23335) || bot->HasAura(34976));
+}
+
+bool AttackAnythingAction::isUseful()
+{
+    if (!ai->AllowActivity(GRIND_ACTIVITY))                                              //Bot not allowed to be active
+        return false;
+
+    if (!AI_VALUE(bool, "can move around"))
+        return false;
+
+    if (context->GetValue<TravelTarget*>("travel target")->Get()->isTraveling() && ChooseRpgTargetAction::isFollowValid(bot, *context->GetValue<TravelTarget*>("travel target")->Get()->getPosition())) //Bot is traveling
+        return false;
+
+    Unit* target = GetTarget();
+
+    if (!target)
+        return false;
+
+    string name = string(target->GetName());
+    if (!name.empty() && name.find("Dummy") != std::string::npos) // Target is not a targetdummy
+        return false;
+
+    if (!ChooseRpgTargetAction::isFollowValid(bot, target))                               //Do not grind mobs far away from master.
+        return false;
+
+    return true;
 }
 
 bool DropTargetAction::Execute(Event event)
 {
     Unit* target = context->GetValue<Unit*>("current target")->Get();
+    if (target && sServerFacade.UnitIsDead(target))
+    {
+        ObjectGuid guid = target->GetObjectGuid();
+        if (guid)
+            context->GetValue<LootObjectStack*>("available loot")->Get()->Add(guid);
+    }
+
     ObjectGuid pullTarget = context->GetValue<ObjectGuid>("pull target")->Get();
-    GuidVector possible = botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets")->Get();
+    GuidVector possible = botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
 
     if (pullTarget && find(possible.begin(), possible.end(), pullTarget) == possible.end())
     {
@@ -52,10 +87,10 @@ bool DropTargetAction::Execute(Event event)
         }
     }
 
-    if (!urand(0, 25))
+    if (!urand(0, 50) && ai->HasStrategy("emote", BOT_STATE_NON_COMBAT))
     {
         std::vector<uint32> sounds;
-        if (target && target->isDead())
+        if (target && sServerFacade.UnitIsDead(target))
         {
             sounds.push_back(TEXT_EMOTE_CHEER);
             sounds.push_back(TEXT_EMOTE_CONGRATULATE);
@@ -67,7 +102,7 @@ bool DropTargetAction::Execute(Event event)
         }
 
         if (!sounds.empty())
-            botAI->PlaySound(sounds[urand(0, sounds.size() - 1)]);
+            botAI->PlayEmote(sounds[urand(0, sounds.size() - 1)]);
     }
 
     return true;
@@ -81,20 +116,15 @@ bool AttackAnythingAction::Execute(Event event)
         if (Unit* grindTarget = GetTarget())
         {
             if (char const* grindName = grindTarget->GetName().c_str())
-                context->GetValue<ObjectGuid>("pull target")->Set(grindTarget->GetGUID());
+            {
+                context->GetValue<ObjectGuid>("pull target")->Set(grindTarget->GetObjectGuid());
+                bot->GetMotionMaster()->Clear();
+                bot->StopMoving();
+            }
         }
     }
 
     return result;
-}
-
-bool AttackAnythingAction::isUseful()
-{
-    return GetTarget() && ((botAI->AllowActive(GRIND_ACTIVITY)                                                                             //Bot allowed to be activ
-        && AI_VALUE2(uint8, "health", "self target") > sPlayerbotAIConfig->mediumHealth                                                 // Bot has enough health.
-        && (!AI_VALUE2(uint8, "mana", "self target") || AI_VALUE2(uint8, "mana", "self target") > sPlayerbotAIConfig->mediumMana)       // Bot has no mana or enough mana.
-        && !context->GetValue<TravelTarget*>("travel target")->Get()->isTraveling()) ||                                                 // Bot is not travelling.
-        AI_VALUE2(bool, "combat", "self target"));                                                                                      // Bot is already in combat
 }
 
 bool AttackAnythingAction::isPossible()
@@ -127,7 +157,7 @@ bool AttackAnythingAction::GrindAlone(Player* bot)
 bool DpsAssistAction::isUseful()
 {
     // if carry flag, do not start fight
-    if (bot->HasAura(23333) || bot->HasAura(23335))
+    if (bot->HasAura(23333) || bot->HasAura(23335) || bot->HasAura(34976))
         return false;
 
     return true;

@@ -12,7 +12,7 @@ class PlayerbotAI;
 class DpsTargetValue : public RtiTargetValue
 {
 	public:
-        DpsTargetValue(PlayerbotAI* botAI) : RtiTargetValue(botAI) { }
+        DpsTargetValue(PlayerbotAI* botAI, string type = "rti", string name = "dps target") : RtiTargetValue(ai, type, name) {}
 
         Unit* Calculate() override;
 };
@@ -20,7 +20,7 @@ class DpsTargetValue : public RtiTargetValue
 class DpsAoeTargetValue : public RtiTargetValue
 {
 	public:
-        DpsAoeTargetValue(PlayerbotAI* botAI) : RtiTargetValue(botAI) { }
+        DpsAoeTargetValue(PlayerbotAI* botAI, string type = "rti", string name = "dps aoe target") : RtiTargetValue(ai, type, name) {}
 
         Unit* Calculate() override;
 };

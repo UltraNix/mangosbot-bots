@@ -9,19 +9,22 @@
 bool PassLeadershipToMasterAction::Execute(Event event)
 {
     if (Player* master = GetMaster())
-        if (master && !master->GetPlayerbotAI() && bot->GetGroup() && bot->GetGroup()->IsMember(master->GetGUID()))
+        if (master && master != bot && bot->GetGroup() && bot->GetGroup()->IsMember(master->GetGUID()))
         {
             WorldPacket p(SMSG_GROUP_SET_LEADER, 8);
             p << master->GetGUID();
             bot->GetSession()->HandleGroupSetLeaderOpcode(p);
 
-            botAI->TellMasterNoFacing("Passing leader to you!");
+            if (!message.empty())
+                ai->TellMasterNoFacing(message);
+
+            if (sRandomPlayerbotMgr.IsRandomBot(bot))
+            {
+                ai->ResetStrategies();
+                ai->Reset();
+            }
 
             return true;
-        }
-        else if (bot->GetGroup() && (!master || master->GetPlayerbotAI()))
-        {
-            bot->GetGroup()->SetLootMethod(FREE_FOR_ALL);
         }
 
     return false;
@@ -29,5 +32,10 @@ bool PassLeadershipToMasterAction::Execute(Event event)
 
 bool PassLeadershipToMasterAction::isUseful()
 {
-    return bot->GetGroup() && bot->GetGroup()->IsLeader(bot->GetGUID()) && !bot->GetPlayerbotAI()->IsRealPlayer();
+    return ai->IsAlt() && bot->GetGroup() && bot->GetGroup()->IsLeader(bot->GetObjectGuid());
+}
+
+bool GiveLeaderAction::isUseful()
+{
+    return ai->HasActivePlayerMaster() && bot->GetGroup() && bot->GetGroup()->IsLeader(bot->GetObjectGuid());
 }

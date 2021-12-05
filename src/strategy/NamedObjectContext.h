@@ -14,12 +14,12 @@ class Qualified
     public:
         Qualified() { };
         Qualified(std::string const& qualifier) : qualifier(qualifier) { }
-        Qualified(uint32 qualifier1)
+        Qualified(int32 qualifier1)
         {
             Qualify(qualifier1);
         }
 
-        virtual void Qualify(uint32 qual)
+        virtual void Qualify(int32 qual)
         {
             std::ostringstream out;
             out << qual;
@@ -32,6 +32,25 @@ class Qualified
         }
 
         std::string const& getQualifier() { return qualifier; }
+
+        static string MultiQualify(vector<string> qualifiers)
+        {
+            ostringstream out;
+            for (auto& qualifier : qualifiers)
+                out << qualifier << (&qualifier != &qualifiers.back() ? " " : "");
+            return out.str();
+        }
+
+        static vector<string> getMultiQualifiers(string qualifier1)
+        {
+            istringstream iss(qualifier1);
+            return { istream_iterator<string>{iss}, istream_iterator<string>{} };
+        }
+
+        static int32 getMultiQualifier(string qualifier1, uint32 pos)
+        {
+            return stoi(getMultiQualifiers(qualifier1)[pos]);
+        }
 
     protected:
         std::string qualifier;

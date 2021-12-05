@@ -153,6 +153,7 @@ class ShamanAiObjectContextInternal : public NamedObjectContext<Action>
             creators["grace of air totem"] = &ShamanAiObjectContextInternal::grace_of_air_totem;
             creators["mana spring totem"] = &ShamanAiObjectContextInternal::mana_spring_totem;
             creators["mana tide totem"] = &ShamanAiObjectContextInternal::mana_tide_totem;
+            creators["earthbind totem"] = &AiObjectContextInternal::earthbind_totem;
             creators["healing stream totem"] = &ShamanAiObjectContextInternal::healing_stream_totem;
             creators["wind shear"] = &ShamanAiObjectContextInternal::wind_shear;
             creators["wind shear on enemy healer"] = &ShamanAiObjectContextInternal::wind_shear_on_enemy_healer;
@@ -225,6 +226,7 @@ class ShamanAiObjectContextInternal : public NamedObjectContext<Action>
         static Action* grace_of_air_totem(PlayerbotAI* botAI) { return new CastGraceOfAirTotemAction(botAI); }
         static Action* mana_spring_totem(PlayerbotAI* botAI) { return new CastManaSpringTotemAction(botAI); }
         static Action* mana_tide_totem(PlayerbotAI* botAI) { return new CastManaTideTotemAction(botAI); }
+        static Action* earthbind_totem(PlayerbotAI* ai) { return new CastEarthbindTotemAction(ai); }
         static Action* healing_stream_totem(PlayerbotAI* botAI) { return new CastHealingStreamTotemAction(botAI); }
         static Action* wind_shear(PlayerbotAI* botAI) { return new CastWindShearAction(botAI); }
         static Action* rockbiter_weapon(PlayerbotAI* botAI) { return new CastRockbiterWeaponAction(botAI); }

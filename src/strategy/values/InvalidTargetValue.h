@@ -13,7 +13,7 @@ class PlayerbotAI;
 class InvalidTargetValue : public BoolCalculatedValue, public Qualified
 {
 	public:
-        InvalidTargetValue(PlayerbotAI* botAI) : BoolCalculatedValue(botAI) { }
+        InvalidTargetValue(PlayerbotAI* botAI, string name = "invalid target") : BoolCalculatedValue(ai, name) {}
 
         bool Calculate() override;
 };

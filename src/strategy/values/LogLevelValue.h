@@ -12,7 +12,7 @@ class PlayerbotAI;
 class LogLevelValue : public ManualSetValue<LogLevel>
 {
 	public:
-        LogLevelValue(PlayerbotAI* botAI) : ManualSetValue<LogLevel>(botAI, LOG_LEVEL_DEBUG) { }
+        LogLevelValue(PlayerbotAI* botAI, string name = "log level") : ManualSetValue<LogLevel>(ai, LOG_LVL_DEBUG, name) {}
 };
 
 #endif

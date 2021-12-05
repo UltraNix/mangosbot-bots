@@ -415,4 +415,6 @@ class CastTurnUndeadAction : public CastBuffSpellAction
         Value<Unit*>* GetTargetValue() override;
 };
 
+PROTECT_ACTION(CastBlessingOfProtectionProtectAction, "blessing of protection");
+
 #endif

@@ -9,7 +9,10 @@
 #include "Item.h"
 #include "ChatHelper.h"
 
+class AiObjectContext;
 class Player;
+
+enum ItemUsage : uint32;
 
 char* strstri(char const* str1, char const* str2);
 
@@ -346,6 +349,21 @@ class FindAmmoVisitor : public FindUsableItemVisitor
         uint32 weaponType;
 };
 
+class FindQuestItemVisitor : public FindUsableItemVisitor
+{
+    public:
+        FindQuestItemVisitor(Player* bot) : FindUsableItemVisitor(bot) {}
+
+        bool Accept(const ItemPrototype* proto) override
+        {
+            if (proto->Class == ITEM_CLASS_QUEST)
+            {
+                return true;
+            }
+            return false;
+        }
+};
+
 class FindRecipeVisitor : public FindUsableItemVisitor
 {
     public:
@@ -386,6 +404,18 @@ class FindRecipeVisitor : public FindUsableItemVisitor
 
     private:
         SkillType skill;
+};
+
+class FindItemUsageVisitor : public FindUsableItemVisitor
+{
+    public:
+        FindItemUsageVisitor(Player* bot, ItemUsage usage = ITEM_USAGE_NONE);
+
+        bool Accept(const ItemPrototype* proto) override;
+
+    private:
+        AiObjectContext* context;
+        ItemUsage usage;
 };
 
 #endif

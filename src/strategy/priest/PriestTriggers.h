@@ -9,10 +9,40 @@
 
 class PlayerbotAI;
 
+DEBUFF_TRIGGER(HolyFireTrigger, "holy fire");
+DEBUFF_TRIGGER(PowerWordPainTrigger, "shadow word: pain");
+DEBUFF_ENEMY_TRIGGER(PowerWordPainOnAttackerTrigger, "shadow word: pain");
+DEBUFF_TRIGGER(VampiricTouchTrigger, "vampiric touch");
+DEBUFF_TRIGGER(VampiricEmbraceTrigger, "vampiric embrace");
+CURE_TRIGGER(DispelMagicTrigger, "dispel magic", DISPEL_MAGIC);
+CURE_PARTY_TRIGGER(DispelMagicPartyMemberTrigger, "dispel magic", DISPEL_MAGIC);
+CURE_TRIGGER(CureDiseaseTrigger, "cure disease", DISPEL_DISEASE);
+CURE_PARTY_TRIGGER(PartyMemberCureDiseaseTrigger, "cure disease", DISPEL_DISEASE);
+BUFF_TRIGGER_A(InnerFireTrigger, "inner fire");
+BUFF_TRIGGER_A(ShadowformTrigger, "shadowform");
+BUFF_TRIGGER(PowerInfusionTrigger, "power infusion");
+BUFF_TRIGGER(InnerFocusTrigger, "inner focus");
+BUFF_TRIGGER(ShadowProtectionTrigger, "shadow protection");
+BUFF_PARTY_TRIGGER(ShadowProtectionOnPartyTrigger, "shadow protection");
+CC_TRIGGER(ShackleUndeadTrigger, "shackle undead");
+INTERRUPT_TRIGGER(SilenceTrigger, "silence");
+INTERRUPT_HEALER_TRIGGER(SilenceEnemyHealerTrigger, "silence");
+
+// racials
+DEBUFF_TRIGGER(DevouringPlagueTrigger, "devouring plague");
+BUFF_TRIGGER(TouchOfWeaknessTrigger, "touch of weakness");
+DEBUFF_TRIGGER(HexOfWeaknessTrigger, "hex of weakness");
+BUFF_TRIGGER(ShadowguardTrigger, "shadowguard");
+BUFF_TRIGGER(FearWardTrigger, "fear ward");
+DEFLECT_TRIGGER(FeedbackTrigger, "feedback");
+SNARE_TRIGGER(ChastiseTrigger, "chastise");
+
+BOOST_TRIGGER_A(ShadowfiendTrigger, "shadowfiend");
+
 class PowerWordFortitudeOnPartyTrigger : public BuffOnPartyTrigger
 {
     public:
-        PowerWordFortitudeOnPartyTrigger(PlayerbotAI* botAI) : BuffOnPartyTrigger(botAI, "power word: fortitude", 2) { }
+        PowerWordFortitudeOnPartyTrigger(PlayerbotAI* botAI) : BuffOnPartyTrigger(botAI, "power word: fortitude", 4) { }
 
         bool IsActive() override;
 };
@@ -20,7 +50,7 @@ class PowerWordFortitudeOnPartyTrigger : public BuffOnPartyTrigger
 class PowerWordFortitudeTrigger : public BuffTrigger
 {
     public:
-        PowerWordFortitudeTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "power word: fortitude", 2) { }
+        PowerWordFortitudeTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "power word: fortitude", 4) { }
 
         bool IsActive() override;
 };
@@ -28,7 +58,7 @@ class PowerWordFortitudeTrigger : public BuffTrigger
 class DivineSpiritOnPartyTrigger : public BuffOnPartyTrigger
 {
     public:
-        DivineSpiritOnPartyTrigger(PlayerbotAI* botAI) : BuffOnPartyTrigger(botAI, "divine spirit", 2) { }
+        DivineSpiritOnPartyTrigger(PlayerbotAI* botAI) : BuffOnPartyTrigger(botAI, "divine spirit", 4) { }
 
         bool IsActive() override;
 };
@@ -36,7 +66,7 @@ class DivineSpiritOnPartyTrigger : public BuffOnPartyTrigger
 class DivineSpiritTrigger : public BuffTrigger
 {
     public:
-        DivineSpiritTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "divine spirit", 2) { }
+        DivineSpiritTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "divine spirit", 4) { }
 
         bool IsActive() override;
 };
@@ -44,7 +74,7 @@ class DivineSpiritTrigger : public BuffTrigger
 class PrayerOfFortitudeTrigger : public BuffOnPartyTrigger
 {
     public:
-        PrayerOfFortitudeTrigger(PlayerbotAI* botAI) : BuffOnPartyTrigger(botAI, "prayer of fortitude", 2) { }
+        PrayerOfFortitudeTrigger(PlayerbotAI* botAI) : BuffOnPartyTrigger(botAI, "prayer of fortitude", 3) { }
 
         bool IsActive() override;
 };
@@ -57,86 +87,12 @@ class PrayerOfSpiritTrigger : public BuffOnPartyTrigger
         bool IsActive() override;
 };
 
-class InnerFireTrigger : public BuffTrigger
+class BindingHealTrigger : public PartyMemberLowHealthTrigger
 {
     public:
-        InnerFireTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "inner fire", 2) { }
+        BindingHealTrigger(PlayerbotAI* ai);
 
         bool IsActive() override;
-};
-
-BUFF_TRIGGER(VampiricEmbraceTrigger, "vampiric embrace", "vampiric embrace")
-
-class PowerWordPainOnAttackerTrigger : public DebuffOnAttackerTrigger
-{
-    public:
-        PowerWordPainOnAttackerTrigger(PlayerbotAI* botAI) : DebuffOnAttackerTrigger(botAI, "shadow word: pain") { }
-};
-
-DEBUFF_TRIGGER(PowerWordPainTrigger, "shadow word: pain", "shadow word: pain")
-DEBUFF_TRIGGER(DevouringPlagueTrigger, "devouring plague", "devouring plague")
-DEBUFF_TRIGGER(VampiricTouchTrigger, "vampiric touch", "vampiric touch")
-
-class DispelMagicTrigger : public NeedCureTrigger
-{
-    public:
-        DispelMagicTrigger(PlayerbotAI* botAI) : NeedCureTrigger(botAI, "dispel magic", DISPEL_MAGIC) { }
-};
-
-class DispelMagicPartyMemberTrigger : public PartyMemberNeedCureTrigger
-{
-    public:
-        DispelMagicPartyMemberTrigger(PlayerbotAI* botAI) : PartyMemberNeedCureTrigger(botAI, "dispel magic", DISPEL_MAGIC) { }
-};
-
-class CureDiseaseTrigger : public NeedCureTrigger
-{
-    public:
-        CureDiseaseTrigger(PlayerbotAI* botAI) : NeedCureTrigger(botAI, "cure disease", DISPEL_DISEASE) { }
-};
-
-class PartyMemberCureDiseaseTrigger : public PartyMemberNeedCureTrigger
-{
-    public:
-        PartyMemberCureDiseaseTrigger(PlayerbotAI* botAI) : PartyMemberNeedCureTrigger(botAI, "cure disease", DISPEL_DISEASE) { }
-};
-
-class ShadowformTrigger : public BuffTrigger
-{
-    public:
-        ShadowformTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "shadowform") { }
-
-        bool IsActive() override;
-};
-
-class PowerInfusionTrigger : public BuffTrigger
-{
-    public:
-        PowerInfusionTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "power infusion") { }
-};
-
-class InnerFocusTrigger : public BuffTrigger
-{
-    public:
-        InnerFocusTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "inner focus") { }
-};
-
-class ShadowProtectionOnPartyTrigger : public BuffOnPartyTrigger
-{
-    public:
-        ShadowProtectionOnPartyTrigger(PlayerbotAI* botAI) : BuffOnPartyTrigger(botAI, "shadow protection", 2) { }
-};
-
-class ShadowProtectionTrigger : public BuffTrigger
-{
-    public:
-        ShadowProtectionTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "shadow protection", 2) { }
-};
-
-class ShackleUndeadTrigger : public HasCcTargetTrigger
-{
-    public:
-        ShackleUndeadTrigger(PlayerbotAI* botAI) : HasCcTargetTrigger(botAI, "shackle undead") { }
 };
 
 #endif

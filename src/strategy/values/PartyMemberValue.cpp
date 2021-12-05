@@ -4,6 +4,7 @@
 
 #include "PartyMemberValue.h"
 #include "Playerbot.h"
+#include "ServerFacade.h"
 
 Unit* PartyMemberValue::FindPartyMember(std::vector<Player*>* party, FindPlayerPredicate& predicate)
 {
@@ -24,7 +25,7 @@ Unit* PartyMemberValue::FindPartyMember(FindPlayerPredicate& predicate, bool ign
 {
     Player* master = GetMaster();
     GuidVector nearestPlayers;
-    if (botAI->AllowActive(OUT_OF_PARTY_ACTIVITY))
+    if (botAI->AllowActivity(OUT_OF_PARTY_ACTIVITY))
         nearestPlayers = AI_VALUE(GuidVector, "nearest friendly players");
 
     GuidList nearestGroupPlayers;
@@ -46,7 +47,7 @@ Unit* PartyMemberValue::FindPartyMember(FindPlayerPredicate& predicate, bool ign
         }
     }
 
-    if (!ignoreOutOfGroup && !nearestPlayers.empty())
+    if (!ignoreOutOfGroup && !nearestPlayers.empty() && nearestPlayers.size() < 100)
         nearestGroupPlayers.insert(nearestGroupPlayers.end(), nearestPlayers.begin(), nearestPlayers.end());
 
     nearestPlayers = nearestGroupPlayers;
@@ -92,8 +93,7 @@ Unit* PartyMemberValue::FindPartyMember(FindPlayerPredicate& predicate, bool ign
 
 bool PartyMemberValue::Check(Unit* player)
 {
-    return player && player != bot && player->GetMapId() == bot->GetMapId() && bot->GetDistance(player) < sPlayerbotAIConfig->spellDistance &&
-        bot->IsWithinLOS(player->GetPositionX(), player->GetPositionY(), player->GetPositionZ());
+    return player && player != bot && player->GetMapId() == bot->GetMapId() && bot->IsWithinDistInMap(player, sPlayerbotAIConfig.sightDistance, false);
 }
 
 bool PartyMemberValue::IsTargetOfSpellCast(Player* target, SpellEntryPredicate &predicate)

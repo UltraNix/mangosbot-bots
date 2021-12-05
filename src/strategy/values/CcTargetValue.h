@@ -13,7 +13,7 @@ class PlayerbotAI;
 class CcTargetValue : public TargetValue, public Qualified
 {
 	public:
-        CcTargetValue(PlayerbotAI* botAI) : TargetValue(botAI) { }
+        CcTargetValue(PlayerbotAI* botAI, string name = "cc target") : TargetValue(ai, name) {}
 
         Unit* Calculate() override;
 };

@@ -35,12 +35,12 @@ bool AddAllLootAction::Execute(Event event)
 
 bool AddLootAction::isUseful()
 {
-    return true; // AI_VALUE(uint8, "bag space") < 80 || GrindTravelDestination::moneyNeeded(bot) > bot->GetMoney();
+    return true;
 }
 
 bool AddAllLootAction::isUseful()
 {
-    return true; // AI_VALUE(uint8, "bag space") < 80 || GrindTravelDestination::moneyNeeded(bot) > bot->GetMoney();
+    return true;
 }
 
 bool AddAllLootAction::AddLoot(ObjectGuid guid)
@@ -70,7 +70,7 @@ bool AddGatheringLootAction::AddLoot(ObjectGuid guid)
         std::list<Unit*> targets;
         Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, sPlayerbotAIConfig->lootDistance);
         Acore::UnitListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
-        Cell::VisitAllObjects(bot, searcher, sPlayerbotAIConfig->lootDistance);
+        Cell::VisitAllObjects(bot, searcher, sPlayerbotAIConfig->lootDistance * 1.5f);
         if (!targets.empty())
         {
             std::ostringstream out;

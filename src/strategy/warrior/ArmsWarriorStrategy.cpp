@@ -1,0 +1,56 @@
+/*
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it and/or modify it under version 2 of the License, or (at your option), any later version.
+ */
+
+#include "ArmsWarriorStrategy.h"
+#include "WarriorMultipliers.h"
+#include "Playerbot.h"
+
+class ArmsWarriorStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
+{
+    public:
+        ArmsWarriorStrategyActionNodeFactory()
+        {
+            creators["charge"] = &charge;
+            creators["death wish"] = &death_wish;
+            creators["piercing howl"] = &piercing_howl;
+            creators["mocking blow"] = &mocking_blow;
+        }
+
+    private:
+        ACTION_NODE_A(charge, "charge", "reach melee");
+        ACTION_NODE_A(death_wish, "death wish", "bloodrage");
+        ACTION_NODE_A(piercing_howl, "piercing howl", "mocking blow");
+        ACTION_NODE_A(mocking_blow, "mocking blow", "hamstring");
+};
+
+ArmsWarriorStrategy::ArmsWarriorStrategy(PlayerbotAI* ai) : GenericWarriorStrategy(ai)
+{
+    actionNodeFactories.Add(new ArmsWarriorStrategyActionNodeFactory());
+}
+
+NextAction** ArmsWarriorStrategy::getDefaultActions()
+{
+    return NextAction::array(0, new NextAction("melee", ACTION_NORMAL), NULL);
+}
+
+void ArmsWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+{
+    GenericWarriorStrategy::InitTriggers(triggers);
+
+    triggers.push_back(new TriggerNode("enemy out of melee", NextAction::array(0, new NextAction("charge", ACTION_MOVE + 9), NULL)));
+    triggers.push_back(new TriggerNode("battle stance", NextAction::array(0, new NextAction("battle stance", ACTION_HIGH + 9), NULL)));
+    triggers.push_back(new TriggerNode("battle shout", NextAction::array(0, new NextAction("battle shout", ACTION_HIGH + 8), NULL)));
+    triggers.push_back(new TriggerNode("mortal strike", NextAction::array(0, new NextAction("mortal strike", ACTION_HIGH + 1), NULL)));
+    triggers.push_back(new TriggerNode("target critical health", NextAction::array(0, new NextAction("execute", ACTION_HIGH + 4), NULL)));
+    triggers.push_back(new TriggerNode("sudden death", NextAction::array(0, new NextAction("execute", ACTION_HIGH + 4), NULL)));
+	triggers.push_back(new TriggerNode("hamstring", NextAction::array(0, new NextAction("piercing howl", ACTION_HIGH), NULL)));
+    triggers.push_back(new TriggerNode("overpower", NextAction::array(0, new NextAction("overpower", ACTION_HIGH + 3), NULL)));
+    triggers.push_back(new TriggerNode("taste for blood", NextAction::array(0, new NextAction("overpower", ACTION_HIGH + 3), NULL)));
+	triggers.push_back(new TriggerNode("victory rush", NextAction::array(0, new NextAction("victory rush", ACTION_INTERRUPT), NULL)));
+    triggers.push_back(new TriggerNode("high rage available", NextAction::array(0, new NextAction("heroic strike", ACTION_HIGH), NULL)));
+    triggers.push_back(new TriggerNode("bloodrage", NextAction::array(0, new NextAction("bloodrage", ACTION_HIGH + 2), NULL)));
+    triggers.push_back(new TriggerNode("death wish", NextAction::array(0, new NextAction("death wish", ACTION_HIGH + 2), NULL)));
+    triggers.push_back(new TriggerNode("rend", NextAction::array(0, new NextAction("rend", ACTION_NORMAL + 1), NULL)));
+    triggers.push_back(new TriggerNode("critical health", NextAction::array(0, new NextAction("intimidating shout", ACTION_EMERGENCY), NULL)));
+}

@@ -1175,4 +1175,6 @@ bool GuildTaskMgr::CheckTaskTransfer(std::string text, Player* ownerPlayer, Play
             }
         } while (results->NextRow());
     }
+
+    return true;
 }

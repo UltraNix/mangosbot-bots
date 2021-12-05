@@ -294,7 +294,8 @@ std::string ChatHelper::formatGameobject(GameObject* go)
 std::string ChatHelper::formatWorldobject(WorldObject* wo)
 {
     std::ostringstream out;
-    out << "|cFFFFFF00|Hfound:" << wo->GetGUID().GetRawValue() << ":" << wo->GetEntry() << ":" << "|h[" << wo->GetName() << "]|h|r";
+    out << "|cFFFFFF00|Hfound:" << wo->GetGUID().GetRawValue() << ":" << wo->GetEntry() << ":" << "|h[";
+    out << (wo->IsGameObject() ? ((GameObject*)wo)->GetGOInfo()->name : wo->GetName()) << "]|h|r";
     return out.str();
 }
 
@@ -344,6 +345,19 @@ std::string ChatHelper::formatItem(ItemTemplate const* proto, uint32 count, uint
 
     if (total > 0)
         out << " (" << total << ")";
+
+    return out.str();
+}
+
+string ChatHelper::formatQItem(uint32 itemId)
+{
+    char color[32];
+    sprintf(color, "%x", ItemQualityColors[0]);
+
+    ostringstream out;
+    out << "|c" << color << "|Hitem:" << itemId << ":0:0:0:0:0:0:0"
+        << "|h[item"
+        << "]|h|r";
 
     return out.str();
 }

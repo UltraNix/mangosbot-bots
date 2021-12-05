@@ -8,6 +8,8 @@
 #include "InventoryAction.h"
 
 class Event;
+class GameObject;
+class Item;
 class PlayerbotAI;
 
 class GuildBankAction : public InventoryAction
@@ -15,7 +17,11 @@ class GuildBankAction : public InventoryAction
     public:
         GuildBankAction(PlayerbotAI* botAI) : InventoryAction(botAI, "guild bank") { }
 
-        bool Execute(Event event) override { return false; }
+        bool Execute(Event event) override;
+
+    private:
+        bool Execute(string text, GameObject* bank);
+        bool MoveFromCharToBank(Item* item, GameObject* bank);
 };
 
 #endif

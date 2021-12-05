@@ -13,7 +13,7 @@ class PlayerbotAI;
 class PartyMemberToDispel : public PartyMemberValue, public Qualified
 {
 	public:
-        PartyMemberToDispel(PlayerbotAI* botAI) : PartyMemberValue(botAI), Qualified() { }
+        PartyMemberToDispel(PlayerbotAI* ai, string name = "party member to dispel") : PartyMemberValue(ai, name), Qualified() {}
 
     protected:
         Unit* Calculate() override;

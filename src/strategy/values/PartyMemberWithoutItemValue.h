@@ -14,7 +14,7 @@ class PlayerbotAI;
 class PartyMemberWithoutItemValue : public PartyMemberValue, public Qualified
 {
     public:
-        PartyMemberWithoutItemValue(PlayerbotAI* botAI, float range = sPlayerbotAIConfig->farDistance) : PartyMemberValue(botAI) { }
+        PartyMemberWithoutItemValue(PlayerbotAI* botAI, string name = "party member without item", float range = sPlayerbotAIConfig->farDistance) : PartyMemberValue(botAI, name) { }
 
     protected:
         Unit* Calculate() override;
@@ -24,7 +24,7 @@ class PartyMemberWithoutItemValue : public PartyMemberValue, public Qualified
 class PartyMemberWithoutFoodValue : public PartyMemberWithoutItemValue
 {
     public:
-        PartyMemberWithoutFoodValue(PlayerbotAI* botAI) : PartyMemberWithoutItemValue(botAI) { }
+        PartyMemberWithoutFoodValue(PlayerbotAI* botAI, string name = "party member without food") : PartyMemberWithoutItemValue(ai, name) {}
 
     protected:
         FindPlayerPredicate* CreatePredicate() override;
@@ -33,7 +33,7 @@ class PartyMemberWithoutFoodValue : public PartyMemberWithoutItemValue
 class PartyMemberWithoutWaterValue : public PartyMemberWithoutItemValue
 {
     public:
-        PartyMemberWithoutWaterValue(PlayerbotAI* botAI) : PartyMemberWithoutItemValue(botAI) { }
+        PartyMemberWithoutWaterValue(PlayerbotAI* botAI, string name = "party member without water") : PartyMemberWithoutItemValue(ai, name) {}
 
     protected:
         FindPlayerPredicate* CreatePredicate() override;

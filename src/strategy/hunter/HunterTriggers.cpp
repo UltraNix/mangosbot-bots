@@ -42,7 +42,7 @@ bool HunterAspectOfThePackTrigger::IsActive()
 
 bool HunterLowAmmoTrigger::IsActive()
 {
-    return (AI_VALUE2(uint8, "item count", "ammo") < 2) && (AI_VALUE2(uint8, "item count", "ammo") > 0);
+    return bot->GetGroup() && (AI_VALUE2(uint32, "item count", "ammo") < 100) && (AI_VALUE2(uint32, "item count", "ammo") > 0);
 }
 
 bool HunterHasAmmoTrigger::IsActive()

@@ -8,7 +8,9 @@
 #include "Action.h"
 
 class Event;
+class Player;
 class PlayerbotAI;
+class Quest;
 
 class DropQuestAction : public Action
 {
@@ -25,7 +27,8 @@ class CleanQuestLogAction : public Action
 
         bool Execute(Event event) override;
         void DropQuestType(uint8& numQuest, uint8 wantNum = 100, bool isGreen = false, bool hasProgress = false, bool isComplete = false);
-        bool HasProgress(uint32 questId);
+
+        static bool HasProgress(Player* bot, Quest const* quest);
 };
 
 

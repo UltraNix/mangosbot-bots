@@ -13,7 +13,7 @@ class Unit;
 class LineTargetValue : public UnitCalculatedValue
 {
 	public:
-        LineTargetValue(PlayerbotAI* botAI) : UnitCalculatedValue(botAI) { }
+        LineTargetValue(PlayerbotAI* botAI, string name = "line target") : UnitCalculatedValue(ai, name) {}
 
         Unit* Calculate() override;
 };

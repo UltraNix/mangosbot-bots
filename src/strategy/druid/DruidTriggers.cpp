@@ -20,6 +20,16 @@ bool ThornsOnPartyTrigger::IsActive()
     return BuffOnPartyTrigger::IsActive() && !botAI->HasAura("thorns", GetTarget());
 }
 
+bool MoonfireTrigger::IsActive()
+{
+    return DebuffTrigger::IsActive() && !GetTarget()->IsRooted();
+}
+
+bool EntanglingRootsKiteTrigger::IsActive()
+{
+    return DebuffTrigger::IsActive() && AI_VALUE(uint8, "attacker count") < 3 && !GetTarget()->HasMana();
+}
+
 bool ThornsTrigger::IsActive()
 {
     return BuffTrigger::IsActive() && !botAI->HasAura("thorns", GetTarget());

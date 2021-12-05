@@ -6,6 +6,7 @@
 #define _PLAYERBOT_RELEASESPIRITACTION_H
 
 #include "Action.h"
+#include "ReviveFromCorpseAction.h"
 
 class Event;
 class PlayerbotAI;
@@ -27,10 +28,10 @@ class AutoReleaseSpiritAction : public ReleaseSpiritAction
         bool isUseful() override;
 };
 
-class RepopAction : public Action
+class RepopAction : public SpiritHealerAction
 {
     public:
-        RepopAction(PlayerbotAI* botAI, std::string const& name = "repop") : Action(botAI, name) { }
+        RepopAction(PlayerbotAI* botAI, std::string const& name = "repop") : SpiritHealerAction(botAI, name) { }
 
         bool Execute(Event event) override;
         bool isUseful() override;

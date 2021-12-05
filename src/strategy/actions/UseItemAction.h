@@ -11,6 +11,7 @@ class Event;
 class Item;
 class ObjectGuid;
 class PlayerbotAI;
+class Unit;
 
 class UseItemAction : public Action
 {
@@ -24,7 +25,7 @@ class UseItemAction : public Action
         bool UseItemAuto(Item* item);
         bool UseItemOnGameObject(Item* item, ObjectGuid go);
         bool UseItemOnItem(Item* item, Item* itemTarget);
-        bool UseItem(Item* item, ObjectGuid go, Item* itemTarget);
+        bool UseItem(Item* item, ObjectGuid go, Item* itemTarget, Unit* unitTarget = nullptr);
         bool UseGameObject(ObjectGuid guid);
         void TellConsumableUse(Item* item, std::string const& action, float percent);
         bool SocketItem(Item* item, Item* gem, bool replace = false);
@@ -60,7 +61,7 @@ class UseManaPotion : public UseItemAction
 class UseHearthStone : public UseItemAction
 {
     public:
-        UseHearthStone(PlayerbotAI* botAI) : UseItemAction(botAI, "hearthstone") { }
+        UseHearthStone(PlayerbotAI* botAI) : UseItemAction(botAI, "hearthstone", true) { }
 
         bool isUseful() override;
         bool Execute(Event event) override;
@@ -69,10 +70,20 @@ class UseHearthStone : public UseItemAction
 class UseRandomRecipe : public UseItemAction
 {
     public:
-        UseRandomRecipe(PlayerbotAI* botAI) : UseItemAction(botAI, "random recipe") { }
+        UseRandomRecipe(PlayerbotAI* botAI) : UseItemAction(botAI, "random recipe", true) { }
 
         bool isUseful() override;
-        bool isPossible() override { return true; }
+        bool isPossible() override;
+        bool Execute(Event event);
+};
+
+class UseRandomQuestItem : public UseItemAction
+{
+   public:
+       UseRandomQuestItem(PlayerbotAI* ai) : UseItemAction(ai, "random quest item", true) {}
+
+        bool isUseful() override;
+        bool isPossible() override;
         bool Execute(Event event) override;
 };
 

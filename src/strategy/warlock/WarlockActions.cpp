@@ -8,7 +8,7 @@
 
 bool CastDrainSoulAction::isUseful()
 {
-    return AI_VALUE2(uint8, "item count", "soul shard") < 2;
+    return AI_VALUE2(uint32, "item count", "soul shard") < uint32(AI_VALUE(uint8, "bag space") * 0.2);
 }
 
 Value<Unit*>* CastBanishAction::GetTargetValue()

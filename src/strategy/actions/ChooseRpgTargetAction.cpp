@@ -4,296 +4,303 @@
 
 #include "ChooseRpgTargetAction.h"
 #include "BattlegroundMgr.h"
+#include "BudgetValues.h"
 #include "ChatHelper.h"
 #include "Event.h"
+#include "Formations.h"
+#include "GuildCreateActions.h"
 #include "PossibleRpgTargetsValue.h"
 #include "Playerbot.h"
 #include "TravelMgr.h"
 
-bool ChooseRpgTargetAction::CanTrain(ObjectGuid guid)
+bool ChooseRpgTargetAction::HasSameTarget(ObjectGuid guid, uint32 max, list<ObjectGuid>& nearGuids)
 {
-    Creature* creature = botAI->GetCreature(guid);
-    if (!creature)
+    if (ai->HasRealPlayerMaster())
         return false;
-
-    if (!creature->IsValidTrainerForPlayer(bot))
-        return false;
-
-    // check present spell in trainer spell list
-    TrainerSpellData const* cSpells = creature->GetTrainerSpells();
-    if (!cSpells)
-    {
-        return false;
-    }
-
-    float fDiscountMod = bot->GetReputationPriceDiscount(creature);
-
-    TrainerSpellData const* trainer_spells = cSpells;
-    for (TrainerSpellMap::const_iterator itr = trainer_spells->spellList.begin(); itr != trainer_spells->spellList.end(); ++itr)
-    {
-        TrainerSpell const* tSpell = &itr->second;
-
-        if (!tSpell)
-            continue;
-
-        TrainerSpellState state = bot->GetTrainerSpellState(tSpell);
-        if (state != TRAINER_SPELL_GREEN)
-            continue;
-
-        uint32 spellId = tSpell->spell;
-        SpellInfo const* pSpellInfo = sSpellMgr->GetSpellInfo(spellId);
-        if (!pSpellInfo)
-            continue;
-
-        uint32 cost = uint32(floor(tSpell->spellCost * fDiscountMod));
-        if (cost > bot->GetMoney())
-            continue;
-
-        return true;
-    }
-
-    return false;
-}
-
-BattlegroundTypeId ChooseRpgTargetAction::CanQueueBg(ObjectGuid guid)
-{
-    for (uint32 i = 1; i < MAX_BATTLEGROUND_QUEUE_TYPES; i++)
-    {
-        BattlegroundQueueTypeId queueTypeId = (BattlegroundQueueTypeId)i;
-
-        BattlegroundTypeId bgTypeId = BattlegroundMgr::BGTemplateId(queueTypeId);
-
-        Battleground* bg = sBattlegroundMgr->GetBattlegroundTemplate(bgTypeId);
-        if (!bg)
-            continue;
-
-        if (bot->getLevel() < bg->GetMinLevel())
-            continue;
-
-        // check if already in queue
-        if (bot->InBattlegroundQueueForBattlegroundQueueType(queueTypeId))
-            continue;
-
-        std::map<TeamId, std::map<BattlegroundTypeId, std::vector<uint32>>> battleMastersCache = sRandomPlayerbotMgr->getBattleMastersCache();
-
-        for (auto& entry : battleMastersCache[TEAM_NEUTRAL][bgTypeId])
-            if (entry == guid.GetEntry())
-                return bgTypeId;
-
-        for (auto& entry : battleMastersCache[bot->GetTeamId()][bgTypeId])
-            if (entry == guid.GetEntry())
-                return bgTypeId;
-    }
-
-    return BATTLEGROUND_TYPE_NONE;
-}
-
-uint32 ChooseRpgTargetAction::HasSameTarget(ObjectGuid guid)
-{
-    if (botAI->HasRealPlayerMaster())
-        return 0;
 
     uint32 num = 0;
 
-    GuidVector nearGuids = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest friendly players")->Get();
-    for (ObjectGuid const guid : nearGuids)
+    for (auto& i : nearGuids)
     {
-        Player* player = ObjectAccessor::FindPlayer(guid);
+        Player* player = sObjectMgr.GetPlayer(i);
         if (!player)
             continue;
 
-        PlayerbotAI* botAI = player->GetPlayerbotAI();
-        if (!botAI)
+        PlayerbotAI* ai = player->GetPlayerbotAI();
+        if (!ai)
             continue;
 
-        if (!botAI->AllowActive(GRIND_ACTIVITY))
+        if (!ai->AllowActivity(GRIND_ACTIVITY))
             continue;
 
-        if (botAI->GetAiObjectContext()->GetValue<ObjectGuid>("rpg target")->Get() != guid)
+        if (PAI_VALUE(GuidPosition, "rpg target") != guid)
             continue;
 
         num++;
+        if (num >= max)
+            break;
     }
 
-    return num;
+    return num > 0;
+}
+
+float ChooseRpgTargetAction::getMaxRelevance(GuidPosition guidP)
+{
+    GuidPosition currentRpgTarget = AI_VALUE(GuidPosition, "rpg target");
+    SET_AI_VALUE(GuidPosition, "rpg target", guidP);
+
+    Strategy* rpgStrategy = ai->GetAiObjectContext()->GetStrategy("rpg");
+
+    list<TriggerNode*> triggerNodes;
+    rpgStrategy->InitTriggers(triggerNodes);
+
+    float maxRelevance = 0.0f;
+
+    for (auto& triggerNode : triggerNodes)
+    {
+        Trigger* trigger = context->GetTrigger(triggerNode->getName());
+        if (trigger)
+        {
+            triggerNode->setTrigger(trigger);
+
+            if (triggerNode->getFirstRelevance() < maxRelevance || triggerNode->getFirstRelevance() > 2.0f)
+                continue;
+
+            trigger = triggerNode->getTrigger();
+            if (!trigger->IsActive())
+                continue;
+
+            maxRelevance = nextAction->getRelevance();
+        }
+    }
+
+    SET_AI_VALUE(GuidPosition, "rpg target", currentRpgTarget);
+
+    for (list<TriggerNode*>::iterator i = triggerNodes.begin(); i != triggerNodes.end(); i++)
+    {
+        TriggerNode* trigger = *i;
+        delete trigger;
+    }
+
+    triggerNodes.clear();
+
+    return (maxRelevance - 1.0) * 1000.0f;
 }
 
 bool ChooseRpgTargetAction::Execute(Event event)
 {
-    TravelTarget* travelTarget = context->GetValue<TravelTarget*>("travel target")->Get();
-    GuidVector possibleTargets = AI_VALUE(GuidVector, "possible rpg targets");
-    GuidVector possibleObjects = AI_VALUE(GuidVector, "nearest game objects no los");
-    GuidSet& ignoreList = context->GetValue<GuidSet&>("ignore rpg target")->Get();
+    TravelTarget* travelTarget = AI_VALUE(TravelTarget*, "travel target");
 
-    if (!possibleObjects.empty())
+    uint32 num = 0;
+
+    unordered_map<ObjectGuid, uint32> targets;
+
+    list<ObjectGuid> possibleTargets = AI_VALUE(list<ObjectGuid>, "possible rpg targets");
+    list<ObjectGuid> possibleObjects = AI_VALUE(list<ObjectGuid>, "nearest game objects no los");
+    list<ObjectGuid> possiblePlayers = AI_VALUE(list<ObjectGuid>, "nearest friendly players");
+    set<ObjectGuid>& ignoreList = AI_VALUE(set<ObjectGuid>&, "ignore rpg target");
+
+    for (auto target : possibleTargets)
+        targets[target] = 0.0f;
+
+    for (auto target : possibleObjects)
+        targets[target] = 0.0f;
+
+    for (auto target : possiblePlayers)
+        targets[target] = 0.0f;
+
+    if (targets.empty())
     {
-        possibleTargets.insert(possibleTargets.end(), possibleObjects.begin(), possibleObjects.end());
+        return false;
     }
 
-    if (possibleTargets.empty())
-        return false;
-
-    uint32 maxPriority = 1;
-
-    //First handing in quests
-    GuidVector targets;
-    for (ObjectGuid const guid : possibleTargets)
+    if (urand(0, 9))
     {
-        GameObject* go = botAI->GetGameObject(guid);
-        Unit* unit = botAI->GetUnit(guid);
-        if (!go && !unit)
+       for (auto target : ignoreList)
+            targets.erase(target);
+    }
+
+    SET_AI_VALUE(string, "next rpg action", this->getName());
+
+    bool hasGoodRelevance = false;
+
+    for (auto& target : targets)
+    {
+        GuidPosition guidP(target.first);
+        if (!guidP)
             continue;
 
-        if (!ignoreList.empty() && ignoreList.find(guid) != ignoreList.end() && urand(0, 100) < 10) //10% chance to retry ignored.
+        float priority = 1;
+
+        if (guidP.GetWorldObject() && !isFollowValid(bot, guidP.GetWorldObject()))
             continue;
 
-        uint32 priority = 1;
-
-        if (unit)
+        if (guidP.IsGameObject())
         {
-            if (!isFollowValid(bot, unit))
+            GameObject* go = guidP.GetGameObject();
+            if (!go || !go->isSpawned() || go->GetGoState() != GO_STATE_READY)
+                continue;
+        }
+        else if (guidP.IsPlayer())
+        {
+            Player* player = guidP.GetPlayer();
+            if (!player)
                 continue;
 
-            if (unit->IsVendor())
-                if (AI_VALUE(uint8, "bag space") > 80)
-                    priority = 100;
+            if (player->GetPlayerbotAI())
+            {
+                GuidPosition guidPP = PAI_VALUE(GuidPosition, "rpg target");
+                if (guidPP.IsPlayer())
+                {
+                    continue;
+                }
+            }
+        }
 
-            if (unit->IsArmorer())
-                if (AI_VALUE(uint8, "bag space") > 80 || (AI_VALUE(uint8, "durability") < 80 && AI_VALUE(uint32, "repair cost") < bot->GetMoney()))
-                    priority = 95;
+        if (possiblePlayers.size() > 200 || HasSameTarget(guidP, urand(5, 15), possiblePlayers))
+            continue;
 
-            uint32 dialogStatus = bot->GetQuestDialogStatus(unit);
-            if (dialogStatus == DIALOG_STATUS_REWARD2 || dialogStatus == DIALOG_STATUS_REWARD || dialogStatus == DIALOG_STATUS_REWARD_REP)
-                priority = 90;
-            else if (CanTrain(guid) || dialogStatus == DIALOG_STATUS_AVAILABLE)
-                priority = 80;
-            else if (travelTarget->getDestination() && travelTarget->getDestination()->getEntry() == unit->GetEntry())
-                priority = 70;
-            else if (unit->IsInnkeeper() && AI_VALUE2(float, "distance", "home bind") > 1000.0f)
-                priority = 60;
-            else if (unit->IsBattleMaster() && CanQueueBg(guid) != BATTLEGROUND_TYPE_NONE)
-                priority = 50;
+        float relevance = getMaxRelevance(guidP);
+
+        if (!hasGoodRelevance || relevance > 1)
+            target.second = relevance;
+
+       if (target.second > 1)
+            hasGoodRelevance = true;
+    }
+
+    SET_AI_VALUE(string, "next rpg action", "");
+
+    for (auto it = begin(targets); it != end(targets);)
+    {
+        if (it->second == 0 || hasGoodRelevance && it->second <= 1.0)
+        {
+            it = targets.erase(it);
         }
         else
-        {
-            if (!go->isSpawned() || go->GetGoState() != GO_STATE_READY)
-                continue;
-
-            if (!isFollowValid(bot, go))
-                continue;
-
-            uint32 dialogStatus = bot->GetQuestDialogStatus(go);
-            if (dialogStatus == DIALOG_STATUS_REWARD2 || dialogStatus == DIALOG_STATUS_REWARD || dialogStatus == DIALOG_STATUS_REWARD_REP)
-                priority = 90;
-            else if (dialogStatus == DIALOG_STATUS_AVAILABLE)
-                priority = 80;
-            else if (travelTarget->getDestination() && travelTarget->getDestination()->getEntry() * -1 == go->GetEntry())
-                priority = 70;
-            //else if (urand(1, 100) > 10)
-                //continue;
-        }
-
-        if (botAI->HasStrategy("debug rpg", BOT_STATE_NON_COMBAT))
-        {
-            std::ostringstream out;
-            out << "rpg option: ";
-            if (unit)
-                out << chat->formatWorldobject(unit);
-            if (go)
-                out << chat->formatGameobject(go);
-
-            out << " " << priority;
-
-            botAI->TellMasterNoFacing(out);
-        }
-
-        if (priority < maxPriority)
-            continue;
-
-        if (HasSameTarget(guid) > urand(5, 15))
-            continue;
-
-        if (priority > maxPriority)
-            targets.clear();
-
-        maxPriority = priority;
-
-        targets.push_back(guid);
+            ++it;
     }
 
     if (targets.empty())
     {
         LOG_INFO("playerbots", "%s can't choose RPG target: all %zu are not available", bot->GetName().c_str(), possibleTargets.size());
-        ignoreList.clear(); //Clear ignore list.
-        context->GetValue<GuidSet&>("ignore rpg target")->Set(ignoreList);
-        context->GetValue<ObjectGuid>("rpg target")->Set(ObjectGuid::Empty);
+        RESET_AI_VALUE(GuidSet&, "ignore rpg target");
+        RESET_AI_VALUE(GuidPosition, "rpg target");
         return false;
     }
 
-    ObjectGuid guid = targets[urand(0, targets.size() - 1)];
-    if (!guid)
+    vector<GuidPosition> guidps;
+    vector<int32> relevances;
+
+    for (auto& target : targets)
     {
-        context->GetValue<ObjectGuid>("rpg target")->Set(ObjectGuid::Empty);
+        guidps.push_back(target.first);
+        relevances.push_back(target.second);
+    }
+
+    std::mt19937 gen(time(0));
+
+    sTravelMgr.weighted_shuffle(guidps.begin(), guidps.end(), relevances.begin(), relevances.end(), gen);
+
+    GuidPosition guidP(guidps.front());
+    if (!guidP)
+    {
+        RESET_AI_VALUE(GuidPosition, "rpg target");
         return false;
     }
 
-    GameObject* go = botAI->GetGameObject(guid);
-    Unit* unit = botAI->GetUnit(guid);
-
-    if (botAI->HasStrategy("debug", BOT_STATE_NON_COMBAT))
+    if (ai->HasStrategy("debug", BOT_STATE_NON_COMBAT) && guidP.GetWorldObject())
     {
         std::ostringstream out;
         out << "found: ";
-
-        if (unit)
-            out << chat->formatWorldobject(unit);
-
-        if (go)
-            out << chat->formatGameobject(go);
-
-        out << " " << maxPriority;
+        out << chat->formatWorldobject(guidP.GetWorldObject());
+        out << " " << relevances.front();
 
         botAI->TellMasterNoFacing(out);
     }
 
-    context->GetValue<ObjectGuid>("rpg target")->Set(guid);
+    SET_AI_VALUE(GuidPosition, "rpg target", guidP);
 
     return true;
 }
 
 bool ChooseRpgTargetAction::isUseful()
 {
-    return botAI->AllowActive(RPG_ACTIVITY) && !bot->IsInCombat() && !context->GetValue<ObjectGuid>("rpg target")->Get()
-        && !context->GetValue<TravelTarget*>("travel target")->Get()->isTraveling() && !context->GetValue<GuidVector>("possible rpg targets")->Get().empty();
+    if (!ai->AllowActivity(RPG_ACTIVITY))
+        return false;
+
+    if (AI_VALUE(GuidPosition, "rpg target"))
+        return false;
+
+    TravelTarget* travelTarget = AI_VALUE(TravelTarget*, "travel target");
+
+    if (travelTarget->isTraveling() && isFollowValid(bot, *travelTarget->getPosition()))
+        return false;
+
+    if (AI_VALUE(list<ObjectGuid>, "possible rpg targets").empty())
+        return false;
+
+    if (!AI_VALUE(bool, "can move around"))
+        return false;
+
+    return true;
 }
 
 bool ChooseRpgTargetAction::isFollowValid(Player* bot, WorldObject* target)
 {
+    if (!target)
+        return false;
+
     WorldLocation location;
     target->GetPosition(location.m_positionX, location.m_positionY, location.m_positionZ);
     return isFollowValid(bot, location);
 }
 
-bool ChooseRpgTargetAction::isFollowValid(Player* bot, WorldLocation location)
+bool ChooseRpgTargetAction::isFollowValid(Player* bot, WorldPosition pos)
 {
     PlayerbotAI* botAI = bot->GetPlayerbotAI();
     Player* master = botAI->GetGroupMaster();
+    Player* realMaster = ai->GetMaster();
+    AiObjectContext* context = ai->GetAiObjectContext();
+
+    bool inDungeon = false;
+
+    if (ai->HasActivePlayerMaster())
+    {
+        if (realMaster->IsInWorld() && realMaster->GetMap()->IsDungeon() && bot->GetMapId() == realMaster->GetMapId())
+            inDungeon = true;
+
+        if (realMaster && realMaster->IsInWorld() && realMaster->GetMap()->IsDungeon() && (realMaster->GetMapId() != pos.getMapId()))
+            return false;
+    }
+
     if (!master || bot == master)
         return true;
 
     if (!botAI->HasStrategy("follow", BOT_STATE_NON_COMBAT))
         return true;
 
-    if (bot->GetDistance(master) > sPlayerbotAIConfig->rpgDistance * 2)
+    if (sqrt(bot->GetDistance(master)) > sPlayerbotAIConfig.rpgDistance * 2)
+        return false;
+
+    Formation* formation = AI_VALUE(Formation*, "formation");
+    float distance = master->GetDistance2d(pos.getX(), pos.getY());
+
+    if (!ai->HasActivePlayerMaster() && distance < 50.0f)
+    {
+        Player* player = master;
+        if (!master->IsMoving() || PAI_VALUE(WorldPosition, "last long move").distance(pos) < sPlayerbotAIConfig.reactDistance)
+            return true;
+    }
+
+    if (inDungeon && realMaster == master && distance > 5.0f)
+        return false;
+
+   if (!master->IsMoving() && distance < 25.0f)
         return true;
 
-    float distance = master->GetDistance(location.GetPositionX(), location.GetPositionY(), location.GetPositionZ());
-
-    if (!master->isMoving() && distance < sPlayerbotAIConfig->sightDistance)
-        return true;
-
-    if (distance < sPlayerbotAIConfig->lootDistance)
-        return true;
+    if (distance < formation->GetMaxDistance())
+       return true;
 
     return false;
 }

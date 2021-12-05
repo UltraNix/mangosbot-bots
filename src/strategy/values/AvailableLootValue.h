@@ -14,20 +14,20 @@ class PlayerbotAI;
 class AvailableLootValue : public ManualSetValue<LootObjectStack*>
 {
 	public:
-        AvailableLootValue(PlayerbotAI* botAI);
+        AvailableLootValue(PlayerbotAI* botAI, string name = "available loot");
         virtual ~AvailableLootValue();
 };
 
 class LootTargetValue : public ManualSetValue<LootObject>
 {
     public:
-        LootTargetValue(PlayerbotAI* botAI);
+        LootTargetValue(PlayerbotAI* botAI, string name = "loot target");
 };
 
 class CanLootValue : public BoolCalculatedValue
 {
     public:
-        CanLootValue(PlayerbotAI* botAI) : BoolCalculatedValue(botAI) { }
+        CanLootValue(PlayerbotAI* botAI, string name = "can loot") : BoolCalculatedValue(ai, name) {}
 
         bool Calculate() override;
 };

@@ -21,11 +21,35 @@ bool RepairAllAction::Execute(Event event)
 
         bot->SetFacingToObject(unit);
         float discountMod = bot->GetReputationPriceDiscount(unit);
-        uint32 totalCost = bot->DurabilityRepairAll(true, discountMod, false);
 
-        std::ostringstream out;
-        out << "Repair: " << chat->formatMoney(totalCost) << " (" << unit->GetName() << ")";
-        botAI->TellMasterNoFacing(out.str());
+        uint32 botMoney = bot->GetMoney();
+        if (ai->HasCheat(BotCheatMask::gold))
+        {
+            bot->SetMoney(10000000);
+        }
+
+        //Repair weapons first.
+        uint32 totalCost = bot->DurabilityRepair(EQUIPMENT_SLOT_MAINHAND, true, discountMod, false);
+        totalCost += bot->DurabilityRepair(EQUIPMENT_SLOT_RANGED, true, discountMod, false);
+        totalCost += bot->DurabilityRepair(EQUIPMENT_SLOT_OFFHAND, true, discountMod, false);
+
+        totalCost += bot->DurabilityRepairAll(true, discountMod, false);
+
+        if (ai->HasCheat(BotCheatMask::gold))
+        {
+            bot->SetMoney(botMoney);
+        }
+
+        if (totalCost > 0)
+        {
+            std::ostringstream out;
+            out << "Repair: " << chat->formatMoney(totalCost) << " (" << unit->GetName() << ")";
+            ai->TellMasterNoFacing(out.str());
+
+           bot->PlayDistanceSound(1116);
+        }
+
+        context->GetValue<uint32>("death count")->Set(0);
 
         return true;
     }

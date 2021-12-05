@@ -51,8 +51,8 @@ WorldLocation MoveAheadFormation::GetLocation()
     if (ground <= INVALID_HEIGHT)
         return Formation::NullLocation;
 
-    z += CONTACT_DISTANCE;
-    bot->UpdateAllowedPositionZ(x, y, z);
+    //z += CONTACT_DISTANCE;
+    //bot->UpdateAllowedPositionZ(x, y, z);
     return WorldLocation(master->GetMapId(), x, y, z);
 }
 
@@ -92,8 +92,8 @@ class NearFormation : public MoveAheadFormation
             if (ground <= INVALID_HEIGHT)
                 return Formation::NullLocation;
 
-            z += CONTACT_DISTANCE;
-            bot->UpdateAllowedPositionZ(x, y, z);
+            //z += CONTACT_DISTANCE;
+            //bot->UpdateAllowedPositionZ(x, y, z);
             return WorldLocation(master->GetMapId(), x, y, z);
         }
 
@@ -369,7 +369,7 @@ float Formation::GetFollowAngle()
 
     uint32 index = 1;
     uint32 total = 1;
-    if (!group && master && !master->GetPlayerbotAI())
+    if (!group && master && !master->GetPlayerbotAI() && master->GetPlayerbotMgr())
     {
         for (PlayerBotMap::const_iterator i = master->GetPlayerbotMgr()->GetPlayerBotsBegin(); i != master->GetPlayerbotMgr()->GetPlayerBotsEnd(); ++i)
         {

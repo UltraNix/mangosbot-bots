@@ -17,4 +17,12 @@ class LfgProposalActiveTrigger : public Trigger
         bool IsActive() override;
 };
 
+class UnknownDungeonTrigger : public Trigger
+{
+    public:
+        UnknownDungeonTrigger(PlayerbotAI* ai) : Trigger(ai, "unknown dungeon", 20) {}
+
+        bool IsActive() override;
+};
+
 #endif

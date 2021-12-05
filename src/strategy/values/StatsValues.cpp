@@ -184,6 +184,11 @@ bool IsInCombatValue::Calculate()
     return false;
 }
 
+bool IsInCombatValue::EqualToLast(bool value)
+{
+    return value == lastValue;
+}
+
 uint8 BagSpaceValue::Calculate()
 {
     uint32 totalused = 0, total = 16;
@@ -240,45 +245,6 @@ uint8 DurabilityValue::Calculate()
         return 0;
 
     return (static_cast<float> (total) / totalMax) * 100;
-}
-
-uint32 RepairCostValue::Calculate()
-{
-    uint32 TotalCost = 0;
-    for (int i = EQUIPMENT_SLOT_START; i < INVENTORY_SLOT_ITEM_END; ++i)
-    {
-        uint16 pos = ((INVENTORY_SLOT_BAG_0 << 8) | i);
-        Item* item = bot->GetItemByPos(pos);
-        if (!item)
-            continue;
-
-        uint32 maxDurability = item->GetUInt32Value(ITEM_FIELD_MAXDURABILITY);
-        if (!maxDurability)
-            continue;
-
-        uint32 curDurability = item->GetUInt32Value(ITEM_FIELD_DURABILITY);
-        uint32 LostDurability = maxDurability - curDurability;
-        if (!LostDurability)
-            continue;
-
-        ItemTemplate const* ditemProto = item->GetTemplate();
-
-        DurabilityCostsEntry const* dcost = sDurabilityCostsStore.LookupEntry(ditemProto->ItemLevel);
-        if (!dcost)
-            continue;
-
-        uint32 dQualitymodEntryId = (ditemProto->Quality + 1) * 2;
-        DurabilityQualityEntry const* dQualitymodEntry = sDurabilityQualityStore.LookupEntry(dQualitymodEntryId);
-        if (!dQualitymodEntry)
-            continue;
-
-        uint32 dmultiplier = dcost->multiplier[ItemSubClassToDurabilityMultiplierId(ditemProto->Class, ditemProto->SubClass)];
-        uint32 costs = uint32(LostDurability * dmultiplier * double(dQualitymodEntry->quality_mod));
-
-        TotalCost += costs;
-    }
-
-    return TotalCost;
 }
 
 Unit* SpeedValue::GetTarget()

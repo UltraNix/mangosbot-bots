@@ -84,25 +84,75 @@ bool AutoReleaseSpiritAction::Execute(Event event)
 
 bool AutoReleaseSpiritAction::isUseful()
 {
-    if (bot->InBattleground())
-        return bot->isDead() && !bot->GetCorpse();
+    if (!sServerFacade.UnitIsDead(bot))
+        return false;
 
-    return ((!bot->GetGroup()) || (bot->GetGroup() && botAI->GetGroupMaster() == bot) || (botAI->GetGroupMaster() && botAI->GetGroupMaster() != bot &&
-        botAI->GetGroupMaster()->isDead() &&
-        bot->getDeathState() != botAI->GetGroupMaster()->getDeathState()))
-        && bot->isDead() && !bot->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST);
+    if (bot->InArena())
+        return false;
+
+    if (bot->InBattleground())
+        return !bot->GetCorpse();
+
+    if (bot->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST))
+        return false;
+
+    if (!bot->GetGroup())
+        return true;
+
+    if (!ai->GetGroupMaster())
+        return true;
+
+    if (ai->GetGroupMaster() == bot)
+        return true;
+
+    if (!ai->HasActivePlayerMaster())
+        return true;
+
+    if (ai->HasActivePlayerMaster() && ai->GetGroupMaster()->GetMapId() == bot->GetMapId() && bot->GetMap() && (bot->GetMap()->IsRaid() || bot->GetMap()->IsDungeon()))
+        return false;
+
+    if (sServerFacade.UnitIsDead(ai->GetGroupMaster()))
+        return true;
+
+    if (sServerFacade.IsDistanceGreaterThan(AI_VALUE2(float, "distance", "master target"), sPlayerbotAIConfig.sightDistance))
+        return true;
+
+    return false;
 }
 
 bool RepopAction::Execute(Event event)
 {
     LOG_INFO("playerbots", "Bot %s %s:%d <%s> repops at graveyard", bot->GetGUID().ToString().c_str(), bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H", bot->getLevel(), bot->GetName().c_str());
 
-    bot->RepopAtGraveyard();
+    int64 deadTime;
+
+    Corpse* corpse = bot->GetCorpse();
+    if (corpse)
+        deadTime = time(nullptr) - corpse->GetGhostTime();
+    else if (bot->IsDead())
+        deadTime = 0;
+    else
+        deadTime = 60 * MINUTE;
+
+    uint32 dCount = AI_VALUE(uint32, "death count");
+
+    WorldSafeLocsEntry const* ClosestGrave = GetGrave(dCount > 10 || deadTime > 30 * MINUTE);
+
+    if (!ClosestGrave)
+        return false;
+
+    bot->TeleportTo(ClosestGrave->map_id, ClosestGrave->x, ClosestGrave->y, ClosestGrave->z, ClosestGrave->o);
+
+    RESET_AI_VALUE(bool, "combat::self target");
+    RESET_AI_VALUE(WorldPosition, "current position");
 
     return true;
 }
 
 bool RepopAction::isUseful()
 {
+    if (bot->InBattleGround())
+        return false;
+
     return true;
 }

@@ -14,7 +14,7 @@ class Unit;
 class AttackerCountValue : public Uint8CalculatedValue, public Qualified
 {
     public:
-        AttackerCountValue(PlayerbotAI* botAI) : Uint8CalculatedValue(botAI) { }
+        AttackerCountValue(PlayerbotAI* botAI, string name = "attackers count") : Uint8CalculatedValue(ai, name) {}
 
         Unit* GetTarget();
         uint8 Calculate() override;
@@ -23,7 +23,7 @@ class AttackerCountValue : public Uint8CalculatedValue, public Qualified
 class MyAttackerCountValue : public Uint8CalculatedValue, public Qualified
 {
     public:
-        MyAttackerCountValue(PlayerbotAI* botAI) : Uint8CalculatedValue(botAI) { }
+        MyAttackerCountValue(PlayerbotAI* botAI, string name = "my attackers count") : Uint8CalculatedValue(ai, name) {}
 
         Unit* GetTarget();
         uint8 Calculate() override;
@@ -32,7 +32,7 @@ class MyAttackerCountValue : public Uint8CalculatedValue, public Qualified
 class HasAggroValue : public BoolCalculatedValue, public Qualified
 {
     public:
-        HasAggroValue(PlayerbotAI* botAI) : BoolCalculatedValue(botAI) { }
+        HasAggroValue(PlayerbotAI* botAI, string name = "has agro") : BoolCalculatedValue(ai, name) {}
 
         Unit* GetTarget();
         bool Calculate() override;
@@ -41,7 +41,7 @@ class HasAggroValue : public BoolCalculatedValue, public Qualified
 class BalancePercentValue : public Uint8CalculatedValue, public Qualified
 {
     public:
-        BalancePercentValue(PlayerbotAI* botAI) : Uint8CalculatedValue(botAI) { }
+        BalancePercentValue(PlayerbotAI* botAI, string name = "balance percentage") : Uint8CalculatedValue(ai, name) {}
 
         Unit* GetTarget();
         uint8 Calculate() override;

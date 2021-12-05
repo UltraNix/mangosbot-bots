@@ -3,6 +3,7 @@
  */
 
 #include "PvpTriggers.h"
+#include "BattleGroundEY.h"
 #include "BattlegroundWS.h"
 #include "Playerbot.h"
 #include "ServerFacade.h"
@@ -61,6 +62,35 @@ bool BgActiveTrigger::IsActive()
     return false;
 }
 
+bool BgInviteActiveTrigger::IsActive()
+{
+    if (bot->InBattleGround() || !bot->InBattleGroundQueue())
+    {
+        return false;
+    }
+
+    for (uint8 i = 0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; ++i)
+    {
+        BattleGroundQueueTypeId queueTypeId = bot->GetBattleGroundQueueTypeId(i);
+        if (queueTypeId == BATTLEGROUND_QUEUE_NONE)
+            continue;
+
+        BattleGroundQueue& bgQueue = sServerFacade.bgQueue(queueTypeId);
+
+        GroupQueueInfo ginfo;
+        if (bgQueue.GetPlayerGroupInfoData(bot->GetObjectGuid(), &ginfo))
+        {
+            if (ginfo.isInvitedToBgInstanceGuid && ginfo.removeInviteTime)
+            {
+                sLog.outDetail("Bot #%d <%s> (%u %s) : Invited to BG but not in BG", bot->GetGUIDLow(), bot->GetName(), bot->getLevel(), bot->GetTeam() == ALLIANCE ? "A" : "H");
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
 bool PlayerIsInBattlegroundWithoutFlag::IsActive()
 {
     if (botAI->GetBot()->InBattleground())
@@ -87,13 +117,19 @@ bool PlayerHasFlag::IsActive()
 {
     if (bot->InBattleground())
     {
-        if (bot->GetBattlegroundTypeId() == BattlegroundTypeId::BATTLEGROUND_WS)
+        if (bot->GetBattlegroundTypeId() == BATTLEGROUND_WS)
         {
             BattlegroundWS *bg = (BattlegroundWS*)botAI->GetBot()->GetBattleground();
             if (bot->GetGUID() == bg->GetFlagPickerGUID(TEAM_INDEX_ALLIANCE) || bot->GetGUID() == bg->GetFlagPickerGUID(TEAM_INDEX_HORDE))
             {
                 return true;
             }
+        }
+
+        if (bot->GetBattleGroundTypeId() == BATTLEGROUND_EY)
+        {
+            BattleGroundEY* bg = (BattleGroundEY*) ai->GetBot()->GetBattleGround();
+            return bot->GetObjectGuid() == bg->GetFlagCarrierGuid();
         }
 
         return false;

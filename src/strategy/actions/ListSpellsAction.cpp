@@ -53,12 +53,8 @@ bool CompareSpells(std::pair<uint32, std::string>& s1, std::pair<uint32, std::st
     return p1 > p2;
 }
 
-bool ListSpellsAction::Execute(Event event)
+list<pair<uint32, string>> ListSpellsAction::GetSpellList(string filter)
 {
-    Player* master = GetMaster();
-    if (!master)
-        return false;
-
     if (skillSpells.empty())
     {
         for (uint32 j = 0; j < sSkillLineAbilityStore.GetNumRows(); ++j)
@@ -73,18 +69,18 @@ bool ListSpellsAction::Execute(Event event)
         QueryResult results = WorldDatabase.PQuery("SELECT item FROM npc_vendor WHERE maxcount = 0");
         if (results)
         {
-          do
-          {
-              Field* fields = results->Fetch();
-              vendorItems.insert(fields[0].GetUInt32());
-          } while (results->NextRow());
+            do
+            {
+                Field* fields = results->Fetch();
+                vendorItems.insert(fields[0].GetUInt32());
+            }
+            while (results->NextRow());
         }
     }
 
     std::ostringstream posOut;
     std::ostringstream negOut;
 
-    std::string filter = event.getParam();
     uint32 skill = 0;
 
     std::vector<std::string> ss = split(filter, ' ');
@@ -265,6 +261,19 @@ bool ListSpellsAction::Execute(Event event)
         alreadySeenList += spellInfo->SpellName[0];
         alreadySeenList += ",";
     }
+
+    return spells;
+}
+
+bool ListSpellsAction::Execute(Event event)
+{
+    Player* master = GetMaster();
+    if (!master)
+        return false;
+
+    string filter = event.getParam();
+
+    list<pair<uint32, string>> spells = GetSpellList(filter);
 
     botAI->TellMaster("=== Spells ===");
 

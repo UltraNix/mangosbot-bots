@@ -12,45 +12,6 @@ class Event;
 class PlayerbotAI;
 class Unit;
 
-#define BEGIN_SPELL_ACTION(clazz, name) \
-class clazz : public CastSpellAction \
-{ \
-    public: \
-        clazz(PlayerbotAI* botAI) : CastSpellAction(botAI, name) { } \
-
-
-#define END_SPELL_ACTION() \
-};
-
-#define BEGIN_DEBUFF_ACTION(clazz, name) \
-class clazz : public CastDebuffSpellAction \
-{ \
-    public: \
-        clazz(PlayerbotAI* botAI) : CastDebuffSpellAction(botAI, name) { } \
-
-#define BEGIN_RANGED_SPELL_ACTION(clazz, name) \
-class clazz : public CastSpellAction \
-{ \
-    public: \
-        clazz(PlayerbotAI* botAI) : CastSpellAction(botAI, name) { } \
-
-#define BEGIN_MELEE_SPELL_ACTION(clazz, name) \
-class clazz : public CastMeleeSpellAction \
-{ \
-    public: \
-        clazz(PlayerbotAI* botAI) : CastMeleeSpellAction(botAI, name) { } \
-
-
-#define END_RANGED_SPELL_ACTION() \
-};
-
-
-#define BEGIN_BUFF_ON_PARTY_ACTION(clazz, name) \
-class clazz : public BuffOnPartyAction \
-{ \
-    public: \
-        clazz(PlayerbotAI* botAI) : BuffOnPartyAction(botAI, name) { }
-
 class CastSpellAction : public Action
 {
     public:
@@ -80,10 +41,7 @@ class CastAuraSpellAction : public CastSpellAction
 class CastMeleeSpellAction : public CastSpellAction
 {
     public:
-        CastMeleeSpellAction(PlayerbotAI* botAI, std::string const& spell) : CastSpellAction(botAI, spell)
-        {
-			range = ATTACK_DISTANCE;
-		}
+        CastMeleeSpellAction(PlayerbotAI* botAI, std::string const& spell);
 };
 
 class CastDebuffSpellAction : public CastAuraSpellAction
@@ -219,7 +177,7 @@ class BuffOnPartyAction : public CastBuffSpellAction, public PartyMemberActionNa
 class CastShootAction : public CastSpellAction
 {
     public:
-        CastShootAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "shoot") { }
+        CastShootAction(PlayerbotAI* ai);
 
         ActionThreatType getThreatType() override { return ACTION_THREAT_NONE; }
 };
@@ -270,6 +228,29 @@ class CastSnareSpellAction : public CastDebuffSpellAction
 
         Value<Unit*>* GetTargetValue() override;
         std::string const& getName() override { return spell + " on snare target"; }
+        ActionThreatType getThreatType() override { return ACTION_THREAT_NONE; }
+};
+
+class CastCrowdControlSpellAction : public CastBuffSpellAction
+{
+    public:
+        CastCrowdControlSpellAction(PlayerbotAI* ai, string spell) : CastBuffSpellAction(ai, spell) {}
+
+        Value<Unit*>* GetTargetValue() override;
+        bool Execute(Event event) override;
+        bool isPossible() override;
+        bool isUseful() override;
+        ActionThreatType getThreatType() override { return ACTION_THREAT_NONE; }
+};
+
+class CastProtectSpellAction : public CastSpellAction
+{
+    public:
+        CastProtectSpellAction(PlayerbotAI* ai, std::string const& spell) : CastSpellAction(ai, spell) { }
+
+        std::string const& GetTargetName() override;
+        bool isUseful() override;
+        ActionThreatType getThreatType() override { return ACTION_THREAT_NONE; }
 };
 
 #endif

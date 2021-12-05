@@ -52,16 +52,28 @@ bool PetitionSignAction::Execute(Event event)
             botAI->TellError("Sorry, I am invited to a guild already");
             accept = false;
         }
+
+        // check for same acc id
+        /*if (QueryResult* result = CharacterDatabase.PQuery("SELECT playerguid FROM petition_sign WHERE player_account = '%u' AND petitionguid = '%u'",
+            bot->GetSession()->GetAccountId(), petitionGuid.GetCounter()))
+        {
+            ai->TellError("Sorry, I already signed this pettition");
+            accept = false;
+        }
+        */
     }
 
     Player* _inviter = ObjectAccessor::FindPlayer(inviter);
-    if (!inviter)
+    if (!_inviter)
+        return false;
+
+    if (_inviter == bot)
         return false;
 
     if (!accept || !botAI->GetSecurity()->CheckLevelFor(PLAYERBOT_SECURITY_INVITE, false, _inviter, true))
     {
         WorldPacket data(MSG_PETITION_DECLINE);
-        p << petitionGuid;
+        data << petitionGuid;
         bot->GetSession()->HandlePetitionDeclineOpcode(data);
         LOG_INFO("playerbots", "Bot %s <%s> declines %s invite", bot->GetGUID().ToString().c_str(), bot->GetName().c_str(), isArena ? "Arena" : "Guild");
         return false;

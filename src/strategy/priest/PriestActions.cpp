@@ -5,16 +5,6 @@
 #include "PriestActions.h"
 #include "Event.h"
 
-NextAction** CastAbolishDiseaseAction::getAlternatives()
-{
-    return NextAction::merge(NextAction::array(0, new NextAction("cure disease"), nullptr), CastSpellAction::getAlternatives());
-}
-
-NextAction** CastAbolishDiseaseOnPartyAction::getAlternatives()
-{
-    return NextAction::merge(NextAction::array(0, new NextAction("cure disease on party"), nullptr), CastSpellAction::getAlternatives());
-}
-
 bool CastRemoveShadowformAction::isUseful()
 {
     return botAI->HasAura("shadowform", AI_VALUE(Unit*, "self target"));

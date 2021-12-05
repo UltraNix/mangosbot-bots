@@ -14,7 +14,7 @@ typedef std::vector<std::string> Outfit;
 class OutfitListValue : public ManualSetValue<Outfit&>
 {
 	public:
-        OutfitListValue(PlayerbotAI* botAI) : ManualSetValue<Outfit&>(botAI, list) { }
+        OutfitListValue(PlayerbotAI* botAI, string name = "outfit list") : ManualSetValue<Outfit&>(ai, list, name) {}
 
         std::string const& Save() override;
         bool Load(std::string const& value) override;

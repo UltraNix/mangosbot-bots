@@ -9,6 +9,9 @@
 
 class PlayerbotAI;
 
+BUFF_ACTION(CastFireWardAction, "fire ward");
+BUFF_ACTION(CastFrostWardAction, "frost ward");
+
 class CastFireballAction : public CastSpellAction
 {
     public:
@@ -77,6 +80,8 @@ class CastBlizzardAction : public CastSpellAction
 {
 	public:
 		CastBlizzardAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "blizzard") { }
+
+        ActionThreatType getThreatType() override { return ACTION_THREAT_AOE; }
 };
 
 class CastArcaneIntellectAction : public CastBuffSpellAction

@@ -13,7 +13,7 @@ class PlayerbotAI;
 class LootStrategyValue : public ManualSetValue<LootStrategy*>
 {
 	public:
-        LootStrategyValue(PlayerbotAI* botAI) : ManualSetValue<LootStrategy*>(botAI, normal) { }
+        LootStrategyValue(PlayerbotAI* botAI, string name = "loot strategy") : ManualSetValue<LootStrategy*>(ai, normal, name) {}
         virtual ~LootStrategyValue();
 
         std::string const& Save() override;

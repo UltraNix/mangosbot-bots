@@ -3,6 +3,7 @@
  */
 
 #include "GoAction.h"
+#include "ChooseTravelTargetAction.h"
 #include "Event.h"
 #include "Formations.h"
 #include "PathGenerator.h"
@@ -37,31 +38,12 @@ bool GoAction::Execute(Event event)
     {
         WorldPosition* botPos = &WorldPosition(bot);
 
-        std::vector<TravelDestination*> dests;
-
-        for (auto& d : sTravelMgr->getExploreTravelDestinations(bot, true, true))
-        {
-            if (strstri(d->getTitle().c_str(), param.substr(7).c_str()))
-                dests.push_back(d);
-        }
-
-        for (auto& d : sTravelMgr->getRpgTravelDestinations(bot, true, true))
-        {
-            if (strstri(d->getTitle().c_str(), param.substr(7).c_str()))
-                dests.push_back(d);
-        }
-
-        for (auto& d : sTravelMgr->getGrindTravelDestinations(bot, true, true))
-        {
-            if (strstri(d->getTitle().c_str(), param.substr(7).c_str()))
-                dests.push_back(d);
-        }
+        string destination = param.substr(7);
 
         TravelTarget* target = context->GetValue<TravelTarget*>("travel target")->Get();
-        if (!dests.empty())
-        {
-            TravelDestination* dest = *std::min_element(dests.begin(), dests.end(), [botPos](TravelDestination* i, TravelDestination* j) {return i->distanceTo(botPos) < j->distanceTo(botPos); });
 
+        if (TravelDestination* dest = ChooseTravelTargetAction::FindDestination(bot, destination))
+        {
             std::vector<WorldPosition*> points = dest->nextPoint(botPos, true);
             if (points.empty())
                 return false;

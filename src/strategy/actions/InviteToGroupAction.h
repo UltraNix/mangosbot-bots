@@ -6,9 +6,9 @@
 #define _PLAYERBOT_INVITETOGROUPACTION_H
 
 #include "Action.h"
+#include "Player.h"
 
 class Event;
-class Player;
 class PlayerbotAI;
 
 class InviteToGroupAction : public Action
@@ -28,6 +28,38 @@ class InviteNearbyToGroupAction : public InviteToGroupAction
 
         bool Execute(Event event) override;
         bool isUseful() override;
+};
+
+//Generic guid member finder
+class FindGuildMembers
+{
+    public:
+        FindGuildMembers() {};
+
+        void operator()(Player* player)
+        {
+            data.push_back(player);
+        };
+
+        vector<Player*> const GetResult()
+        {
+            return data;
+        };
+
+    private:
+        vector<Player*> data;
+};
+
+class InviteGuildToGroupAction : public InviteNearbyToGroupAction
+{
+    public:
+        InviteGuildToGroupAction(PlayerbotAI* ai, string name = "invite guild") : InviteNearbyToGroupAction(ai, name) {}
+
+        bool Execute(Event event) override;
+        bool isUseful() override;
+
+    private:
+        vector<Player*> getGuildMembers();
 };
 
 #endif

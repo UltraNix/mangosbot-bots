@@ -19,6 +19,7 @@ class Event
         Event(std::string const& source) : source(source) { }
         Event(std::string const& source, std::string const& param, Player* owner = nullptr) : source(source), param(param), owner(owner) { }
         Event(std::string const& source, WorldPacket& packet, Player* owner = nullptr) : source(source), packet(packet), owner(owner) { }
+        Event(std::string const& source, ObjectGuid object, Player* owner = nullptr);
         virtual ~Event() { }
 
         std::string const& getSource() { return source; }
@@ -32,8 +33,7 @@ class Event
         std::string source;
         std::string param;
         WorldPacket packet;
-        ObjectGuid object;
-        Player* owner;
+        Player* owner = nullptr;
 };
 
 #endif

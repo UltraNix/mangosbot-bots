@@ -18,9 +18,11 @@ class EmoteActionBase : public Action
     public:
         EmoteActionBase(PlayerbotAI* botAI, std::string const& name);
 
+        uint32 GetNumberOfEmoteVariants(TextEmotes emote, uint8 race, uint8 gender);
+
     protected:
-        bool Emote(Unit* target, uint32 type);
-        bool ReceiveEmote(Player* source, uint32 emote);
+        bool Emote(Unit* target, uint32 type, bool textEmote = false);
+        bool ReceiveEmote(Player* source, uint32 emote, bool verbal = false);
         Unit* GetTarget();
         void InitEmotes();
         static std::map<std::string, uint32> emotes;
@@ -42,7 +44,7 @@ class TalkAction : public EmoteActionBase
         TalkAction(PlayerbotAI* botAI) : EmoteActionBase(botAI, "talk") { }
 
         bool Execute(Event event) override;
-        static uint32 GetRandomEmote(Unit* unit);
+        static uint32 GetRandomEmote(Unit* unit, bool textEmote = false);
 };
 
 #endif

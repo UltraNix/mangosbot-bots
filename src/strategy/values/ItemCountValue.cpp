@@ -18,9 +18,9 @@ std::vector<Item*> InventoryItemValueBase::Find(std::string const& qualifier)
     return result;
 }
 
-uint8 ItemCountValue::Calculate()
+uint32 ItemCountValue::Calculate()
 {
-    uint8 count = 0;
+    uint32 count = 0;
     std::vector<Item*> items = Find(qualifier);
     for (Item* item : items)
     {

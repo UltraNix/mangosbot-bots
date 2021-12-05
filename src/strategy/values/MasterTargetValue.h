@@ -13,7 +13,7 @@ class Unit;
 class MasterTargetValue : public UnitCalculatedValue
 {
 	public:
-        MasterTargetValue(PlayerbotAI* botAI) : UnitCalculatedValue(botAI) { }
+        MasterTargetValue(PlayerbotAI* botAI, string name = "master target") : UnitCalculatedValue(ai, name) {}
 
         Unit* Calculate() override;
 };

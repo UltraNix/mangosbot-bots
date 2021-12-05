@@ -5,13 +5,14 @@
 #ifndef _PLAYERBOT_H
 #define _PLAYERBOT_H
 
+#include "AiObjectContext.h"
 #include "Group.h"
 #include "Pet.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotMgr.h"
 #include "RandomPlayerbotMgr.h"
-#include "AiObjectContext.h"
+#include "SharedValueContext.h"
 
 std::vector<std::string> split(std::string const& s, char delim);
 void split(std::vector<std::string>& dest, std::string const& str, char const* delim);
@@ -24,5 +25,18 @@ int strcmpi(char const* s1, char const* s2);
 
 #define AI_VALUE(type, name) context->GetValue<type>(name)->Get()
 #define AI_VALUE2(type, name, param) context->GetValue<type>(name, param)->Get()
+
+#define AI_VALUE_LAZY(type, name) context->GetValue<type>(name)->LazyGet()
+#define AI_VALUE2_LAZY(type, name, param) context->GetValue<type>(name, param)->LazyGet()
+
+#define SET_AI_VALUE(type, name, value) context->GetValue<type>(name)->Set(value)
+#define SET_AI_VALUE2(type, name, param, value) context->GetValue<type>(name, param)->Set(value)
+#define RESET_AI_VALUE(type, name) context->GetValue<type>(name)->Reset()
+#define RESET_AI_VALUE2(type, name, param) context->GetValue<type>(name, param)->Reset()
+
+#define PAI_VALUE(type, name) player->GetPlayerbotAI()->GetAiObjectContext()->GetValue<type>(name)->Get()
+#define PAI_VALUE2(type, name, param) player->GetPlayerbotAI()->GetAiObjectContext()->GetValue<type>(name, param)->Get()
+#define GAI_VALUE(type, name) sSharedValueContext.getGlobalValue<type>(name)->Get()
+#define GAI_VALUE2(type, name, param) sSharedValueContext.getGlobalValue<type>(name, param)->Get()
 
 #endif

@@ -44,9 +44,17 @@ bool FollowAction::isUseful()
     else
         fTarget = AI_VALUE(Unit*, "master target");
 
-    if (fTarget && (fTarget->HasUnitState(UNIT_STATE_IN_FLIGHT) && (bot->IsAlive() || bot->GetCorpse()) ||
-        fTarget->GetGUID() == bot->GetGUID() || fTarget->getDeathState() != bot->getDeathState()))
-        return false;
+    if (fTarget)
+    {
+        if (fTarget->IsTaxiFlying())
+            return false;
+
+        if (!CanDeadFollow(fTarget))
+            return false;
+
+        if (fTarget->GetGUIDLow() == bot->GetGUIDLow())
+            return false;
+    }
 
     float distance = 0.f;
     if (!target.empty())
@@ -65,16 +73,43 @@ bool FollowAction::isUseful()
     return sServerFacade->IsDistanceGreaterThan(distance, formation->GetMaxDistance());
 }
 
+bool FollowAction::CanDeadFollow(Unit* target)
+{
+    // Move to corpse when dead and player is alive or not a ghost.
+    if (!sServerFacade.IsAlive(bot) && (sServerFacade.IsAlive(target) || !target->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST)))
+        return false;
+
+    return true;
+}
+
 bool FleeToMasterAction::Execute(Event event)
 {
-    bool canFollow = Follow(AI_VALUE(Unit*, "master target"));
+    Unit* fTarget = AI_VALUE(Unit*, "master target");
+    bool canFollow = Follow(fTarget);
     if (!canFollow)
     {
         //botAI->SetNextCheckDelay(5000);
         return false;
     }
 
-    botAI->TellMaster("Wait for me!");
+    WorldPosition targetPos(fTarget);
+    WorldPosition bosPos(bot);
+    float distance = bosPos.fDist(targetPos);
+
+    if (distance < sPlayerbotAIConfig.reactDistance * 3)
+    {
+        if (!urand(0, 3))
+            ai->TellMaster("I am close, wait for me!");
+    }
+    else if (distance < 1000)
+    {
+        if (!urand(0, 10))
+            ai->TellMaster("I heading to your position.");
+    }
+    else
+        if (!urand(0,20))
+            ai->TellMaster("I am traveling to your position.");
+
     botAI->SetNextCheckDelay(3000);
 
     return true;
@@ -82,7 +117,23 @@ bool FleeToMasterAction::Execute(Event event)
 
 bool FleeToMasterAction::isUseful()
 {
+    if (!ai->GetGroupMaster())
+        return false;
+
+    if (ai->GetGroupMaster() == bot)
+        return false;
+
     Unit* target = AI_VALUE(Unit*, "current target");
-    return botAI->GetGroupMaster() && botAI->GetGroupMaster() != bot &&
-        (!target || (target && botAI->GetGroupMaster()->GetTarget() != target->GetGUID())) && botAI->HasStrategy("follow", BOT_STATE_NON_COMBAT);
+    if (target && ai->GetGroupMaster()->HasTarget(target->GetObjectGuid()))
+        return false;
+
+    if (!ai->HasStrategy("follow", BOT_STATE_NON_COMBAT))
+        return false;
+
+    Unit* fTarget = AI_VALUE(Unit*, "master target");
+
+    if (!CanDeadFollow(fTarget))
+        return false;
+
+    return true;
 }

@@ -16,7 +16,7 @@ bool DrinkAction::Execute(Event event)
 
 bool DrinkAction::isUseful()
 {
-    return UseItemAction::isUseful() && AI_VALUE2(uint8, "mana", "self target") < sPlayerbotAIConfig->lowMana;
+    return UseItemAction::isUseful() && AI_VALUE2(uint8, "mana", "self target") < 85;
 }
 
 bool EatAction::Execute(Event event)

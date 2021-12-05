@@ -13,7 +13,7 @@ class PlayerbotAI;
 class DistanceValue : public FloatCalculatedValue, public Qualified
 {
 	public:
-        DistanceValue(PlayerbotAI* botAI) : FloatCalculatedValue(botAI) { }
+        DistanceValue(PlayerbotAI* ai, string name = "distance") : FloatCalculatedValue(ai, name) {}
 
         float Calculate() override;
 };
@@ -21,7 +21,7 @@ class DistanceValue : public FloatCalculatedValue, public Qualified
 class InsideTargetValue : public BoolCalculatedValue, public Qualified
 {
 	public:
-        InsideTargetValue(PlayerbotAI* botAI) : BoolCalculatedValue(botAI) { }
+        InsideTargetValue(PlayerbotAI* ai, string name = "inside target") : BoolCalculatedValue(ai, name) {}
 
         bool Calculate() override;
 };

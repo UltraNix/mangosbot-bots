@@ -10,7 +10,7 @@ void FleeManager::calculateDistanceToCreatures(FleePoint *point)
 {
     point->minDistance = -1.0f;
     point->sumDistance = 0.0f;
-	GuidVector units = *bot->GetPlayerbotAI()->GetAiObjectContext()->GetValue<GuidVector>("possible targets");
+	GuidVector units = *bot->GetPlayerbotAI()->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los");
 	for (GuidVector::iterator i = units.begin(); i != units.end(); ++i)
     {
 		Unit* unit = bot->GetPlayerbotAI()->GetUnit(*i);
@@ -40,9 +40,9 @@ void FleeManager::calculatePossibleDestinations(std::vector<FleePoint*> &points)
 {
     Unit* target = *bot->GetPlayerbotAI()->GetAiObjectContext()->GetValue<Unit*>("current target");
 
-	float botPosX = bot->GetPositionX();
-	float botPosY = bot->GetPositionY();
-	float botPosZ = bot->GetPositionZ();
+	float botPosX = startPosition.getX();
+    float botPosY = startPosition.getY();
+    float botPosZ = startPosition.getZ();
 
 	FleePoint start(bot->GetPlayerbotAI(), botPosX, botPosY, botPosZ);
 	calculateDistanceToCreatures(&start);
@@ -65,7 +65,7 @@ void FleeManager::calculatePossibleDestinations(std::vector<FleePoint*> &points)
         float angleIncrement = std::max(M_PI / 20, M_PI / 4 / (1.0 + dist - sPlayerbotAIConfig->tooCloseDistance));
         for (float add = 0.0f; add < M_PI / 4 + angleIncrement; add += angleIncrement)
         {
-            for (float angle = add; angle < add + 2 * M_PI + angleIncrement; angle += M_PI / 4)
+            for (float angle = add; angle < add + 2 * static_cast<float>(M_PI) + angleIncrement; angle += static_cast<float>(M_PI) / 4)
             {
                 if (intersectsOri(angle, enemyOri, angleIncrement))
                     continue;
@@ -76,7 +76,7 @@ void FleeManager::calculatePossibleDestinations(std::vector<FleePoint*> &points)
 
                 bot->UpdateAllowedPositionZ(x, y, z);
 
-                Map* map = bot->GetMap();
+                Map* map = startPosition.getMap();
                 if (map && map->IsInWater(x, y, z))
                     continue;
 
@@ -152,9 +152,11 @@ bool FleeManager::isUseful()
         if (!unit)
             continue;
 
-        float d = sServerFacade->GetDistance2d(unit, bot);
-        if (sServerFacade->IsDistanceLessThan(d, sPlayerbotAIConfig->aggroDistance))
+        if (startPosition.sqDistance(WorldPosition(unit)) < unit->GetAttackDistance(bot) * unit->GetAttackDistance(bot))
             return true;
+
+        // float d = sServerFacade.GetDistance2d(unit, bot);
+        // if (sServerFacade.IsDistanceLessThan(d, sPlayerbotAIConfig.aggroDistance)) return true;
     }
 
     return false;

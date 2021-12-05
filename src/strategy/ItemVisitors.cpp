@@ -65,3 +65,16 @@ bool FindPetVisitor::Accept(ItemTemplate const* proto)
 
     return false;
 }
+
+FindItemUsageVisitor::FindItemUsageVisitor(Player* bot, ItemUsage usage) : FindUsableItemVisitor(bot), usage(usage)
+{
+    context = bot->GetPlayerbotAI()->GetAiObjectContext();
+};
+
+bool FindItemUsageVisitor::Accept(const ItemPrototype* proto) override
+{
+    if (AI_VALUE2(ItemUsage, "item usage", proto->ItemId) == usage)
+        return true;
+
+    return false;
+}

@@ -11,7 +11,9 @@ bool SetHomeAction::Execute(Event event)
     Player* master = GetMaster();
 
     ObjectGuid selection = bot->GetTarget();
-    if (AI_VALUE(ObjectGuid, "rpg target") != bot->GetTarget())
+    bool isRpgAction = AI_VALUE(GuidPosition, "rpg target") == selection;
+
+    if (!isRpgAction)
         if (master)
             selection = master->GetTarget();
         else
@@ -20,16 +22,20 @@ bool SetHomeAction::Execute(Event event)
     if (Unit* unit = botAI->GetUnit(selection))
         if (unit->HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_INNKEEPER))
         {
-            float angle = GetFollowAngle();
-            float x = unit->GetPositionX() + sPlayerbotAIConfig->followDistance * cos(angle);
-            float y = unit->GetPositionY() + sPlayerbotAIConfig->followDistance * sin(angle);
-            float z = unit->GetPositionZ();
-
-            WorldLocation loc(unit->GetMapId(), x, y, z);
-            bot->SetHomebind(loc, unit->GetAreaId());
-
-            botAI->TellMaster("This inn is my new home");
-            return true;
+            if (isRpgAction)
+            {
+                Creature* creature = ai->GetCreature(selection);
+                bot->GetSession()->SendBindPoint(creature);
+                ai->TellMaster("This inn is my new home");
+                return true;
+            }
+            else
+            {
+                Creature* creature = ai->GetCreature(selection);
+                bot->GetSession()->SendBindPoint(creature);
+                ai->TellMaster("This inn is my new home");
+                return true;
+            }
         }
 
     GuidVector npcs = AI_VALUE(GuidVector, "nearest npcs");

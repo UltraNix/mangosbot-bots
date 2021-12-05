@@ -86,6 +86,17 @@ class PriestTriggerFactoryInternal : public NamedObjectContext<Trigger>
             creators["shackle undead"] = &PriestTriggerFactoryInternal::shackle_undead;
             creators["prayer of fortitude on party"] = &PriestTriggerFactoryInternal::prayer_of_fortitude_on_party;
             creators["prayer of spirit on party"] = &PriestTriggerFactoryInternal::prayer_of_spirit_on_party;
+            creators["holy fire"] = &TriggerFactoryInternal::holy_fire;
+            creators["touch of weakness"] = &TriggerFactoryInternal::touch_of_weakness;
+            creators["hex of weakness"] = &TriggerFactoryInternal::hex_of_weakness;
+            creators["shadowguard"] = &TriggerFactoryInternal::shadowguard;
+            creators["fear ward"] = &TriggerFactoryInternal::fear_ward;
+            creators["feedback"] = &TriggerFactoryInternal::feedback;
+            creators["binding heal"] = &TriggerFactoryInternal::binding_heal;
+            creators["chastise"] = &TriggerFactoryInternal::chastise;
+            creators["silence"] = &TriggerFactoryInternal::silence;
+            creators["silence on enemy healer"] = &TriggerFactoryInternal::silence_on_enemy_healer;
+            creators["shadowfiend"] = &TriggerFactoryInternal::shadowfiend;
         }
 
     private:
@@ -111,6 +122,17 @@ class PriestTriggerFactoryInternal : public NamedObjectContext<Trigger>
         static Trigger* shackle_undead(PlayerbotAI* botAI) { return new ShackleUndeadTrigger(botAI); }
         static Trigger* prayer_of_fortitude_on_party(PlayerbotAI* botAI) { return new PrayerOfFortitudeTrigger(botAI); }
         static Trigger* prayer_of_spirit_on_party(PlayerbotAI* botAI) { return new PrayerOfSpiritTrigger(botAI); }
+        static Trigger* feedback(PlayerbotAI* ai) { return new FeedbackTrigger(ai); }
+        static Trigger* fear_ward(PlayerbotAI* ai) { return new FearWardTrigger(ai); }
+        static Trigger* shadowguard(PlayerbotAI* ai) { return new ShadowguardTrigger(ai); }
+        static Trigger* hex_of_weakness(PlayerbotAI* ai) { return new HexOfWeaknessTrigger(ai); }
+        static Trigger* touch_of_weakness(PlayerbotAI* ai) { return new TouchOfWeaknessTrigger(ai); }
+        static Trigger* holy_fire(PlayerbotAI* ai) { return new HolyFireTrigger(ai); }
+        static Trigger* shadowfiend(PlayerbotAI* ai) { return new ShadowfiendTrigger(ai); }
+        static Trigger* silence_on_enemy_healer(PlayerbotAI* ai) { return new SilenceEnemyHealerTrigger(ai); }
+        static Trigger* silence(PlayerbotAI* ai) { return new SilenceTrigger(ai); }
+        static Trigger* chastise(PlayerbotAI* ai) { return new ChastiseTrigger(ai); }
+        static Trigger* binding_heal(PlayerbotAI* ai) { return new BindingHealTrigger(ai); }
 };
 
 class PriestAiObjectContextInternal : public NamedObjectContext<Action>
@@ -160,12 +182,39 @@ class PriestAiObjectContextInternal : public NamedObjectContext<Action>
             creators["psychic scream"] = &PriestAiObjectContextInternal::psychic_scream;
             creators["vampiric touch"] = &PriestAiObjectContextInternal::vampiric_touch;
             creators["vampiric embrace"] = &PriestAiObjectContextInternal::vampiric_embrace;
-            creators["dispersion"] = &PriestAiObjectContextInternal::dispersion;
+            //creators["dispersion"] = &PriestAiObjectContextInternal::dispersion;
             creators["shadow protection"] = &PriestAiObjectContextInternal::shadow_protection;
             creators["shadow protection on party"] = &PriestAiObjectContextInternal::shadow_protection_on_party;
             creators["shackle undead"] = &PriestAiObjectContextInternal::shackle_undead;
             creators["prayer of fortitude on party"] = &PriestAiObjectContextInternal::prayer_of_fortitude_on_party;
             creators["prayer of spirit on party"] = &PriestAiObjectContextInternal::prayer_of_spirit_on_party;
+            creators["power infusion on party"] = &AiObjectContextInternal::power_infusion_on_party;
+            creators["silence"] = &AiObjectContextInternal::silence;
+            creators["silence on enemy healer"] = &AiObjectContextInternal::silence_on_enemy_healer;
+            creators["mana burn"] = &AiObjectContextInternal::mana_burn;
+            creators["levitate"] = &AiObjectContextInternal::levitate;
+            creators["prayer of healing"] = &AiObjectContextInternal::prayer_of_healing;
+            creators["lightwell"] = &AiObjectContextInternal::lightwell;
+            creators["mind soothe"] = &AiObjectContextInternal::mind_soothe;
+            creators["touch of weakness"] = &AiObjectContextInternal::touch_of_weakness;
+            creators["hex of weakness"] = &AiObjectContextInternal::hex_of_weakness;
+            creators["shadowguard"] = &AiObjectContextInternal::shadowguard;
+            creators["desperate prayer"] = &AiObjectContextInternal::desperate_prayer;
+            creators["fear ward"] = &AiObjectContextInternal::fear_ward;
+            creators["fear ward on party"] = &AiObjectContextInternal::fear_ward_on_party;
+            creators["starshards"] = &AiObjectContextInternal::starshards;
+            creators["elune's grace"] = &AiObjectContextInternal::elunes_grace;
+            creators["feedback"] = &AiObjectContextInternal::feedback;
+            creators["symbol of hope"] = &AiObjectContextInternal::symbol_of_hope;
+            creators["consume magic"] = &AiObjectContextInternal::consume_magic;
+            creators["chastise"] = &AiObjectContextInternal::chastise;
+            creators["shadow word: death"] = &AiObjectContextInternal::shadow_word_death;
+            creators["shadowfiend"] = &AiObjectContextInternal::shadowfiend;
+            creators["mass dispel"] = &AiObjectContextInternal::mass_dispel;
+            creators["pain suppression"] = &AiObjectContextInternal::pain_suppression;
+            creators["pain suppression on party"] = &AiObjectContextInternal::pain_suppression_on_party;
+            creators["prayer of mending"] = &AiObjectContextInternal::prayer_of_mending;
+            creators["binding heal"] = &AiObjectContextInternal::binding_heal;
         }
 
     private:
@@ -173,7 +222,7 @@ class PriestAiObjectContextInternal : public NamedObjectContext<Action>
         static Action* shadow_protection(PlayerbotAI* botAI) { return new CastShadowProtectionAction(botAI); }
         static Action* power_infusion(PlayerbotAI* botAI) { return new CastPowerInfusionAction(botAI); }
         static Action* inner_focus(PlayerbotAI* botAI) { return new CastInnerFocusAction(botAI); }
-        static Action* dispersion(PlayerbotAI* botAI) { return new CastDispersionAction(botAI); }
+        //static Action* dispersion(PlayerbotAI* botAI) { return new CastDispersionAction(botAI); }
         static Action* vampiric_embrace(PlayerbotAI* botAI) { return new CastVampiricEmbraceAction(botAI); }
         static Action* vampiric_touch(PlayerbotAI* botAI) { return new CastVampiricTouchAction(botAI); }
         static Action* psychic_scream(PlayerbotAI* botAI) { return new CastPsychicScreamAction(botAI); }
@@ -217,6 +266,33 @@ class PriestAiObjectContextInternal : public NamedObjectContext<Action>
         static Action* shackle_undead(PlayerbotAI* botAI) { return new CastShackleUndeadAction(botAI); }
         static Action* prayer_of_spirit_on_party(PlayerbotAI* botAI) { return new CastPrayerOfSpiritOnPartyAction(botAI); }
         static Action* prayer_of_fortitude_on_party(PlayerbotAI* botAI) { return new CastPrayerOfFortitudeOnPartyAction(botAI); }
+        static Action* feedback(PlayerbotAI* ai) { return new CastFeedbackAction(ai); }
+        static Action* elunes_grace(PlayerbotAI* ai) { return new CastElunesGraceAction(ai); }
+        static Action* starshards(PlayerbotAI* ai) { return new CastStarshardsAction(ai); }
+        static Action* fear_ward_on_party(PlayerbotAI* ai) { return new CastFearWardOnPartyAction(ai); }
+        static Action* fear_ward(PlayerbotAI* ai) { return new CastFearWardAction(ai); }
+        static Action* desperate_prayer(PlayerbotAI* ai) { return new CastDesperatePrayerAction(ai); }
+        static Action* shadowguard(PlayerbotAI* ai) { return new CastShadowguardAction(ai); }
+        static Action* hex_of_weakness(PlayerbotAI* ai) { return new CastHexOfWeaknessAction(ai); }
+        static Action* touch_of_weakness(PlayerbotAI* ai) { return new CastTouchOfWeaknessAction(ai); }
+        static Action* mind_soothe(PlayerbotAI* ai) { return new CastMindSootheAction(ai); }
+        static Action* lightwell(PlayerbotAI* ai) { return new CastLightwellAction(ai); }
+        static Action* prayer_of_healing(PlayerbotAI* ai) { return new CastPrayerOfHealingAction(ai); }
+        static Action* levitate(PlayerbotAI* ai) { return new CastLevitateAction(ai); }
+        static Action* mana_burn(PlayerbotAI* ai) { return new CastManaBurnAction(ai); }
+        static Action* silence_on_enemy_healer(PlayerbotAI* ai) { return new CastSilenceOnEnemyHealerAction(ai); }
+        static Action* silence(PlayerbotAI* ai) { return new CastSilenceAction(ai); }
+        static Action* power_infusion_on_party(PlayerbotAI* ai) { return new CastPowerInfusionOnPartyAction(ai); }
+        static Action* binding_heal(PlayerbotAI* ai) { return new CastBindingHealAction(ai); }
+        static Action* prayer_of_mending(PlayerbotAI* ai) { return new CastPrayerOfMendingAction(ai); }
+        static Action* pain_suppression_on_party(PlayerbotAI* ai) { return new CastPainSuppressionProtectAction(ai); }
+        static Action* pain_suppression(PlayerbotAI* ai) { return new CastPainSuppressionAction(ai); }
+        static Action* mass_dispel(PlayerbotAI* ai) { return new CastMassDispelAction(ai); }
+        static Action* shadowfiend(PlayerbotAI* ai) { return new CastShadowfiendAction(ai); }
+        static Action* shadow_word_death(PlayerbotAI* ai) { return new CastShadowWordDeathAction(ai); }
+        static Action* chastise(PlayerbotAI* ai) { return new CastChastiseAction(ai); }
+        static Action* consume_magic(PlayerbotAI* ai) { return new CastConsumeMagicAction(ai); }
+        static Action* symbol_of_hope(PlayerbotAI* ai) { return new CastSymbolOfHopeAction(ai); }
 };
 
 PriestAiObjectContext::PriestAiObjectContext(PlayerbotAI* botAI) : AiObjectContext(botAI)

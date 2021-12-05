@@ -14,7 +14,7 @@ T CalculatedValue<T>::Get()
     {
         lastCheckTime = now;
 
-        PerformanceMonitorOperation* pmo = sPerformanceMonitor->start(PERF_MON_VALUE, getName());
+        PerformanceMonitorOperation* pmo = sPerformanceMonitor->start(PERF_MON_VALUE, getName(), context ? &context->performanceStack : nullptr);
         value = Calculate();
         if (pmo)
             pmo->finish();
@@ -32,6 +32,23 @@ std::string const& UnitCalculatedValue::Format()
 {
     Unit* unit = Calculate();
     return unit ? unit->GetName() : "<none>";
+}
+
+template<class T>
+T SingleCalculatedValue<T>::Get()
+{
+    time_t now = time(0);
+    if (!lastCheckTime)
+    {
+        lastCheckTime = now;
+
+        PerformanceMonitorOperation* pmo = sPerformanceMonitor.start(PERF_MON_VALUE, getName(), context ? &context->performanceStack : nullptr);
+        value = Calculate();
+        if (pmo)
+            pmo->finish();
+    }
+
+    return value;
 }
 
 std::string const& UnitManualSetValue::Format()

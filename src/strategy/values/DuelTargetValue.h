@@ -12,7 +12,7 @@ class PlayerbotAI;
 class DuelTargetValue : public TargetValue
 {
 	public:
-        DuelTargetValue(PlayerbotAI* botAI) : TargetValue(botAI) { }
+        DuelTargetValue(PlayerbotAI* botAI, string name = "duel target") : TargetValue(ai, name) {}
 
         Unit* Calculate() override;
 };

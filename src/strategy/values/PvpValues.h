@@ -42,7 +42,15 @@ class BgMasterValue : public CDPairCalculatedValue, public Qualified
         BgMasterValue(PlayerbotAI* botAI) : CDPairCalculatedValue(botAI, "bg master", 60) { }
 
         CreatureData const* Calculate() override;
-        CreatureData const* NearestBm(bool allowDead = true) override;
+        CreatureData const* NearestBm(bool allowDead = true);
+};
+
+class RpgBgTypeValue : public CalculatedValue<BattleGroundTypeId>
+{
+    public:
+        RpgBgTypeValue(PlayerbotAI* ai) : CalculatedValue(ai, "rpg bg type") {}
+
+        BattleGroundTypeId Calculate() override;
 };
 
 class FlagCarrierValue : public UnitCalculatedValue

@@ -38,6 +38,7 @@ void LastMovement::Set(Unit* follow)
 {
     Set(0, 0.0f, 0.0f, 0.0f, 0.0f);
     setShort(WorldPosition());
+    setPath(TravelPath());
     lastFollow = follow;
 }
 

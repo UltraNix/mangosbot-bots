@@ -13,7 +13,7 @@ class Unit;
 class PetTargetValue : public UnitCalculatedValue
 {
 	public:
-        PetTargetValue(PlayerbotAI* botAI) : UnitCalculatedValue(botAI) { }
+        PetTargetValue(PlayerbotAI* botAI, string name = "pet target") : UnitCalculatedValue(ai, name) {}
 
         Unit* Calculate() override;
 };

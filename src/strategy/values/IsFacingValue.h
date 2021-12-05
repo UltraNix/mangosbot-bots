@@ -13,7 +13,7 @@ class PlayerbotAI;
 class IsFacingValue : public BoolCalculatedValue, public Qualified
 {
 	public:
-        IsFacingValue(PlayerbotAI* botAI) : BoolCalculatedValue(botAI) { }
+        IsFacingValue(PlayerbotAI* botAI, string name = "is facing") : BoolCalculatedValue(ai, name) {}
 
         bool Calculate() override;
 };

@@ -13,7 +13,7 @@ class PlayerbotAI;
 class AoeHealValue : public Uint8CalculatedValue, public Qualified
 {
 	public:
-    	AoeHealValue(PlayerbotAI* botAI) : Uint8CalculatedValue(botAI) { }
+    	AoeHealValue(PlayerbotAI* botAI, string name = "aoe heal") : Uint8CalculatedValue(ai, name) {}
 
     	uint8 Calculate() override;
 };

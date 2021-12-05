@@ -15,20 +15,11 @@ class ShadowPriestStrategyActionNodeFactory : public NamedObjectFactory<ActionNo
     public:
         ShadowPriestStrategyActionNodeFactory()
         {
-            creators["mind flay"] = &mind_flay;
             creators["mind blast"] = &mind_blast;
             creators["dispersion"] = &dispersion;
         }
 
     private:
-        static ActionNode* mind_flay(PlayerbotAI* botAI)
-        {
-            return new ActionNode ("mind flay",
-                /*P*/ nullptr,
-                /*A*/ NextAction::array(0, new NextAction("shoot"), nullptr),
-                /*C*/ nullptr);
-        }
-
         static ActionNode* mind_blast(PlayerbotAI* botAI)
         {
             return new ActionNode ("mind blast",

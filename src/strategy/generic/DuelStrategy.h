@@ -18,4 +18,13 @@ class DuelStrategy : public PassTroughStrategy
         std::string const& getName() override { return "duel"; }
 };
 
+class StartDuelStrategy : public Strategy
+{
+    public:
+        StartDuelStrategy(PlayerbotAI* ai);
+
+        void InitTriggers(std::vector<TriggerNode*>& triggers) override;
+        std::string const& getName() override { return "start duel"; }
+};
+
 #endif

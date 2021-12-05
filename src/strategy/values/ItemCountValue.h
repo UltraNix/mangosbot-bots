@@ -24,12 +24,12 @@ class InventoryItemValueBase : public InventoryAction
         std::vector<Item*> Find(std::string const& qualifier);
 };
 
-class ItemCountValue : public Uint8CalculatedValue, public Qualified, InventoryItemValueBase
+class ItemCountValue : public Uint32CalculatedValue, public Qualified, InventoryItemValueBase
 {
 	public:
-        ItemCountValue(PlayerbotAI* botAI) : Uint8CalculatedValue(botAI), InventoryItemValueBase(botAI) { }
+        ItemCountValue(PlayerbotAI* botAI, string name = "inventory items") : CalculatedValue<list<Item*> >(ai, name), InventoryItemValueBase(ai) {}
 
-        uint8 Calculate() override;
+        uint32 Calculate() override;
 };
 
 class InventoryItemValue : public CalculatedValue<std::vector<Item*>>, public Qualified, InventoryItemValueBase

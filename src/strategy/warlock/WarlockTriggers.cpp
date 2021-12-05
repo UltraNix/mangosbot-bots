@@ -13,10 +13,10 @@ bool DemonArmorTrigger::IsActive()
 
 bool SpellstoneTrigger::IsActive()
 {
-    return BuffTrigger::IsActive() && AI_VALUE2(uint8, "item count", getName()) > 0;
+    return BuffTrigger::IsActive() && AI_VALUE2(uint32, "item count", getName()) > 0;
 }
 
 bool WarlockConjuredItemTrigger::IsActive()
 {
-    return ItemCountTrigger::IsActive() && AI_VALUE2(uint8, "item count", "soul shard") > 0;
+    return ItemCountTrigger::IsActive() && AI_VALUE2(uint32, "item count", "soul shard") > 0;
 }

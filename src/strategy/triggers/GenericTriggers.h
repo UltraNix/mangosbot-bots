@@ -12,27 +12,6 @@
 class PlayerbotAI;
 class Unit;
 
-#define BUFF_TRIGGER(clazz, spell, action) \
-class clazz : public BuffTrigger \
-{ \
-    public: \
-        clazz(PlayerbotAI* botAI) : BuffTrigger(botAI, spell) { } \
-};
-
-#define BUFF_ON_PARTY_TRIGGER(clazz, spell, action) \
-class clazz : public BuffOnPartyTrigger \
-{ \
-    public: \
-        clazz(PlayerbotAI* botAI) : BuffOnPartyTrigger(botAI, spell) { }  \
-};
-
-#define DEBUFF_TRIGGER(clazz, spell, action) \
-class clazz : public DebuffTrigger \
-{ \
-    public: \
-        clazz(PlayerbotAI* botAI) : DebuffTrigger(botAI, spell) { } \
-};
-
 class StatAvailable : public Trigger
 {
 	public:
@@ -40,6 +19,22 @@ class StatAvailable : public Trigger
 
 	protected:
 		int32 amount;
+};
+
+class HighManaTrigger : public Trigger
+{
+    public:
+        HighManaTrigger(PlayerbotAI* ai) : Trigger(ai, "high mana") {}
+
+        bool IsActive() override;
+};
+
+class AlmostFullManaTrigger : public Trigger
+{
+    public:
+        AlmostFullManaTrigger(PlayerbotAI* ai) : Trigger(ai, "almost full mana") {}
+
+        bool IsActive() override;
 };
 
 class RageAvailable : public StatAvailable
@@ -148,6 +143,14 @@ class InterruptSpellTrigger : public SpellTrigger
         bool IsActive() override;
 };
 
+class DeflectSpellTrigger : public SpellTrigger
+{
+    public:
+        DeflectSpellTrigger(PlayerbotAI* ai, std::string const& spell) : SpellTrigger(ai, spell) {}
+
+        bool IsActive() override;
+};
+
 class AttackerCountTrigger : public Trigger
 {
     public:
@@ -245,6 +248,15 @@ class BuffOnPartyTrigger : public BuffTrigger
 
 		Value<Unit*>* GetTargetValue() override;
 		std::string const& getName() override { return spell + " on party"; }
+};
+
+class ProtectPartyMemberTrigger : public Trigger
+{
+    public:
+        ProtectPartyMemberTrigger(PlayerbotAI* ai) : Trigger(ai, "protect party member") { }
+
+        std::string const& GetTargetName() override { return "party member to protect"; }
+        bool IsActive() override;
 };
 
 class NoAttackersTrigger : public Trigger
@@ -428,10 +440,10 @@ class TimerTrigger : public Trigger
         time_t lastCheck;
 };
 
-class TankAoeTrigger : public NoAttackersTrigger
+class TankAssistTrigger : public NoAttackersTrigger
 {
 	public:
-		TankAoeTrigger(PlayerbotAI* botAI) : NoAttackersTrigger(botAI) { }
+		TankAssistTrigger(PlayerbotAI* botAI) : NoAttackersTrigger(botAI) { }
 
 		bool IsActive() override;
 };

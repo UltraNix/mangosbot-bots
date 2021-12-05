@@ -8,7 +8,8 @@
 
 bool LeaveGroupAction::Execute(Event event)
 {
-    return Leave();
+    Player* master = event.getOwner();
+    return Leave(master);
 }
 
 bool PartyCommandAction::Execute(Event event)
@@ -25,7 +26,7 @@ bool PartyCommandAction::Execute(Event event)
 
     Player* master = GetMaster();
     if (master && member == master->GetName())
-        return Leave();
+        return Leave(bot);
 
     return false;
 }
@@ -46,7 +47,7 @@ bool UninviteAction::Execute(Event event)
         }
 
         if (bot->GetName() == membername)
-            return Leave();
+            return Leave(bot);
     }
 
     if (p.GetOpcode() == CMSG_GROUP_UNINVITE_GUID)
@@ -56,28 +57,33 @@ bool UninviteAction::Execute(Event event)
         p >> guid;
 
         if (bot->GetGUID() == guid)
-            return Leave();
+            return Leave(bot);
     }
 
     return false;
 }
 
-bool LeaveGroupAction::Leave()
+bool LeaveGroupAction::Leave(Player* player)
 {
+    if (player && !player->GetPlayerbotAI() && !ai->GetSecurity()->CheckLevelFor(PLAYERBOT_SECURITY_INVITE, false, player))
+        return false;
+
     bool aiMaster = botAI->GetMaster()->GetPlayerbotAI();
 
     botAI->TellMaster("Goodbye!", PLAYERBOT_SECURITY_TALK);
 
-    WorldPacket p;
-    std::string const& member = bot->GetName();
-    p << uint32(PARTY_OP_LEAVE) << member << uint32(0);
-    bot->GetSession()->HandleGroupDisbandOpcode(p);
-
     bool randomBot = sRandomPlayerbotMgr->IsRandomBot(bot);
+    bool shouldStay = randomBot && bot->GetGroup() && player == bot;
+    if (!shouldStay)
+    {
+        WorldPacket p;
+        p << uint32(PARTY_OP_LEAVE) << bot->GetName() << uint32(0);
+        bot->GetSession()->HandleGroupDisbandOpcode(p);
+    }
+
     if (randomBot)
     {
         bot->GetPlayerbotAI()->SetMaster(nullptr);
-        sRandomPlayerbotMgr->ScheduleTeleport(bot->GetGUID().GetCounter());
     }
 
     if (!aiMaster)
@@ -86,6 +92,11 @@ bool LeaveGroupAction::Leave()
     botAI->Reset();
 
     return true;
+}
+
+bool LeaveFarAwayAction::Execute(Event event)
+{
+    return Leave(nullptr);
 }
 
 bool LeaveFarAwayAction::isUseful()
@@ -113,13 +124,30 @@ bool LeaveFarAwayAction::isUseful()
     if (trueMaster && !trueMaster->GetPlayerbotAI())
         return false;
 
-    if (botAI->GetGrouperType() == SOLO)
+    if (ai->IsAlt() && (!master->GetPlayerbotAI() || master->GetPlayerbotAI()->IsRealPlayer())) // Don't leave group when alt grouped with player master.
+        return false;
+
+    if (ai->GetGrouperType() == GrouperType::SOLO)
         return true;
+
+    uint32 dCount = AI_VALUE(uint32, "death count");
+
+    if (dCount > 9)
+        return true;
+
+    if (dCount > 4 && !ai->HasRealPlayerMaster())
+        return true;
+
+    if (bot->GetGuildId() == master->GetGuildId())
+    {
+        if (bot->getLevel() > master->getLevel() + 5)
+        {
+            if (AI_VALUE(bool, "should get money"))
+                return false;
+        }
+    }
 
     if (abs(int32(master->getLevel() - bot->getLevel())) > 4)
-        return true;
-
-    if (master->GetDistance(bot) > sPlayerbotAIConfig->reactDistance * 4)
         return true;
 
     return false;

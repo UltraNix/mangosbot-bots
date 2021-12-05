@@ -114,4 +114,12 @@ ChatCommandHandlerStrategy::ChatCommandHandlerStrategy(PlayerbotAI* botAI) : Pas
     supported.push_back("flag");
     supported.push_back("range");
     supported.push_back("ra");
+    supported.push_back("give leader");
+    supported.push_back("cheat");
+    supported.push_back("ginvite");
+    supported.push_back("guild promote");
+    supported.push_back("guild demote");
+    supported.push_back("guild remove");
+    supported.push_back("guild leave");
+    supported.push_back("rtsc");
 }

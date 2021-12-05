@@ -14,7 +14,7 @@ class PlayerbotAI;
 class NearestUnitsValue : public ObjectGuidListCalculatedValue
 {
 	public:
-        NearestUnitsValue(PlayerbotAI* botAI, std::string const& name, float range = sPlayerbotAIConfig->sightDistance, bool ignoreLos = false) :
+        NearestUnitsValue(PlayerbotAI* botAI, std::string const& name = "nearest units", float range = sPlayerbotAIConfig->sightDistance, bool ignoreLos = false) :
             ObjectGuidListCalculatedValue(botAI, name, 2), range(range), ignoreLos(ignoreLos) { }
 
 	public:

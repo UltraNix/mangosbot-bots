@@ -5,7 +5,7 @@
 #ifndef _PLAYERBOT_CASTCUSTOMSPELLACTION_H
 #define _PLAYERBOT_CASTCUSTOMSPELLACTION_H
 
-#include "InventoryAction.h"
+#include "ListSpellsAction.h"
 
 class Event;
 class PlayerbotAI;
@@ -33,12 +33,14 @@ class CastCustomNcSpellAction : public CastCustomSpellAction
         std::string const& castString(WorldObject* target) override;
 };
 
-class CastRandomSpellAction : public CastCustomSpellAction
+class CastRandomSpellAction : public ListSpellsAction
 {
     public:
-        CastRandomSpellAction(PlayerbotAI* botAI, std::string const& name = "cast random spell") : CastCustomSpellAction(botAI, name) { }
+        CastRandomSpellAction(PlayerbotAI* botAI, std::string const& name = "cast random spell") : ListSpellsAction(botAI, name) { }
 
-        virtual bool AcceptSpell(SpellInfo const* pSpellInfo) { return true; }
+        virtual bool AcceptSpell(SpellInfo const* pSpellInfo);
+        virtual uint32 GetSpellPriority(SpellInfo const* pSpellInfo) { return 1; }
+        virtual bool castSpell(uint32 spellId, WorldObject* wo);
         bool Execute(Event event) override;
 
     protected:
@@ -53,7 +55,27 @@ class CraftRandomItemAction : public CastRandomSpellAction
             MultiCast = true;
         }
 
-        bool AcceptSpell(SpellInfo const* pSpellInfo) override;
+        bool AcceptSpell(SpellInfo const* spellInfo) override;
+        uint32 GetSpellPriority(SpellInfo const* spellInfo) override;
+};
+
+class DisEnchantRandomItemAction : public CastCustomSpellAction
+{
+    public:
+        DisEnchantRandomItemAction(PlayerbotAI* ai) : CastCustomSpellAction(ai, "disenchant random item")  {}
+
+        bool isUseful() override;
+        bool Execute(Event event) override;
+};
+
+class EnchantRandomItemAction : public CastRandomSpellAction
+{
+    public:
+        EnchantRandomItemAction(PlayerbotAI* ai) : CastRandomSpellAction(ai, "enchant random item") {}
+
+        bool isUseful() override;
+        bool AcceptSpell(SpellInfo const* spellInfo) override;
+        uint32 GetSpellPriority(SpellInfo const* spellInfo) override;
 };
 
 #endif

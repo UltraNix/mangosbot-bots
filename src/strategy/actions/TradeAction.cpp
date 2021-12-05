@@ -12,6 +12,33 @@
 bool TradeAction::Execute(Event event)
 {
     std::string const& text = event.getParam();
+
+    if (!bot->GetTrader())
+    {
+        list<ObjectGuid> guids = chat->parseGameobjects(text);
+        Player* player = nullptr;
+
+        for(auto& guid: guids)
+            if (guid.IsPlayer())
+                player = sObjectMgr.GetPlayer(guid);
+
+        if (!player && ai->GetMaster())
+            player = ai->GetMaster();
+
+        if (!player) return false;
+
+        if (!player->GetTrader())
+        {
+
+            WorldPacket packet(CMSG_INITIATE_TRADE);
+            packet << player->GetObjectGuid();
+            bot->GetSession()->HandleInitiateTradeOpcode(packet);
+            return true;
+        }
+        else if (player->GetTrader() != bot)
+            return false;
+    }
+
     uint32 copper = chat->parseMoney(text);
     if (copper > 0)
     {
@@ -72,7 +99,6 @@ bool TradeAction::TradeItem(Item const* item, int8 slot)
         {
             if (pTrade->GetItem(TradeSlots(i)) == nullptr)
             {
-                pTrade->SetItem(TradeSlots(i), itemPtr);
                 tradeSlot = i;
             }
         }

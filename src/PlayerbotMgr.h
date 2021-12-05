@@ -59,6 +59,7 @@ class PlayerbotMgr : public PlayerbotHolder
         void HandleMasterOutgoingPacket(WorldPacket const& packet);
         void HandleCommand(uint32 type, std::string const& text);
         void OnPlayerLogin(Player* player);
+        void CancelLogout();
 
         void UpdateAIInternal(uint32 elapsed) override;
         void TellError(std::string const& botName, std::string const& text);

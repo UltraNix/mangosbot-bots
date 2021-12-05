@@ -13,7 +13,7 @@ class PlayerbotAI;
 class SpellCastUsefulValue : public BoolCalculatedValue, public Qualified
 {
 	public:
-        SpellCastUsefulValue(PlayerbotAI* botAI) : BoolCalculatedValue(botAI) { }
+        SpellCastUsefulValue(PlayerbotAI* botAI, string name = "spell cast useful") : BoolCalculatedValue(ai, name) {}
 
         bool Calculate() override;
 };

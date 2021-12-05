@@ -8,14 +8,15 @@
 #include "PlayerbotMgr.h"
 
 class ChatHandler;
+class PerformanceMonitorOperation;
 class WorldLocation;
 
 class CachedEvent
 {
     public:
-        CachedEvent() : value(0), lastChangeTime(0), validIn(0) { }
-        CachedEvent(CachedEvent const& other) : value(other.value), lastChangeTime(other.lastChangeTime), validIn(other.validIn) { }
-        CachedEvent(uint32 value, uint32 lastChangeTime, uint32 validIn) : value(value), lastChangeTime(lastChangeTime), validIn(validIn) { }
+        CachedEvent() : value(0), lastChangeTime(0), validIn(0), data("") {}
+        CachedEvent(const CachedEvent& other) : value(other.value), lastChangeTime(other.lastChangeTime), validIn(other.validIn), data(other.data) {}
+        CachedEvent(uint32 value, uint32 lastChangeTime, uint32 validIn, string data = "") : value(value), lastChangeTime(lastChangeTime), validIn(validIn), data(data) {}
 
         bool IsEmpty() { return !lastChangeTime; }
 
@@ -23,6 +24,7 @@ class CachedEvent
         uint32 value;
         uint32 lastChangeTime;
         uint32 validIn;
+        string data;
 };
 
 class RandomPlayerbotMgr : public PlayerbotHolder
@@ -36,9 +38,11 @@ class RandomPlayerbotMgr : public PlayerbotHolder
             return &instance;
         }
 
+        void LogPlayerLocation();
         void UpdateAIInternal(uint32 elapsed) override;
 
 	public:
+        uint32 activeBots = 0;
         static bool HandlePlayerbotConsoleCommand(ChatHandler* handler, char const* args);
         bool IsRandomBot(Player* bot);
         bool IsRandomBot(uint32 bot);
@@ -70,8 +74,9 @@ class RandomPlayerbotMgr : public PlayerbotHolder
         void ChangeStrategy(Player* player);
         uint32 GetValue(Player* bot, std::string const& type);
         uint32 GetValue(uint32 bot, std::string const& type);
-        void SetValue(uint32 bot, std::string const& type, uint32 value);
-        void SetValue(Player* bot, std::string const& type, uint32 value);
+        string GetData(uint32 bot, string type);
+        void SetValue(uint32 bot, string type, uint32 value, string data = "");
+        void SetValue(Player* bot, string type, uint32 value, string data = "");
         void Remove(Player* bot);
         uint32 GetBattleMasterEntry(Player* bot, BattlegroundTypeId bgTypeId, bool fake = false);
         CreatureData const* GetCreatureDataByEntry(uint32 entry);
@@ -96,10 +101,10 @@ class RandomPlayerbotMgr : public PlayerbotHolder
 
     private:
         uint32 GetEventValue(uint32 bot, std::string const& event);
-        uint32 SetEventValue(uint32 bot, std::string const& event, uint32 value, uint32 validIn);
+        string GetEventData(uint32 bot, string event);
+        uint32 SetEventValue(uint32 bot, string event, uint32 value, uint32 validIn, string data = "");
         std::vector<uint32> GetBots();
         std::vector<uint32> GetBgBots(uint32 bracket);
-        void AddBgBot(BattlegroundQueueTypeId queueTypeId, BattlegroundBracketId bracketId, bool isRated = false, bool visual = false);
         time_t BgCheckTimer;
         time_t LfgCheckTimer;
         time_t PlayersCheckTimer;
@@ -122,6 +127,7 @@ class RandomPlayerbotMgr : public PlayerbotHolder
         std::vector<uint32> currentBots;
         uint32 bgBotsCount;
         uint32 playersLevel;
+        PerformanceMonitorOperation* totalPmo;
 };
 
 #define sRandomPlayerbotMgr RandomPlayerbotMgr::instance()

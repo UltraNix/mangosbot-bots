@@ -15,12 +15,21 @@ struct ItemTemplate;
 class LootRollAction : public QueryItemUsageAction
 {
     public:
-        LootRollAction(PlayerbotAI* botAI) : QueryItemUsageAction(botAI, "loot roll") { }
+        LootRollAction(PlayerbotAI* botAI, string name = "loot roll") : QueryItemUsageAction(ai, name) {}
 
         bool Execute(Event event) override;
 
-    private:
-        RollVote CalculateRollVote(ItemTemplate const* proto);
+    protected:
+        virtual RollVote CalculateRollVote(ItemPrototype const* proto);
+};
+
+class MasterLootRollAction : public LootRollAction
+{
+    public:
+        MasterLootRollAction(PlayerbotAI* ai) : LootRollAction(ai, "master loot roll") {}
+
+        bool isUseful() override;
+        bool Execute(Event event) override;
 };
 
 #endif

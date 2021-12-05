@@ -10,6 +10,8 @@
 #include <chrono>
 #include <ctime>
 
+typedef vector<string> PerformanceStack;
+
 struct PerformanceData
 {
     uint32 minTime;
@@ -31,11 +33,13 @@ enum PerformanceMetric
 class PerformanceMonitorOperation
 {
     public:
-        PerformanceMonitorOperation(PerformanceData* data);
+        PerformanceMonitorOperation(PerformanceData* data, string name, PerformanceStack* stack);
         void finish();
 
     private:
         PerformanceData* data;
+        string name;
+        PerformanceStack* stack;
         std::chrono::milliseconds started;
 };
 
@@ -51,8 +55,8 @@ class PerformanceMonitor
         }
 
 	public:
-        PerformanceMonitorOperation* start(PerformanceMetric metric, std::string const& name);
-        void PrintStats();
+        PerformanceMonitorOperation* start(PerformanceMetric metric, std::string const& name, PerformanceStack* stack = nullptr);
+        void PrintStats(bool perTick = false,  bool fullStack = false);
         void Reset();
 
 	private:

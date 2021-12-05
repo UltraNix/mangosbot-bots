@@ -29,8 +29,8 @@ void EquipAction::EquipItems(ItemIds ids)
 uint8 EquipAction::GetSmallestBagSlot()
 {
     int8 curBag = 0;
-    int8 curSlots = 0;
-    for (uint8 bag = INVENTORY_SLOT_BAG_START + 1; bag < INVENTORY_SLOT_BAG_END; ++bag)
+    uint32 curSlots = 0;
+    for (uint8 bag = INVENTORY_SLOT_BAG_START; bag < INVENTORY_SLOT_BAG_END; ++bag)
     {
         const Bag* const pBag = (Bag*)bot->GetItemByPos(INVENTORY_SLOT_BAG_0, bag);
         if (pBag)
@@ -99,6 +99,17 @@ bool EquipUpgradesAction::Execute(Event event)
 {
     if (!sPlayerbotAIConfig->autoEquipUpgradeLoot && !sRandomPlayerbotMgr->IsRandomBot(bot))
         return false;
+
+    if (event.getSource() == "trade status")
+    {
+        WorldPacket p(event.getPacket());
+        p.rpos(0);
+        uint32 status;
+        p >> status;
+
+        if (status != TRADE_STATUS_TRADE_ACCEPT)
+            return false;
+    }
 
     ListItemsVisitor visitor;
     IterateItems(&visitor, ITERATE_ITEMS_IN_BAGS);

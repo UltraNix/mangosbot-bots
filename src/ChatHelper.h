@@ -31,6 +31,7 @@ class ChatHelper : public PlayerbotAIAware
         uint32 parseSpell(std::string const& text);
         static std::string formatQuest(Quest const* quest);
         static std::string formatItem(ItemTemplate const* proto, uint32 count = 0, uint32 total = 0);
+        static string formatQItem(uint32 itemId);
         static std::string formatSpell(SpellInfo const* spellInfo);
         static std::string formatGameobject(GameObject* go);
         static std::string formatWorldobject(WorldObject* wo);

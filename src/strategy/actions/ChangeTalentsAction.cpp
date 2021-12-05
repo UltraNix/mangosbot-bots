@@ -48,6 +48,7 @@ bool ChangeTalentsAction::Execute(Event event)
             if (botSpec.CheckTalentLink(param, &out))
             {
                 TalentSpec newSpec(bot, param);
+                string specLink = newSpec.GetTalentLink();
 
                 if (crop)
                 {
@@ -65,7 +66,8 @@ bool ChangeTalentsAction::Execute(Event event)
                 if (newSpec.CheckTalents(bot->getLevel(), &out))
                 {
                     newSpec.ApplyTalents(bot, &out);
-                    sRandomPlayerbotMgr->SetValue(bot->GetGUID().GetCounter(), "specNo", 0);
+                    sRandomPlayerbotMgr.SetValue(bot->GetGUIDLow(), "specNo", 0);
+                    sRandomPlayerbotMgr.SetValue(bot->GetGUIDLow(), "specLink", 1, specLink);
                 }
             }
             else
@@ -88,6 +90,7 @@ bool ChangeTalentsAction::Execute(Event event)
 
                         TalentPath* path = PickPremadePath(paths, sRandomPlayerbotMgr->IsRandomBot(bot));
                         TalentSpec newSpec = *GetBestPremadeSpec(path->id);
+                        string specLink = newSpec.GetTalentLink();
                         newSpec.CropTalents(bot->getLevel());
                         newSpec.ApplyTalents(bot, &out);
 
@@ -95,6 +98,7 @@ bool ChangeTalentsAction::Execute(Event event)
                         {
                             out << "Apply spec " << "|h|cffffffff" << path->name << " " << newSpec.formatSpec(bot);
                             sRandomPlayerbotMgr->SetValue(bot->GetGUID().GetCounter(), "specNo", path->id + 1);
+                            sRandomPlayerbotMgr.SetValue(bot->GetGUIDLow(), "specLink", 0);
                         }
                     }
                 }
@@ -182,7 +186,7 @@ void ChangeTalentsAction::listPremadePaths(std::vector<TalentPath*> paths, std::
 
     for (auto path : paths)
     {
-        *out << path->name << " " << path->talentSpec.back().formatSpec(bot) << ", ";
+        *out << path->name << " (" << path->talentSpec.back().formatSpec(bot) << "), ";
     }
 
     out->seekp(-2, out->cur);
@@ -225,6 +229,7 @@ bool ChangeTalentsAction::AutoSelectTalents(std::ostringstream* out)
 
     uint32 specNo = sRandomPlayerbotMgr->GetValue(bot->GetGUID().GetCounter(), "specNo");
     uint32 specId = specNo - 1;
+    string specLink = sRandomPlayerbotMgr.GetData(bot->GetGUIDLow(), "specLink");
 
     //Continue the current spec
     if (specNo > 0)
@@ -237,9 +242,20 @@ bool ChangeTalentsAction::AutoSelectTalents(std::ostringstream* out)
             *out << "Upgrading spec " << "|h|cffffffff" << getPremadePath(specId)->name << "" << newSpec.formatSpec(bot);
         }
     }
+    else if (!specLink.empty())
+    {
+        TalentSpec newSpec(bot, specLink);
+        newSpec.CropTalents(bot->getLevel());
+        newSpec.ApplyTalents(bot, out);
+        if (newSpec.GetTalentPoints() > 0)
+        {
+            *out << "Upgrading saved spec "
+                 << "|h|cffffffff" << chat->formatClass(bot, newSpec.highestTree()) << " (" << newSpec.formatSpec(bot) << ")";
+        }
+    }
 
     //Spec was not found or not sufficient
-    if (bot->GetFreeTalentPoints() > 0 || specNo == 0)
+    if (bot->GetFreeTalentPoints() > 0 || (!specNo && specLink.empty()))
     {
         TalentSpec oldSpec(bot);
         std::vector<TalentPath*> paths = getPremadePaths(&oldSpec);
@@ -256,6 +272,7 @@ bool ChangeTalentsAction::AutoSelectTalents(std::ostringstream* out)
         {
             *out << "No predefined talents found for this class.";
             specId = -1;
+            // specLink = "";
         }
         else if (paths.size() > 1 && sPlayerbotAIConfig->autoPickTalents != "full" && !sRandomPlayerbotMgr->IsRandomBot(bot))
         {
@@ -266,6 +283,7 @@ bool ChangeTalentsAction::AutoSelectTalents(std::ostringstream* out)
         {
             specId = PickPremadePath(paths, sRandomPlayerbotMgr->IsRandomBot(bot))->id;
             TalentSpec newSpec = *GetBestPremadeSpec(specId);
+            specLink = newSpec.GetTalentLink();
             newSpec.CropTalents(bot->getLevel());
             newSpec.ApplyTalents(bot, out);
 
@@ -277,6 +295,12 @@ bool ChangeTalentsAction::AutoSelectTalents(std::ostringstream* out)
     }
 
     sRandomPlayerbotMgr->SetValue(bot->GetGUID().GetCounter(), "specNo", specId + 1);
+
+    if (!specLink.empty() && specId == -1)
+        sRandomPlayerbotMgr.SetValue(bot->GetGUIDLow(), "specLink", 1, specLink);
+    else
+        sRandomPlayerbotMgr.SetValue(bot->GetGUIDLow(), "specLink", 0);
+
     return (specNo == 0) ? false : true;
 }
 

@@ -3,14 +3,15 @@
  */
 
 #include "TrainerAction.h"
+#include "BudgetValues.h"
 #include "Event.h"
 #include "Playerbot.h"
 
 void TrainerAction::Learn(uint32 cost, TrainerSpell const* tSpell, std::ostringstream& msg)
 {
-    if (sPlayerbotAIConfig->autoTrainSpells != "free")
+    if (sPlayerbotAIConfig->autoTrainSpells != "free" && !ai->HasCheat(BotCheatMask::gold))
     {
-        if (bot->GetMoney() < cost)
+        if (AI_VALUE2(uint32, "free money for", (uint32)NeedMoneyFor::spells) < cost)
         {
             msg << " - too expensive";
             return;
@@ -88,7 +89,7 @@ bool TrainerAction::Execute(Event event)
     Player* master = GetMaster();
 
     Creature* creature = botAI->GetCreature(bot->GetTarget());
-    if (AI_VALUE(ObjectGuid, "rpg target") != bot->GetTarget())
+    if (AI_VALUE(GuidPosition, "rpg target") != bot->GetTarget())
         if (master)
             creature = botAI->GetCreature(master->GetTarget());
         else
@@ -117,7 +118,7 @@ bool TrainerAction::Execute(Event event)
         spells.insert(spell);
 
     if (text.find("learn") != std::string::npos || sRandomPlayerbotMgr->IsRandomBot(bot) || (sPlayerbotAIConfig->autoTrainSpells != "no" &&
-        (creature->GetCreatureTemplate()->trainer_type != TRAINER_TYPE_TRADESKILLS || botAI->IsRealPlayer()))) //Todo rewrite to only exclude start primary profession skills and make config dependent.
+        (creature->GetCreatureTemplate()->trainer_type != TRAINER_TYPE_TRADESKILLS || !botAI->HasActivePlayerMaster()))) //Todo rewrite to only exclude start primary profession skills and make config dependent.
         Iterate(creature, &TrainerAction::Learn, spells);
     else
         Iterate(creature, nullptr, spells);

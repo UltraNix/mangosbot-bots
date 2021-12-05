@@ -83,6 +83,7 @@ class DruidTriggerFactoryInternal : public NamedObjectContext<Trigger>
             creators["cure poison"] = &DruidTriggerFactoryInternal::cure_poison;
             creators["party member cure poison"] = &DruidTriggerFactoryInternal::party_member_cure_poison;
             creators["entangling roots"] = &DruidTriggerFactoryInternal::entangling_roots;
+            creators["entangling roots kite"] = &TriggerFactoryInternal::entangling_roots_kite;
             creators["hibernate"] = &DruidTriggerFactoryInternal::hibernate;
             creators["bear form"] = &DruidTriggerFactoryInternal::bear_form;
             creators["cat form"] = &DruidTriggerFactoryInternal::cat_form;
@@ -117,6 +118,7 @@ class DruidTriggerFactoryInternal : public NamedObjectContext<Trigger>
         static Trigger* cure_poison(PlayerbotAI* botAI) { return new CurePoisonTrigger(botAI); }
         static Trigger* party_member_cure_poison(PlayerbotAI* botAI) { return new PartyMemberCurePoisonTrigger(botAI); }
         static Trigger* entangling_roots(PlayerbotAI* botAI) { return new EntanglingRootsTrigger(botAI); }
+        static Trigger* entangling_roots_kite(PlayerbotAI* ai) { return new EntanglingRootsKiteTrigger(ai); }
         static Trigger* hibernate(PlayerbotAI* botAI) { return new HibernateTrigger(botAI); }
         static Trigger* bear_form(PlayerbotAI* botAI) { return new BearFormTrigger(botAI); }
         static Trigger* cat_form(PlayerbotAI* botAI) { return new CatFormTrigger(botAI); }

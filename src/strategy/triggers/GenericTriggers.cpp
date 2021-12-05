@@ -21,6 +21,16 @@ bool NoPetTrigger::IsActive()
     return !AI_VALUE(Unit*, "pet target") && !AI_VALUE2(bool, "mounted", "self target");
 }
 
+bool HighManaTrigger::IsActive()
+{
+    return AI_VALUE2(bool, "has mana", "self target") && AI_VALUE2(uint8, "mana", "self target") < 65;
+}
+
+bool AlmostFullManaTrigger::IsActive()
+{
+    return AI_VALUE2(bool, "has mana", "self target") && AI_VALUE2(uint8, "mana", "self target") > 85;
+}
+
 bool RageAvailable::IsActive()
 {
     return AI_VALUE2(uint8, "rage", "self target") >= amount;
@@ -97,6 +107,11 @@ Value<Unit*>* BuffOnPartyTrigger::GetTargetValue()
 	return context->GetValue<Unit*>("party member without aura", spell);
 }
 
+bool ProtectPartyMemberTrigger::IsActive()
+{
+    return AI_VALUE(Unit*, "party member to protect");
+}
+
 Value<Unit*>* DebuffOnAttackerTrigger::GetTargetValue()
 {
 	return context->GetValue<Unit*>("attacker without aura", spell);
@@ -104,7 +119,7 @@ Value<Unit*>* DebuffOnAttackerTrigger::GetTargetValue()
 
 bool NoAttackersTrigger::IsActive()
 {
-    return !AI_VALUE(Unit*, "current target") && AI_VALUE(uint8, "attacker count") > 0;
+    return !AI_VALUE(Unit*, "current target") && AI_VALUE(uint8, "my attacker count") > 0;
 }
 
 bool InvalidTargetTrigger::IsActive()
@@ -119,12 +134,12 @@ bool NoTargetTrigger::IsActive()
 
 bool MyAttackerCountTrigger::IsActive()
 {
-    return AI_VALUE(uint8, "my attacker count") >= amount;
+    return AI_VALUE2(bool, "combat", "self target") && AI_VALUE(uint8, "my attacker count") >= amount;
 }
 
 bool AoeTrigger::IsActive()
 {
-    return AI_VALUE(uint8, "aoe count") >= amount && AI_VALUE(uint8, "attacker count") >= amount;
+    return AI_VALUE2(bool, "combat", "self target") && AI_VALUE(uint8, "aoe count") >= amount && AI_VALUE(uint8, "attacker count") >= amount;
 }
 
 bool NoFoodTrigger::IsActive()
@@ -190,12 +205,56 @@ bool BoostTrigger::IsActive()
 
 bool ItemCountTrigger::IsActive()
 {
-	return AI_VALUE2(uint8, "item count", item) < count;
+	return AI_VALUE2(uint32, "item count", item) < count;
 }
 
 bool InterruptSpellTrigger::IsActive()
 {
 	return SpellTrigger::IsActive() && botAI->IsInterruptableSpellCasting(GetTarget(), getName());
+}
+
+bool DeflectSpellTrigger::IsActive()
+{
+    Unit* target = GetTarget();
+    if (!target)
+        return false;
+
+    if (!target->IsNonMeleeSpellCasted(true))
+        return false;
+
+    if (!target->HasTarget(bot->GetObjectGuid()))
+        return false;
+
+    uint32 spellid = context->GetValue<uint32>("spell id", spell)->Get();
+    if (!spellid)
+        return false;
+
+    SpellEntry const *deflectSpell = sServerFacade.LookupSpellInfo(spellid);
+    if (!deflectSpell)
+        return false;
+
+    // warrior deflects all
+    if (spell == "spell reflection")
+        return true;
+
+    // human priest feedback
+    if (spell == "feedback")
+        return true;
+
+    SpellSchoolMask deflectSchool = SpellSchoolMask(deflectSpell->EffectMiscValue[0]);
+    SpellSchoolMask attackSchool = SPELL_SCHOOL_MASK_NONE;
+
+    if (Spell* spell = target->GetCurrentSpell(CURRENT_GENERIC_SPELL))
+    {
+        SpellEntry const* tarSpellInfo = spell->m_spellInfo;
+        if (tarSpellInfo)
+        {
+            attackSchool = GetSpellSchoolMask(tarSpellInfo);
+            if (deflectSchool == attackSchool)
+                return true;
+        }
+    }
+    return false;
 }
 
 bool AttackerCountTrigger::IsActive()
@@ -224,7 +283,7 @@ bool HasNoAuraTrigger::IsActive()
     return !botAI->HasAura(getName(), GetTarget());
 }
 
-bool TankAoeTrigger::IsActive()
+bool TankAssistTrigger::IsActive()
 {
     if (!AI_VALUE(uint8, "attacker count"))
         return false;
@@ -361,17 +420,17 @@ bool CollisionTrigger::IsActive()
 
 bool GiveItemTrigger::IsActive()
 {
-    return AI_VALUE2(Unit*, "party member without item", item) && AI_VALUE2(uint8, "item count", item);
+    return AI_VALUE2(Unit*, "party member without item", item) && AI_VALUE2(uint32, "item count", item);
 }
 
 bool GiveFoodTrigger::IsActive()
 {
-    return AI_VALUE(Unit*, "party member without food") && AI_VALUE2(uint8, "item count", item);
+    return AI_VALUE(Unit*, "party member without food") && AI_VALUE2(uint32, "item count", item);
 }
 
 bool GiveWaterTrigger::IsActive()
 {
-    return AI_VALUE(Unit*, "party member without water") && AI_VALUE2(uint8, "item count", item);
+    return AI_VALUE(Unit*, "party member without water") && AI_VALUE2(uint32, "item count", item);
 }
 
 Value<Unit*>* SnareTargetTrigger::GetTargetValue()

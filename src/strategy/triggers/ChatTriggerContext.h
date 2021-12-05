@@ -63,6 +63,7 @@ class ChatTriggerContext : public NamedObjectContext<Trigger>
             creators["buff"] = &ChatTriggerContext::buff;
             creators["help"] = &ChatTriggerContext::help;
             creators["gb"] = &ChatTriggerContext::gb;
+            creators["gbank"] = &ChatTriggerContext::gb;
             creators["bank"] = &ChatTriggerContext::bank;
             creators["follow"] = &ChatTriggerContext::follow;
             creators["stay"] = &ChatTriggerContext::stay;
@@ -100,6 +101,14 @@ class ChatTriggerContext : public NamedObjectContext<Trigger>
             creators["flag"] = &ChatTriggerContext::craft;
             creators["range"] = &ChatTriggerContext::range;
             creators["ra"] = &ChatTriggerContext::ra;
+            creators["give leader"] = &ChatTriggerContext::give_leader;
+            creators["cheat"] = &ChatTriggerContext::cheat;
+            creators["ginvite"] = &ChatTriggerContext::ginvite;
+            creators["guild promote"] = &ChatTriggerContext::guild_promote;
+            creators["guild demote"] = &ChatTriggerContext::guild_demote;
+            creators["guild remove"] = &ChatTriggerContext::guild_remove;
+            creators["guild leave"] = &ChatTriggerContext::guild_leave;
+            creators["rtsc"] = &ChatTriggerContext::rtsc;
         }
 
     private:
@@ -181,6 +190,14 @@ class ChatTriggerContext : public NamedObjectContext<Trigger>
         static Trigger* reset_ai(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "reset botAI"); }
         static Trigger* spell(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "spell"); }
         static Trigger* ready_check(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "ready check"); }
+        static Trigger* give_leader(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "give leader"); }
+        static Trigger* cheat(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "cheat"); }
+        static Trigger* ginvite(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "ginvite"); }
+        static Trigger* guild_promote(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "guild promote"); }
+        static Trigger* guild_demote(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "guild demote"); }
+        static Trigger* guild_remove(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "guild remove"); }
+        static Trigger* guild_leave(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "guild leave"); }
+        static Trigger* rtsc(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "rtsc"); }
 };
 
 #endif

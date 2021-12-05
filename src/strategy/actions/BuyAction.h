@@ -11,6 +11,7 @@ class Event;
 class FindItemVisitor;
 class ObjectGuid;
 class Item;
+class Player;
 class PlayerbotAI;
 
 struct ItemTemplate;

@@ -12,7 +12,7 @@ class PlayerbotAI;
 class SkipSpellsListValue : public ManualSetValue<std::set<uint32>&>
 {
 	public:
-        SkipSpellsListValue(PlayerbotAI* botAI) : ManualSetValue<std::set<uint32>&>(botAI, list) { }
+        SkipSpellsListValue(PlayerbotAI* botAI, string name = "skip spells list") : ManualSetValue<set<uint32>&>(ai, list, name) {}
 
         std::string const& Save() override;
         bool Load(std::string const& value) override;

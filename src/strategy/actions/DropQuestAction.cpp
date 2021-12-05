@@ -61,9 +61,12 @@ bool CleanQuestLogAction::Execute(Event event)
     if (MAX_QUEST_LOG_SIZE - totalQuests > 6)
         return true;
 
-    DropQuestType(totalQuests, MAX_QUEST_LOG_SIZE - 6); //Drop gray/red quests.
-    DropQuestType(totalQuests, MAX_QUEST_LOG_SIZE - 6, false, true); //Drop gray/red quests with progress.
-    DropQuestType(totalQuests, MAX_QUEST_LOG_SIZE - 6, false, true, true); //Drop gray/red completed quests.
+    if (AI_VALUE(bool, "can fight equal")) // Only drop gray quests when able to fight proper lvl quests.
+    {
+        DropQuestType(totalQuests, MAX_QUEST_LOG_SIZE - 6);                    // Drop gray/red quests.
+        DropQuestType(totalQuests, MAX_QUEST_LOG_SIZE - 6, false, true);       // Drop gray/red quests with progress.
+        DropQuestType(totalQuests, MAX_QUEST_LOG_SIZE - 6, false, true, true); // Drop gray/red completed quests.
+    }
 
     if (MAX_QUEST_LOG_SIZE - totalQuests > 4)
         return true;
@@ -98,24 +101,35 @@ void CleanQuestLogAction::DropQuestType(uint8& numQuest, uint8 wantNum, bool isG
         if (!quest)
             continue;
 
+        if (quest->GetRequiredClasses() && (quest->GetRewSpellCast() || quest->GetRewSpell())) //Do not drop class specific quests that learn spells.
+            continue;
+
+        if (quest->GetRequiredClasses() && (quest->GetRewSpellCast() || quest->GetRewSpell())) // Do not drop class specific quests that learn spells.
+            continue;
+
         if (wantNum == 100)
             numQuest++;
 
-        if (!isGreen)
+        int32 lowLevelDiff = sWorld->getIntConfig(CONFIG_QUEST_LOW_LEVEL_HIDE_DIFF);
+        if (lowLevelDiff < 0 || bot->getLevel() <= bot->GetQuestLevel(quest) + uint32(lowLevelDiff)) // Quest is not gray
         {
-            int32 lowLevelDiff = sWorld->getIntConfig(CONFIG_QUEST_LOW_LEVEL_HIDE_DIFF);
-            if (lowLevelDiff < 0 || bot->getLevel() <= bot->GetQuestLevel(quest) + uint32(lowLevelDiff)) // Quest is not gray
-                if (bot->getLevel() + 5 > bot->GetQuestLevel(quest))                                     // Quest is not red
+            if (bot->getLevel() + 5 > bot->GetQuestLevelForPlayer(quest)) // Quest is not red
+                if (!isGreen)
                     continue;
         }
+        else // Quest is gray
+        {
+            if (isGreen)
+                continue;
+        }
 
-        if (HasProgress(questId) && !hasProgress)
+        if (HasProgress(bot, quest) && !hasProgress)
             continue;
 
         if (bot->GetQuestStatus(questId) == QUEST_STATUS_COMPLETE && !isComplete)
             continue;
 
-        if (numQuest <= wantNum)
+        if (numQuest <= wantNum && bot->GetQuestStatus(questId) != QUEST_STATUS_FAILED) // Always drop failed quests
             continue;
 
         //Drop quest.
@@ -133,30 +147,31 @@ void CleanQuestLogAction::DropQuestType(uint8& numQuest, uint8 wantNum, bool isG
     }
 }
 
-bool CleanQuestLogAction::HasProgress(uint32 questId)
+bool CleanQuestLogAction::HasProgress(Player* bot, Quest const* quest)
 {
+    uint32 questId = quest->GetQuestId();
+
     if (bot->GetQuestStatus(questId) == QUEST_STATUS_COMPLETE)
         return true;
 
-    Quest const* questTemplate = sObjectMgr->GetQuestTemplate(questId);
     QuestStatusData questStatus = bot->getQuestStatusMap()[questId];
 
     for (uint32 i = 0; i < QUEST_OBJECTIVES_COUNT; i++)
     {
-        if (!questTemplate->ObjectiveText[i].empty())
+        if (!quest->ObjectiveText[i].empty())
             return true;
 
-        if (questTemplate->RequiredItemId[i])
+        if (quest->RequiredItemId[i])
         {
-            int required = questTemplate->RequiredItemCount[i];
+            int required  = quest->RequiredItemCount[i];
             int available = questStatus.ItemCount[i];
             if (available > 0 && required > 0)
                 return true;
         }
 
-        if (questTemplate->RequiredNpcOrGo[i])
+        if (quest->RequiredNpcOrGo[i])
         {
-            int required = questTemplate->RequiredNpcOrGoCount[i];
+            int required  = quest->RequiredNpcOrGoCount[i];
             int available = questStatus.CreatureOrGOCount[i];
 
             if (available > 0 && required > 0)

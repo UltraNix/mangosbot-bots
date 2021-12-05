@@ -18,6 +18,19 @@ class LastMovement
         LastMovement();
         LastMovement(LastMovement& other);
 
+        LastMovement& operator=(LastMovement const& other)
+        {
+            taxiNodes = other.taxiNodes;
+            taxiMaster = other.taxiMaster;
+            lastFollow = other.lastFollow;
+            lastAreaTrigger = other.lastAreaTrigger;
+            lastMoveShort = other.lastMoveShort;
+            lastPath = other.lastPath;
+            nextTeleport = other.nextTeleport;
+
+            return *this;
+        };
+
         void clear();
 
         void Set(Unit* follow);
@@ -39,6 +52,7 @@ class LastMovement
         WorldPosition lastMoveShort;
         TravelPath lastPath;
         time_t nextTeleport;
+        std::future<TravelPath> future;
 };
 
 class LastMovementValue : public ManualSetValue<LastMovement&>
@@ -47,7 +61,7 @@ class LastMovementValue : public ManualSetValue<LastMovement&>
         LastMovementValue(PlayerbotAI* botAI) : ManualSetValue<LastMovement&>(botAI, data) { }
 
     private:
-        LastMovement data;
+        LastMovement data = LastMovement();
 };
 
 class StayTimeValue : public ManualSetValue<time_t>

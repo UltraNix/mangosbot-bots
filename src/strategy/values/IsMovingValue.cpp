@@ -8,7 +8,6 @@
 bool IsMovingValue::Calculate()
 {
     Unit* target = AI_VALUE(Unit*, qualifier);
-    Unit* chaseTarget;
 
     if (!target)
         return false;

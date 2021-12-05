@@ -30,7 +30,7 @@ class AttackersValue : public ObjectGuidListCalculatedValue
 class PossibleAddsValue : public BoolCalculatedValue
 {
     public:
-        PossibleAddsValue(PlayerbotAI* botAI) : BoolCalculatedValue(botAI) { }
+        PossibleAddsValue(PlayerbotAI* botAI, string name = "possible adds") : BoolCalculatedValue(ai, name) {}
 
         bool Calculate() override;
 };

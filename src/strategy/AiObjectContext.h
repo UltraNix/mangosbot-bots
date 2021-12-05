@@ -33,9 +33,11 @@ class AiObjectContext : public PlayerbotAIAware
         Value<T>* GetValue(std::string const& name, std::string const& param);
 
         template<class T>
-        Value<T>* GetValue(std::string const& name, uint32 param);
+        Value<T>* GetValue(std::string const& name, int32 param);
 
+        set<string> GetValues();
         std::set<std::string> GetSupportedStrategies();
+        set<string> GetSupportedActions();
         std::string FormatValues();
 
         virtual void Update();
@@ -44,6 +46,8 @@ class AiObjectContext : public PlayerbotAIAware
 
         std::vector<std::string> Save();
         void Load(std::vector<std::string> data);
+
+        vector<string> performanceStack;
 
     protected:
         NamedObjectContextList<Strategy> strategyContexts;

@@ -23,8 +23,12 @@ class ChooseTravelTargetAction : public MovementAction
         bool Execute(Event event) override;
         bool isUseful() override;
 
-    private:
-        bool SetTarget(TravelTarget* target, TravelTarget* oldTarget);
+        static TravelDestination* FindDestination(Player* bot, string name);
+
+    protected:
+        void getNewTarget(TravelTarget* newTarget, TravelTarget* oldTarget);
+        void setNewTarget(TravelTarget* newTarget, TravelTarget* oldTarget);
+        void ReportTravelTarget(TravelTarget* newTarget, TravelTarget* oldTarget);
 
         bool getBestDestination(std::vector<TravelDestination*>* activeDestinations, std::vector<WorldPosition*>* activePoints);
 
@@ -34,23 +38,15 @@ class ChooseTravelTargetAction : public MovementAction
         bool SetNewQuestTarget(TravelTarget* target);
         bool SetRpgTarget(TravelTarget* target);
         bool SetGrindTarget(TravelTarget* target);
+        bool SetBossTarget(TravelTarget* target);
         bool SetExploreTarget(TravelTarget* target);
+        bool SetNpcFlagTarget(TravelTarget* target, vector<NPCFlags> flags, string name = "", vector<uint32> items = { });
+        bool SetNullTarget(TravelTarget* target);
         bool SetNullTarget(TravelTarget* target);
 
         void ReportTravelTarget(TravelTarget* newTarget, TravelTarget* oldTarget);
 
-        TravelTarget ChooseTarget(TravelTarget* oldTarget);
-
-        TravelTarget getBestTarget(std::vector<TravelDestination*> activeDestinations, std::vector<WorldPosition*> activePoints, bool groupCopy = false);
-
-        TravelTarget GetGroupTarget();
-        TravelTarget GetCurrentTarget(TravelTarget* oldTarget);
-        TravelTarget GetQuestTarget();
-        TravelTarget GetNewQuestTarget();
-        TravelTarget GetNullTarget();
-
-        void ReportTravelTarget(TravelTarget* newTarget, TravelTarget* oldTarget);
-
+    private:
         virtual bool needForQuest(Unit* target);
         virtual bool needItemForQuest(uint32 itemId, Quest const* questTemplate, QuestStatusData const* questStatus);
 };

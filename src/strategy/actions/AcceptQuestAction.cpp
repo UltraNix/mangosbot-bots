@@ -9,6 +9,7 @@
 void AcceptAllQuestsAction::ProcessQuest(Quest const* quest, WorldObject* questGiver)
 {
     AcceptQuest(quest, questGiver->GetGUID());
+    bot->PlayDistanceSound(620);
 }
 
 bool AcceptQuestAction::Execute(Event event)

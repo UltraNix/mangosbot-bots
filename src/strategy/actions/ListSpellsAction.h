@@ -14,9 +14,10 @@ class PlayerbotAI;
 class ListSpellsAction : public InventoryAction
 {
     public:
-        ListSpellsAction(PlayerbotAI* botAI) : InventoryAction(botAI, "spells") { }
+        ListSpellsAction(PlayerbotAI* botAI, string name = "spells") : InventoryAction(botAI, name) { }
 
         bool Execute(Event event) override;
+        virtual list<pair<uint32, string>> GetSpellList(string filter = "");
 
     private:
         static std::map<uint32, SkillLineAbilityEntry const*> skillSpells;

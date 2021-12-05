@@ -21,7 +21,7 @@ bool InviteToGroupAction::Invite(Player* player)
     if (!player)
         return false;
 
-    if (!player->GetPlayerbotAI() && !botAI->GetSecurity()->CheckLevelFor(PLAYERBOT_SECURITY_INVITE, false, player))
+    if (!player->GetPlayerbotAI() && !botAI->GetSecurity()->CheckLevelFor(PLAYERBOT_SECURITY_INVITE, true, player))
         return false;
 
     WorldPacket p;
@@ -45,17 +45,19 @@ bool InviteNearbyToGroupAction::Execute(Event event)
         if (player->GetGroup())
             continue;
 
-        PlayerbotAI* botAI = player->GetPlayerbotAI();
-        if (!botAI) //Only invite bots. Maybe change later.
-            continue;
+        if (botAi)
+        {
+            if (botAi->GetGrouperType() == GrouperType::SOLO && !botAi->HasRealPlayerMaster()) // Do not invite solo players.
+                continue;
 
-        if (botAI->GetGrouperType() == SOLO)
-            return false;
-
-        if (botAI->GetMaster())
-            if (!botAI->GetMaster()->GetPlayerbotAI() || botAI->GetMaster()->GetPlayerbotAI()->IsRealPlayer()) //Do not invite bots with a player master.
-                if (!botAI->IsRealPlayer()) //Unless the bot is really a player
-                    continue;
+            if (botAi->HasActivePlayerMaster()) // Do not invite alts of active players.
+                continue;
+        }
+        else
+        {
+            if (!sPlayerbotAIConfig.randomBotGroupNearby)
+                return false;
+        }
 
         if (abs(int32(player->getLevel() - bot->getLevel())) > 2)
             continue;
@@ -71,9 +73,6 @@ bool InviteNearbyToGroupAction::Execute(Event event)
 
 bool InviteNearbyToGroupAction::isUseful()
 {
-    if (!sPlayerbotAIConfig->randomBotGroupNearby)
-        return false;
-
     if (bot->InBattleground())
         return false;
 
@@ -81,7 +80,7 @@ bool InviteNearbyToGroupAction::isUseful()
         return false;
 
     GrouperType grouperType = botAI->GetGrouperType();
-    if (grouperType == SOLO || grouperType == MEMBER)
+    if (grouperType == GrouperType::SOLO || grouperType == GrouperType::MEMBER)
         return false;
 
     if (Group* group = bot->GetGroup())
@@ -93,20 +92,75 @@ bool InviteNearbyToGroupAction::isUseful()
             return false;
 
         uint32 memberCount = group->GetMembersCount();
-        if (memberCount > 1 && grouperType == LEADER_2)
-            return false;
-
-        if (memberCount > 2 && grouperType == LEADER_3)
-            return false;
-
-        if (memberCount > 3 && grouperType == LEADER_4)
+        if (memberCount >= uint8(grouperType))
             return false;
     }
 
-    if (botAI->GetMaster())
-        if (!botAI->GetMaster()->GetPlayerbotAI() || botAI->GetMaster()->GetPlayerbotAI()->IsRealPlayer()) //Alts do not invite.
-            if (!botAI->IsRealPlayer()) //Unless the bot is really a player
-                return false;
+    if (ai->HasActivePlayerMaster()) // Alts do not invite randomly
+        return false;
 
     return true;
 }
+
+vector<Player*> InviteGuildToGroupAction::getGuildMembers()
+{
+    Guild* guild = sGuildMgr.GetGuildById(bot->GetGuildId());
+
+    FindGuildMembers worker;
+    guild->BroadcastWorker(worker);
+
+    return worker.GetResult();
+}
+
+bool InviteGuildToGroupAction::Execute(Event event)
+{
+    for (auto& member : getGuildMembers())
+    {
+        Player* player = member;
+
+        if (!player)
+            continue;
+
+        if (player->GetGroup())
+            continue;
+
+        PlayerbotAI* botAi = player->GetPlayerbotAI();
+
+        if (botAi)
+        {
+            if (botAi->GetGrouperType() == GrouperType::SOLO && !botAi->HasRealPlayerMaster()) //Do not invite solo players.
+                continue;
+
+            if (botAi->HasActivePlayerMaster()) //Do not invite alts of active players.
+                continue;
+
+            if (player->getLevel() > bot->getLevel() + 5) // Only invite higher levels that need money so they can grind money and help out.
+            {
+                AiObjectContext* botContext = botAi->GetAiObjectContext();
+
+                if (!botContext->GetValue<bool>("should get money")->Get())
+                    continue;
+            }
+        }
+        else
+        {
+            if (!sPlayerbotAIConfig.randomBotGroupNearby)
+                return false;
+        }
+
+        if (player->getLevel() + 2 < bot->getLevel())
+            continue;
+
+        if (player->getLevel() > bot->getLevel() + 20)
+            continue;
+
+        return Invite(player);
+    }
+
+    return false;
+}
+
+bool InviteGuildToGroupAction::isUseful()
+{
+    return bot->GetGuildId() && InviteNearbyToGroupAction::isUseful();
+};

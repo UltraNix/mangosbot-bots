@@ -5,6 +5,11 @@
 #include "Event.h"
 #include "Playerbot.h"
 
+Event::Event(string source, ObjectGuid object, Player* owner) : source(source), owner(owner)
+{
+    packet << object;
+}
+
 ObjectGuid Event::getObject()
 {
     if (packet.empty())

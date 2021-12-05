@@ -3,6 +3,8 @@
  */
 
 #include "PvpValues.h"
+#include "BattleGroundEY.h"
+#include "BattleGroundWS.h"
 #include "Playerbot.h"
 #include "ServerFacade.h"
 
@@ -28,6 +30,36 @@ Unit* FlagCarrierValue::Calculate()
                 {
                     return carrier;
                 }
+                else
+                    return nullptr;
+            }
+        }
+
+        if (ai->GetBot()->GetBattleGroundTypeId() == BATTLEGROUND_EY)
+        {
+            BattleGroundEY* bg = (BattleGroundEY*)ai->GetBot()->GetBattleGround();
+
+            if (bg->GetFlagCarrierGuid().IsEmpty())
+                return nullptr;
+
+            Player* fc = bg->GetBgMap()->GetPlayer(bg->GetFlagCarrierGuid());
+            if (!fc)
+                return nullptr;
+
+            if (!sameTeam && (fc->GetTeam() != bot->GetTeam()))
+                carrier = fc;
+
+            if (sameTeam && (fc->GetTeam() == bot->GetTeam()))
+                carrier = fc;
+
+            if (carrier)
+            {
+                if (ignoreRange || bot->IsWithinDistInMap(carrier, sPlayerbotAIConfig.sightDistance))
+                {
+                    return carrier;
+                }
+                else
+                    return nullptr;
             }
         }
     }
@@ -129,4 +161,40 @@ CreatureData const* BgMasterValue::NearestBm(bool allowDead)
     }
 
     return rbmPair;
+}
+
+BattleGroundTypeId RpgBgTypeValue::Calculate()
+{
+    GuidPosition guidPosition = AI_VALUE(GuidPosition, "rpg target");
+
+    if (guidPosition)
+        for (uint32 i = 1; i < MAX_BATTLEGROUND_QUEUE_TYPES; i++)
+        {
+            BattleGroundQueueTypeId queueTypeId = (BattleGroundQueueTypeId)i;
+
+            BattleGroundTypeId bgTypeId = sServerFacade.BgTemplateId(queueTypeId);
+
+            BattleGround* bg = sBattleGroundMgr.GetBattleGroundTemplate(bgTypeId);
+            if (!bg)
+                continue;
+
+            if (bot->getLevel() < bg->GetMinLevel())
+                continue;
+
+            // check if already in queue
+            if (bot->InBattleGroundQueueForBattleGroundQueueType(queueTypeId))
+                continue;
+
+            map<Team, map<BattleGroundTypeId, list<uint32>>> battleMastersCache = sRandomPlayerbotMgr.getBattleMastersCache();
+
+            for (auto& entry : battleMastersCache[TEAM_BOTH_ALLOWED][bgTypeId])
+                if (entry == guidPosition.GetEntry())
+                    return bgTypeId;
+
+            for (auto& entry : battleMastersCache[bot->GetTeam()][bgTypeId])
+                if (entry == guidPosition.GetEntry())
+                    return bgTypeId;
+        }
+
+    return BATTLEGROUND_TYPE_NONE;
 }

@@ -67,7 +67,7 @@ bool CastSpellAction::isPossible()
     }
 
     Spell* currentSpell = bot->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-    return botAI->CanCastSpell(spell, GetTarget()) && (!currentSpell || currentSpell->getState() != SPELL_STATE_CASTING);
+    return ai->CanCastSpell(spell, GetTarget(), true);
 }
 
 bool CastSpellAction::isUseful()
@@ -81,12 +81,33 @@ bool CastSpellAction::isUseful()
         return false;
     }
 
-    return GetTarget() && AI_VALUE2(bool, "spell cast useful", spell) && AI_VALUE2(float, "distance", GetTargetName()) <= range;
+    Unit* spellTarget = GetTarget();
+    if (!spellTarget)
+        return false;
+
+    if (!spellTarget->IsInWorld() || spellTarget->GetMapId() != bot->GetMapId())
+        return false;
+
+    float combatReach = bot->GetCombinedCombatReach(spellTarget, true);
+    if (ai->IsRanged(bot))
+        combatReach = bot->GetCombinedCombatReach(spellTarget, false);
+
+    return spellTarget && AI_VALUE2(bool, "spell cast useful", spell) && sServerFacade.GetDistance2d(bot, spellTarget) <= (range + combatReach);
+}
+
+CastMeleeSpellAction::CastMeleeSpellAction(PlayerbotAI* botAI, std::string const& spell) : CastSpellAction(botAI, spell)
+{
+    range = ATTACK_DISTANCE;
+    Unit* target = AI_VALUE(Unit*, "current target");
+    if (target)
+        range = max(5.0f, bot->GetCombinedCombatReach(target, true));
+
+    // range = target->GetCombinedCombatReach();
 }
 
 bool CastAuraSpellAction::isUseful()
 {
-	return CastSpellAction::isUseful() && !botAI->HasAura(spell, GetTarget(), true);
+    return GetTarget() && (GetTarget() != nullptr) && (GetTarget() != NULL) && CastSpellAction::isUseful() && !ai->HasAura(spell, GetTarget(), true);
 }
 
 bool CastEnchantItemAction::isPossible()
@@ -119,6 +140,27 @@ Value<Unit*>* BuffOnPartyAction::GetTargetValue()
     return context->GetValue<Unit*>("party member without aura", spell);
 }
 
+CastShootAction::CastShootAction(PlayerbotAI* ai) : CastSpellAction(ai, "shoot")
+{
+    if (Item* const pItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_RANGED))
+    {
+        spell = "shoot";
+
+        switch (pItem->GetProto()->SubClass)
+        {
+            case ITEM_SUBCLASS_WEAPON_GUN:
+                spell += " gun";
+                break;
+            case ITEM_SUBCLASS_WEAPON_BOW:
+                spell += " bow";
+                break;
+            case ITEM_SUBCLASS_WEAPON_CROSSBOW:
+                spell += " crossbow";
+                break;
+        }
+    }
+}
+
 NextAction** CastSpellAction::getPrerequisites()
 {
     if (spell == "mount")
@@ -145,4 +187,34 @@ Value<Unit*>* CastSpellOnEnemyHealerAction::GetTargetValue()
 Value<Unit*>* CastSnareSpellAction::GetTargetValue()
 {
     return context->GetValue<Unit*>("snare target", spell);
+}
+
+Value<Unit*>* CastCrowdControlSpellAction::GetTargetValue()
+{
+    return context->GetValue<Unit*>("cc target", getName());
+}
+
+bool CastCrowdControlSpellAction::Execute(Event event)
+{
+    return ai->CastSpell(getName(), GetTarget());
+}
+
+bool CastCrowdControlSpellAction::isPossible()
+{
+    return ai->CanCastSpell(getName(), GetTarget(), true);
+}
+
+bool CastCrowdControlSpellAction::isUseful()
+{
+    return true;
+}
+
+std::string const& CastProtectSpellAction::GetTargetName()
+{
+    return "party member to protect";
+}
+
+bool CastProtectSpellAction::isUseful()
+{
+    return GetTarget() && !ai->HasAura(spell, GetTarget());
 }

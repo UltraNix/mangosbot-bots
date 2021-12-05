@@ -26,7 +26,7 @@ class LastSpellCast
 class LastSpellCastValue : public ManualSetValue<LastSpellCast&>
 {
 	public:
-        LastSpellCastValue(PlayerbotAI* botAI) : ManualSetValue<LastSpellCast&>(botAI, data) { }
+        LastSpellCastValue(PlayerbotAI* botAI, string name = "last spell cast") : ManualSetValue<LastSpellCast&>(ai, data, name) {}
 
     private:
         LastSpellCast data;

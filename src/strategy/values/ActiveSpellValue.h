@@ -12,7 +12,7 @@ class PlayerbotAI;
 class ActiveSpellValue : public CalculatedValue<uint32>
 {
 	public:
-        ActiveSpellValue(PlayerbotAI* botAI) : CalculatedValue<uint32>(botAI) { }
+        ActiveSpellValue(PlayerbotAI* botAI, string name = "active spell") : CalculatedValue<uint32>(ai, name) {}
 
         uint32 Calculate() override;
 };

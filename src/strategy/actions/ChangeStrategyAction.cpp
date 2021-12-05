@@ -11,7 +11,25 @@ bool ChangeCombatStrategyAction::Execute(Event event)
 {
     std::string const& text = event.getParam();
     botAI->ChangeStrategy(text.empty() ? getName() : text, BOT_STATE_COMBAT);
-    sPlayerbotDbStore->Save(botAI);
+    if (event.getSource() == "co")
+    {
+        vector<string> splitted = split(text, ',');
+        for (vector<string>::iterator i = splitted.begin(); i != splitted.end(); i++)
+        {
+            const char* name = i->c_str();
+            switch (name[0])
+            {
+                case '+':
+                case '-':
+                case '~':
+                    sPlayerbotDbStore.Save(ai);
+                    break;
+                case '?':
+                    break;
+            }
+        }
+    }
+
     return true;
 }
 
@@ -30,7 +48,25 @@ bool ChangeNonCombatStrategyAction::Execute(Event event)
     }
 
     botAI->ChangeStrategy(text, BOT_STATE_NON_COMBAT);
-    sPlayerbotDbStore->Save(botAI);
+    if (event.getSource() == "nc")
+    {
+        vector<string> splitted = split(text, ',');
+        for (vector<string>::iterator i = splitted.begin(); i != splitted.end(); i++)
+        {
+            const char* name = i->c_str();
+            switch (name[0])
+            {
+                case '+':
+                case '-':
+                case '~':
+                    sPlayerbotDbStore.Save(ai);
+                    break;
+                case '?':
+                    break;
+            }
+        }
+    }
+
     return true;
 }
 

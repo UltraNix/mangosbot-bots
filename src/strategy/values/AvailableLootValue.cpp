@@ -6,7 +6,7 @@
 #include "LootObjectStack.h"
 #include "Playerbot.h"
 
-AvailableLootValue::AvailableLootValue(PlayerbotAI* botAI) : ManualSetValue<LootObjectStack*>(botAI, nullptr)
+AvailableLootValue::AvailableLootValue(PlayerbotAI* botAI, string name) : ManualSetValue<LootObjectStack*>(ai, NULL, name)
 {
     value = new LootObjectStack(botAI->GetBot());
 }
@@ -16,7 +16,7 @@ AvailableLootValue::AvailableLootValue(PlayerbotAI* botAI) : ManualSetValue<Loot
     delete value;
 }
 
-LootTargetValue::LootTargetValue(PlayerbotAI* botAI) : ManualSetValue<LootObject>(botAI, LootObject())
+LootTargetValue::LootTargetValue(PlayerbotAI* botAI, string name) : ManualSetValue<LootObject>(ai, LootObject(), name)
 {
 }
 

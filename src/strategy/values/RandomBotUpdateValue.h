@@ -12,7 +12,7 @@ class PlayerbotAI;
 class RandomBotUpdateValue : public ManualSetValue<bool>
 {
 	public:
-        RandomBotUpdateValue(PlayerbotAI* botAI) : ManualSetValue<bool>(botAI, false) { }
+        RandomBotUpdateValue(PlayerbotAI* botAI, string name = "random bot update") : ManualSetValue<bool>(ai, false, name) {}
 };
 
 #endif

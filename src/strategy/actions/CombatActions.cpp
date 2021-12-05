@@ -38,8 +38,8 @@ bool SwitchToRangedAction::isUseful()
     if (bot->getClass() == CLASS_HUNTER)
     {
         Unit* target = AI_VALUE(Unit*, "current target");
-        bool hasAmmo = AI_VALUE2(uint8, "item count", "ammo");
-        return botAI->HasStrategy("close", BOT_STATE_COMBAT) && hasAmmo && ((bot->IsInCombat() && target && (target->GetVictim() != bot ||
+        bool hasAmmo = AI_VALUE2(uint32, "item count", "ammo");
+        return botAI->HasStrategy("close", BOT_STATE_COMBAT) && hasAmmo && ((bot->IsInCombat() && target && ((target->GetVictim() != bot || target->GetTarget() != bot) ||
             sServerFacade->IsDistanceGreaterThan(AI_VALUE2(float, "distance", "current target"), 8.0f))) || (!bot->IsInCombat()));
     }
 

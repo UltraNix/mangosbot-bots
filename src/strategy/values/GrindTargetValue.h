@@ -13,7 +13,7 @@ class Unit;
 class GrindTargetValue : public TargetValue
 {
 	public:
-        GrindTargetValue(PlayerbotAI* botAI) : TargetValue(botAI) { }
+        GrindTargetValue(PlayerbotAI* botAI, string name = "grind target") : TargetValue(ai, name) {}
 
         Unit* Calculate() override;
 

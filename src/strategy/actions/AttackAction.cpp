@@ -75,9 +75,6 @@ bool AttackAction::Attack(Unit* target)
         msg << " is not on my sight";
         if (verbose)
             botAI->TellError(msg.str());
-
-        //if (!ChaseTo(target))
-            //return false;
     }
 
     if (target->isDead())
@@ -89,7 +86,7 @@ bool AttackAction::Attack(Unit* target)
         return false;
     }
 
-    if (bot->IsMounted() && bot->IsWithinLOSInMap(target) && sServerFacade->GetDistance2d(bot, target) < 40.0f)
+    if (bot->IsMounted() && bot->IsWithinLOSInMap(target, true) && sServerFacade->GetDistance2d(bot, target) < 40.0f)
     {
         WorldPacket emptyPacket;
         bot->GetSession()->HandleCancelMountAuraOpcode(emptyPacket);
@@ -114,27 +111,22 @@ bool AttackAction::Attack(Unit* target)
         }
     }
 
-    if (!urand(0, 300))
+    if (!urand(0, 300) && ai->HasStrategy("emote", BOT_STATE_NON_COMBAT))
     {
         std::vector<uint32> sounds;
         sounds.push_back(TEXT_EMOTE_OPENFIRE);
         sounds.push_back(305);
         sounds.push_back(307);
-        botAI->PlaySound(sounds[urand(0, sounds.size() - 1)]);
+        botAI->PlayEmote(sounds[urand(0, sounds.size() - 1)]);
     }
 
-    if (!bot->HasInArc(CAST_ANGLE_IN_FRONT, target, sPlayerbotAIConfig->sightDistance))
+    if (IsMovingAllowed() && !bot->HasInArc(CAST_ANGLE_IN_FRONT, target, sPlayerbotAIConfig->sightDistance))
         bot->SetFacingToObject(target);
 
-    if (bot->Attack(target, !botAI->IsRanged(bot) || sServerFacade->GetDistance2d(bot, target) <= sPlayerbotAIConfig->tooCloseDistance))
-    {
-        botAI->ChangeEngine(BOT_STATE_COMBAT);
-        return ChaseTo(target);
-    }
-    else
-        context->GetValue<Unit*>("current target")->Set(nullptr);
+    bool attacked = bot->Attack(target, !ai->IsRanged(bot));
+    ai->ChangeEngine(BOT_STATE_COMBAT);
 
-    return false;
+    return attacked;
 }
 
 bool AttackDuelOpponentAction::isUseful()

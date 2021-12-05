@@ -11,14 +11,6 @@
 class PlayerbotAI;
 class Unit;
 
-/*class EnemyPlayerValue : public TargetValue
-{
-	public:
-        EnemyPlayerValue(PlayerbotAI* botAI) : TargetValue(botAI) { }
-
-        Unit* Calculate() override;
-};*/
-
 class NearestEnemyPlayersValue : public PossibleTargetsValue
 {
     public:
@@ -32,7 +24,7 @@ class NearestEnemyPlayersValue : public PossibleTargetsValue
 class EnemyPlayerValue : public UnitCalculatedValue
 {
     public:
-        EnemyPlayerValue(PlayerbotAI* botAI) : UnitCalculatedValue(botAI) { }
+        EnemyPlayerValue(PlayerbotAI* botAI, string name = "enemy player") : UnitCalculatedValue(ai, name) {}
 
         Unit* Calculate() override;
 

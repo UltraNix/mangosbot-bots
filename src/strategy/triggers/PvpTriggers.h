@@ -12,7 +12,7 @@ class PlayerbotAI;
 class EnemyPlayerNear : public Trigger
 {
     public:
-        EnemyPlayerNear(PlayerbotAI* botAI) : Trigger(botAI, "enemy player near") { }
+        EnemyPlayerNear(PlayerbotAI* botAI) : Trigger(botAI, "enemy player near", 3) { }
 
         bool IsActive() override;
 };
@@ -85,6 +85,14 @@ class BgActiveTrigger : public Trigger
 {
     public:
         BgActiveTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bg active", 1) { }
+
+        bool IsActive() override;
+};
+
+class BgInviteActiveTrigger : public Trigger
+{
+    public:
+        BgInviteActiveTrigger(PlayerbotAI* ai) : Trigger(ai, "bg invite active", 10) {}
 
         bool IsActive() override;
 };

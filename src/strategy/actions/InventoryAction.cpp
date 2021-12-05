@@ -191,6 +191,25 @@ std::list<Item*> InventoryAction::parseItems(std::string const& text, IterateIte
     else if (count > TRADE_SLOT_TRADED_COUNT)
         count = TRADE_SLOT_TRADED_COUNT;
 
+    ItemIds ids = chat->parseItems(text);
+    if (!ids.empty())
+    {
+        for (ItemIds::iterator i = ids.begin(); i != ids.end(); i++)
+        {
+            FindItemByIdVisitor visitor(*i);
+            IterateItems(&visitor, mask);
+            found.insert(visitor.GetResult().begin(), visitor.GetResult().end());
+        }
+
+        list<Item*> result;
+        for (set<Item*>::iterator i = found.begin(); i != found.end(); ++i)
+            result.push_back(*i);
+
+        result.sort(compare_items_by_level);
+
+        return result;
+    }
+
     if (text == "food" || text == "conjured food")
     {
         FindFoodVisitor visitor(bot, 11, text == "conjured food");
@@ -250,9 +269,19 @@ std::list<Item*> InventoryAction::parseItems(std::string const& text, IterateIte
         found.insert(visitor.GetResult().begin(), visitor.GetResult().end());
     }
 
-    FindNamedItemVisitor visitor(bot, text);
-    IterateItems(&visitor, ITERATE_ITEMS_IN_BAGS);
-    found.insert(visitor.GetResult().begin(), visitor.GetResult().end());
+    if (text == "quest")
+    {
+        FindQuestItemVisitor visitor(bot);
+        IterateItems(&visitor, ITERATE_ITEMS_IN_BAGS);
+        found.insert(visitor.GetResult().begin(), visitor.GetResult().end());
+    }
+
+    if (text.find("usage ") != std::string::npos)
+    {
+        FindItemUsageVisitor visitor(bot, ItemUsage(stoi(text.substr(6))));
+        IterateItems(&visitor, ITERATE_ITEMS_IN_BAGS);
+        found.insert(visitor.GetResult().begin(), visitor.GetResult().end());
+    }
 
     uint32 quality = chat->parseItemQuality(text);
     if (quality != MAX_ITEM_QUALITY)

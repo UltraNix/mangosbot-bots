@@ -9,6 +9,14 @@
 
 class PlayerbotAI;
 
+class RpgActionMultiplier : public Multiplier
+{
+    public:
+        RpgActionMultiplier(PlayerbotAI* ai) : Multiplier(ai, "rpg action") {}
+
+        float GetValue(Action* action) override;
+};
+
 class RpgStrategy : public Strategy
 {
     public:

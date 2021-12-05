@@ -13,7 +13,7 @@ class PlayerbotAI;
 class IsMovingValue : public BoolCalculatedValue, public Qualified
 {
 	public:
-        IsMovingValue(PlayerbotAI* botAI) : BoolCalculatedValue(botAI) { }
+        IsMovingValue(PlayerbotAI* botAI, string name = "is moving") : BoolCalculatedValue(ai, name) {}
 
         bool Calculate() override;
 };
@@ -21,7 +21,7 @@ class IsMovingValue : public BoolCalculatedValue, public Qualified
 class IsSwimmingValue : public BoolCalculatedValue, public Qualified
 {
 	public:
-        IsSwimmingValue(PlayerbotAI* botAI) : BoolCalculatedValue(botAI) { }
+        IsSwimmingValue(PlayerbotAI* botAI, string name = "is swimming") : BoolCalculatedValue(ai, name) {}
 
         bool Calculate() override;
 };

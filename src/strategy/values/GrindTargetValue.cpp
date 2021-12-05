@@ -45,6 +45,9 @@ Unit* GrindTargetValue::FindTargetForGrinding(uint32 assistCount)
 
     float distance = 0;
     Unit* result = nullptr;
+
+    unordered_map<uint32, bool> needForQuestMap;
+
     for (ObjectGuid const guid : targets)
     {
         Unit* unit = botAI->GetUnit(guid);
@@ -63,16 +66,20 @@ Unit* GrindTargetValue::FindTargetForGrinding(uint32 assistCount)
 		if (!bot->InBattleground() && (int)unit->getLevel() - (int)bot->getLevel() > 4 && !unit->GetGUID().IsPlayer())
 		    continue;
 
-        if (!needForQuest(unit) && (urand(0, 100) < 75 || (context->GetValue<TravelTarget*>("travel target")->Get()->isWorking() &&
-            context->GetValue<TravelTarget*>("travel target")->Get()->getDestination()->getName() != "GrindTravelDestination")))
-            continue;
+        if (needForQuestMap.find(unit->GetEntry()) == needForQuestMap.end())
+            needForQuestMap[unit->GetEntry()] = needForQuest(unit);
+
+        if (!needForQuestMap[unit->GetEntry()])
+            if ((urand(0, 100) < 75 || (context->GetValue<TravelTarget*>("travel target")->Get()->isWorking() &&
+                context->GetValue<TravelTarget*>("travel target")->Get()->getDestination()->getName() != "GrindTravelDestination")))
+                continue;
 
         //if (bot->InBattleground() && bot->GetDistance(unit) > 40.0f)
             //continue;
 
 		if (Creature* creature = unit->ToCreature())
             if (CreatureTemplate const* creatureInfo = creature->GetCreatureTemplate())
-		        if (creatureInfo->rank > CREATURE_ELITE_NORMAL)
+		        if (creatureInfo->rank > CREATURE_ELITE_NORMAL && !AI_VALUE(bool, "can fight elite"))
 		            continue;
 
         if (group)

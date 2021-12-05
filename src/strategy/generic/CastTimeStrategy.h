@@ -24,6 +24,7 @@ class CastTimeStrategy : public Strategy
 
         void InitMultipliers(std::vector<Multiplier*>& multipliers) override;
         std::string const& getName() override { return "cast time"; }
+        void InitMultipliers(std::vector<Multiplier*>& multipliers) override;
 };
 
 #endif

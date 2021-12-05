@@ -13,9 +13,20 @@ class PlayerbotAI;
 class PassLeadershipToMasterAction : public Action
 {
     public:
-        PassLeadershipToMasterAction(PlayerbotAI* botAI) : Action(botAI, "leader") { }
+        PassLeadershipToMasterAction(PlayerbotAI* botAI, string name = "leader", string message = "Passing leader to you!") : Action(ai, name), message(message) {}
 
         bool Execute(Event event) override;
+        bool isUseful() override;
+
+    protected:
+        string message;
+};
+
+class GiveLeaderAction : public PassLeadershipToMasterAction
+{
+    public:
+        GiveLeaderAction(PlayerbotAI* ai, string message = "Lead the way!") : PassLeadershipToMasterAction(ai, "give leader", message) {}
+
         bool isUseful() override;
 };
 

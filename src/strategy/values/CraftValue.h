@@ -60,7 +60,7 @@ class CraftData
 class CraftValue : public ManualSetValue<CraftData&>
 {
 	public:
-        CraftValue(PlayerbotAI* botAI) : ManualSetValue<CraftData&>(botAI, data) { }
+        CraftValue(PlayerbotAI* botAI, string name = "craft") : ManualSetValue<CraftData&>(ai, data, name) {}
 
 	private:
         CraftData data;

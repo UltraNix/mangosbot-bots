@@ -13,16 +13,17 @@ class PlayerbotAI;
 class FollowAction : public MovementAction
 {
 	public:
-		FollowAction(PlayerbotAI* botAI) : MovementAction(botAI, "follow") { }
+		FollowAction(PlayerbotAI* ai, string name = "follow") : MovementAction(ai, name) {}
 
 		bool Execute(Event event) override;
         bool isUseful() override;
+        bool CanDeadFollow(Unit* target);
 };
 
-class FleeToMasterAction : public MovementAction
+class FleeToMasterAction : public FollowAction
 {
     public:
-        FleeToMasterAction(PlayerbotAI* botAI) : MovementAction(botAI, "flee to master") { }
+        FleeToMasterAction(PlayerbotAI* botAI) : FollowAction(botAI, "flee to master") { }
 
         bool Execute(Event event) override;
         bool isUseful() override;

@@ -5,30 +5,30 @@
 #ifndef _PLAYERBOT_CHOOSERPGTARGETACTION_H
 #define _PLAYERBOT_CHOOSERPGTARGETACTION_H
 
-#include "MovementActions.h"
+#include "ObjectGuid.h"
+#include "RpgAction.h"
 
 class Event;
-class ObjectGuid;
+class GuidPosition;
 class Player;
 class PlayerbotAI;
 class WorldObject;
-class WorldLocation;
+class WorldPosition;
 
-class ChooseRpgTargetAction : public MovementAction
+class ChooseRpgTargetAction : public Action
 {
     public:
-        ChooseRpgTargetAction(PlayerbotAI* botAI, std::string const& name = "choose rpg target") : MovementAction(botAI, name) { }
+        ChooseRpgTargetAction(PlayerbotAI* botAI, std::string const& name = "choose rpg target") : Action(botAI, name) { }
 
         bool Execute(Event event) override;
         bool isUseful() override;
 
         static bool isFollowValid(Player* bot, WorldObject* target);
-        static bool isFollowValid(Player* bot, WorldLocation location);
+        static bool isFollowValid(Player* bot, WorldPosition pos);
 
     private:
-        virtual uint32 HasSameTarget(ObjectGuid guid);
-        virtual bool CanTrain(ObjectGuid guid);
-        virtual BattlegroundTypeId CanQueueBg(ObjectGuid guid);
+        float getMaxRelevance(GuidPosition guidP);
+        bool  HasSameTarget(ObjectGuid guid, uint32 max, list<ObjectGuid> const& nearGuids);
 };
 
 class ClearRpgTargetAction : public ChooseRpgTargetAction

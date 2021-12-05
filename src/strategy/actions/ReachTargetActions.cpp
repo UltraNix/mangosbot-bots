@@ -9,12 +9,35 @@
 
 bool ReachTargetAction::Execute(Event event)
 {
-    return MoveTo(AI_VALUE(Unit*, GetTargetName()), distance);
+    Unit* target = AI_VALUE(Unit*, GetTargetName());
+    if (!target)
+        return false;
+
+    UpdateMovementState();
+
+    float combatReach = bot->GetCombinedCombatReach(target, true);
+    if (distance < max(5.0f, combatReach))
+    {
+        return ChaseTo(target, 0.0f, GetFollowAngle());
+    }
+    else
+    {
+        combatReach = bot->GetCombinedCombatReach(target, false);
+        bool inLos = bot->IsWithinLOSInMap(target, true);
+        bool isFriend = sServerFacade.IsFriendlyTo(bot, target);
+        float chaseDist = inLos ? distance : isFriend ? distance / 2 : distance;
+        return ChaseTo(target, chaseDist + combatReach, bot->GetAngle(target));
+    }
 }
 
 bool ReachTargetAction::isUseful()
 {
-    return sServerFacade->IsDistanceGreaterThan(AI_VALUE2(float, "distance", GetTargetName()), (distance + sPlayerbotAIConfig->contactDistance));
+    // do not move while casting
+    if (bot->IsNonMeleeSpellCasted(true))
+        return false;
+
+    Unit* target = AI_VALUE(Unit*, GetTargetName());
+    return target && (!bot->IsWithinDistInMap(target, distance) || (bot->IsWithinDistInMap(target, distance) && !bot->IsWithinLOSInMap(target, true)));
 }
 
 std::string const& ReachTargetAction::GetTargetName()

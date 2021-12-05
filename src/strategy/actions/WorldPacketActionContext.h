@@ -15,6 +15,7 @@
 #include "BattlegroundTactics.h"
 #include "CheckMountStateAction.h"
 #include "GuildAcceptAction.h"
+#include "GuildCreateActions.h"
 #include "InventoryChangeFailureAction.h"
 #include "LeaveGroupAction.h"
 #include "LfgActions.h"
@@ -22,7 +23,6 @@
 #include "LootRollAction.h"
 #include "QuestAction.h"
 #include "PassLeadershipToMasterAction.h"
-#include "PetitionSignAction.h"
 #include "ReadyCheckAction.h"
 #include "RememberTaxiAction.h"
 #include "ReviveFromCorpseAction.h"
@@ -43,6 +43,7 @@ class WorldPacketActionContext : public NamedObjectContext<Action>
         WorldPacketActionContext()
         {
             creators["accept invitation"] = &WorldPacketActionContext::accept_invitation;
+            creators["give leader in dungeon"] = &WorldPacketActionContext::give_leader_in_dungeon;
             creators["leader"] = &WorldPacketActionContext::pass_leadership_to_master;
             creators["tell not enough money"] = &WorldPacketActionContext::tell_not_enough_money;
             creators["tell not enough reputation"] = &WorldPacketActionContext::tell_not_enough_reputation;
@@ -52,6 +53,7 @@ class WorldPacketActionContext : public NamedObjectContext<Action>
             creators["accept all quests"] = &WorldPacketActionContext::accept_all_quests;
             creators["accept quest share"] = &WorldPacketActionContext::accept_quest_share;
             creators["loot roll"] = &WorldPacketActionContext::loot_roll;
+            creators["master loot roll"] = &WorldPacketActionContext::master_loot_roll;
             creators["revive from corpse"] = &WorldPacketActionContext::revive_from_corpse;
             creators["find corpse"] = &WorldPacketActionContext::find_corpse;
             creators["auto release"] = &WorldPacketActionContext::auto_release;
@@ -111,6 +113,7 @@ class WorldPacketActionContext : public NamedObjectContext<Action>
         static Action* auto_release(PlayerbotAI* botAI) { return new AutoReleaseSpiritAction(botAI); }
         static Action* revive_from_corpse(PlayerbotAI* botAI) { return new ReviveFromCorpseAction(botAI); }
         static Action* accept_invitation(PlayerbotAI* botAI) { return new AcceptInvitationAction(botAI); }
+        static Action* give_leader_in_dungeon(PlayerbotAI* ai) { return new GiveLeaderAction(ai, "I don't know this dungeon, lead the way!"); }
         static Action* pass_leadership_to_master(PlayerbotAI* botAI) { return new PassLeadershipToMasterAction(botAI); }
         static Action* tell_not_enough_money(PlayerbotAI* botAI) { return new TellMasterAction(botAI, "Not enough money"); }
         static Action* tell_not_enough_reputation(PlayerbotAI* botAI) { return new TellMasterAction(botAI, "Not enough reputation"); }
@@ -120,6 +123,7 @@ class WorldPacketActionContext : public NamedObjectContext<Action>
         static Action* accept_all_quests(PlayerbotAI* botAI) { return new AcceptAllQuestsAction(botAI); }
         static Action* accept_quest_share(PlayerbotAI* botAI) { return new AcceptQuestShareAction(botAI); }
         static Action* loot_roll(PlayerbotAI* botAI) { return (QueryItemUsageAction*)new LootRollAction(botAI); }
+        static Action* master_loot_roll(PlayerbotAI* ai) { return (QueryItemUsageAction*)new MasterLootRollAction(ai); }
         static Action* bg_join(PlayerbotAI* botAI) { return new BGJoinAction(botAI); }
         static Action* bg_leave(PlayerbotAI* botAI) { return new BGLeaveAction(botAI); }
         static Action* bg_status(PlayerbotAI* botAI) { return new BGStatusAction(botAI); }

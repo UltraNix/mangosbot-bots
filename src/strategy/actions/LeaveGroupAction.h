@@ -8,6 +8,7 @@
 #include "Action.h"
 
 class Event;
+class Player;
 class PlayerbotAI;
 
 class LeaveGroupAction : public Action
@@ -17,7 +18,7 @@ class LeaveGroupAction : public Action
 
         bool Execute(Event event) override;
 
-        virtual bool Leave();
+        virtual bool Leave(Player* player);
 };
 
 class PartyCommandAction : public LeaveGroupAction
@@ -41,6 +42,7 @@ class LeaveFarAwayAction : public LeaveGroupAction
     public:
         LeaveFarAwayAction(PlayerbotAI* botAI) : LeaveGroupAction(botAI, "leave far away") { }
 
+        bool Execute(Event event) override;
         bool isUseful() override;
 };
 

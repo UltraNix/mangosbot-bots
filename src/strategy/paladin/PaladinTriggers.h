@@ -9,10 +9,10 @@
 
 class PlayerbotAI;
 
-BUFF_TRIGGER(HolyShieldTrigger, "holy shield", "holy shield")
-BUFF_TRIGGER(RighteousFuryTrigger, "righteous fury", "righteous fury")
+BUFF_TRIGGER(HolyShieldTrigger, "holy shield");
+BUFF_TRIGGER(RighteousFuryTrigger, "righteous fury");
 
-BUFF_TRIGGER(RetributionAuraTrigger, "retribution aura", "retribution aura")
+BUFF_TRIGGER(RetributionAuraTrigger, "retribution aura");
 
 class CrusaderAuraTrigger : public BuffTrigger
 {
@@ -30,8 +30,8 @@ class SealTrigger : public BuffTrigger
 		bool IsActive() override;
 };
 
-DEBUFF_TRIGGER(JudgementOfLightTrigger, "judgement of light", "judgement of light")
-DEBUFF_TRIGGER(JudgementOfWisdomTrigger, "judgement of wisdom", "judgement of wisdom")
+DEBUFF_TRIGGER(JudgementOfLightTrigger, "judgement of light");
+DEBUFF_TRIGGER(JudgementOfWisdomTrigger, "judgement of wisdom");
 
 class BlessingOnPartyTrigger : public BuffOnPartyTrigger
 {

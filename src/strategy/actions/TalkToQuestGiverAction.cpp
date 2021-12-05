@@ -138,12 +138,7 @@ void TalkToQuestGiverAction::RewardMultipleItem(Quest const* quest, WorldObject*
     std::set<uint32> bestIds;
 
     std::ostringstream outid;
-    if (sPlayerbotAIConfig->autoPickReward == "no")
-    {
-        //Old functionality, list rewards.
-        AskToSelectReward(quest, out, false);
-    }
-    else if (sPlayerbotAIConfig->autoPickReward == "yes")
+    if (!ai->IsAlt() || sPlayerbotAIConfig.autoPickReward == "yes")
     {
         //Pick the first item of the best rewards.
         bestIds = BestRewards(quest);
@@ -151,6 +146,11 @@ void TalkToQuestGiverAction::RewardMultipleItem(Quest const* quest, WorldObject*
         bot->RewardQuest(quest, *bestIds.begin(), questGiver, true);
 
         out << "Rewarded " << chat->formatItem(item);
+    }
+    else if (sPlayerbotAIConfig.autoPickReward == "no")
+    {
+        // Old functionality, list rewards.
+        AskToSelectReward(quest, out, false);
     }
     else
     {

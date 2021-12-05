@@ -38,11 +38,6 @@ bool AcceptInvitationAction::Execute(Event event)
 
     botAI->ResetStrategies();
     botAI->ChangeStrategy("+follow,-lfg,-bg", BOT_STATE_NON_COMBAT);
-    if (!inviter->GetPlayerbotAI() && !bot->GetPlayerbotAI()->IsRealPlayer())
-    {
-        botAI->ChangeStrategy("-rpg,-travel,-grind", BOT_STATE_NON_COMBAT);
-    }
-
     botAI->Reset();
 
     botAI->TellMaster("Hello");

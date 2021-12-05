@@ -86,14 +86,28 @@ RandomPlayerbotFactory::RandomPlayerbotFactory(uint32 accountId) : accountId(acc
     availableRaces[CLASS_DEATH_KNIGHT].push_back(RACE_DWARF);
 }
 
-bool RandomPlayerbotFactory::CreateRandomBot(uint8 cls)
+bool RandomPlayerbotFactory::CreateRandomBot(uint8 cls, unordered_map<uint8, vector<string>> const& names)
 {
     LOG_DEBUG("playerbots",  "Creating new random bot for class %d", cls);
 
     uint8 gender = rand() % 2 ? GENDER_MALE : GENDER_FEMALE;
 
     uint8 race = availableRaces[cls][urand(0, availableRaces[cls].size() - 1)];
-    std::string name = CreateRandomBotName(gender);
+
+    string name;
+    if(names.empty())
+        name = CreateRandomBotName(gender);
+    else
+    {
+        if (names[gender].empty())
+            return false;
+
+        uint32 i = urand(0, names[gender].size() - 1);
+        name = names[gender][i];
+        swap(names[gender][i], names[gender].back());
+        names[gender].pop_back();
+    }
+
     if (name.empty())
         return false;
 
@@ -148,7 +162,12 @@ bool RandomPlayerbotFactory::CreateRandomBot(uint8 cls)
 
     player->setCinematic(2);
     player->SetAtLoginFlag(AT_LOGIN_NONE);
-    player->SaveToDB(true, false);
+
+    // player->SetSemaphoreTeleportFar(true); //Fake teleport to delay sql save
+    // player->SaveToDB();
+    // player->SetSemaphoreTeleportFar(false);
+
+    ObjectAccessor::AddObject(player);
 
     LOG_DEBUG("playerbots", "Random bot created for account %d - name: \"%s\"; race: %u; class: %u", accountId, name.c_str(), race, cls);
 
@@ -245,6 +264,7 @@ void RandomPlayerbotFactory::CreateRandomBots()
             }
         }
 
+        vector<std::future<void>> dels;
         QueryResult results = LoginDatabase.PQuery("SELECT id FROM account WHERE username LIKE '%s%%'", sPlayerbotAIConfig->randomBotAccountPrefix.c_str());
         if (results)
         {
@@ -284,9 +304,17 @@ void RandomPlayerbotFactory::CreateRandomBots()
                     }
                 }
                 else
-                    AccountMgr::DeleteAccount(accId);
+                    dels.push_back(std::async([accId]
+                    {
+                        sAccountMgr.DeleteAccount(accId);
+                    }));
 
             } while (results->NextRow());
+        }
+
+        for (uint32 i = 0; i < dels.size(); i++)
+        {
+            dels[i].wait();
         }
 
         PlayerbotDatabase.Execute("DELETE FROM playerbot_random_bots");
@@ -298,7 +326,8 @@ void RandomPlayerbotFactory::CreateRandomBots()
 
     LOG_INFO("playerbots", "Creating random bot accounts...");
 
-    for (uint32 accountNumber = 0; accountNumber < sPlayerbotAIConfig->randomBotAccountCount; ++accountNumber)
+    vector<std::future<void>> account_creations;
+    for (uint32 accountNumber = 0; accountNumber < sPlayerbotAIConfig.randomBotAccountCount; ++accountNumber)
     {
         std::ostringstream out;
         out << sPlayerbotAIConfig->randomBotAccountPrefix << accountNumber;
@@ -311,21 +340,51 @@ void RandomPlayerbotFactory::CreateRandomBots()
         }
 
         std::string password = "";
-        for (uint8 i = 0; i < 10; i++)
+        if (sPlayerbotAIConfig.randomBotRandomPassword)
         {
-            password += (char)urand('!', 'z');
+            for (int i = 0; i < 10; i++)
+            {
+                password += (char) urand('!', 'z');
+            }
         }
+        else
+            password = accountName;
 
-        AccountMgr::CreateAccount(accountName, password);
+        account_creations.push_back(std::async([accountName, password]
+        {
+            AccountMgr::CreateAccount(accountName, password);
+        }));
 
         LOG_DEBUG("playerbots", "Account %s created for random bots", accountName.c_str());
     }
 
-    LoginDatabase.PExecute("UPDATE account SET expansion = '%u' WHERE username LIKE '%s%%'", EXPANSION_WRATH_OF_THE_LICH_KING, sPlayerbotAIConfig->randomBotAccountPrefix.c_str());
+    for (uint32 i = 0; i < account_creations.size(); i++)
+    {
+        account_creations[i].wait();
+    }
 
+    //LoginDatabase.PExecute("UPDATE account SET expansion = '%u' WHERE username LIKE '%s%%'", EXPANSION_WRATH_OF_THE_LICH_KING, sPlayerbotAIConfig->randomBotAccountPrefix.c_str());
+
+    sLog.outString("Loading available names...");
+    unordered_map<uint8,vector<string>> names;
+    QueryResult* result = CharacterDatabase.PQuery("SELECT n.gender, n.name FROM playerbot_names n LEFT OUTER JOIN characters e ON e.name = n.name WHERE e.guid IS NULL");
+    if (!result)
+    {
+        sLog.outError("No more names left for random bots");
+        return;
+    }
+
+    do
+    {
+        Field* fields = result->Fetch();
+        uint8 gender = fields[0].GetUInt8();
+        string bname = fields[1].GetString();
+        names[gender].push_back(bname);
+    } while (result->NextRow());
+
+    LOG_INFO("playerbots", "Creating random bot characters...");
     uint32 totalRandomBotChars = 0;
     uint32 totalCharCount = sPlayerbotAIConfig->randomBotAccountCount * 10;
-    LOG_INFO("playerbots", "Creating random bot characters...");
     for (uint32 accountNumber = 0; accountNumber < sPlayerbotAIConfig->randomBotAccountCount; ++accountNumber)
     {
         std::ostringstream out;
@@ -349,13 +408,28 @@ void RandomPlayerbotFactory::CreateRandomBots()
         }
 
         RandomPlayerbotFactory factory(accountId);
-        for (uint8 cls = CLASS_WARRIOR; cls < MAX_CLASSES; ++cls)
+        for (uint8 cls = CLASS_WARRIOR; cls < MAX_CLASSES - count; ++cls)
         {
            if (cls != 10)
-               factory.CreateRandomBot(cls);
+               factory.CreateRandomBot(cls, names);
         }
 
         totalRandomBotChars += AccountMgr::GetCharactersCount(accountId);
+    }
+
+    vector<std::future<void>> bot_creations;
+    for (auto pl : sObjectAccessor.GetPlayers())
+    {
+        Player* player = pl.second;
+        account_creations.push_back(std::async([player]
+        {
+            player->SaveToDB();
+        }));
+    }
+
+    for (uint32 i = 0; i < account_creations.size(); i++)
+    {
+        account_creations[i].wait();
     }
 
     LOG_INFO("playerbots", "%zu random bot accounts with %d characters available", sPlayerbotAIConfig->randomBotAccounts.size(), totalRandomBotChars);
@@ -592,6 +666,18 @@ void RandomPlayerbotFactory::CreateRandomArenaTeams()
         }
 
         arenateam->SetCaptain(player->GetGUID());
+        // set random rating
+        arenateam->SetRatingForAll(urand(1500, 2300));
+        // set random emblem
+        uint32 backgroundColor = urand(0xFF000000, 0xFFFFFFFF), emblemStyle = urand(0, 5), emblemColor = urand(0xFF000000, 0xFFFFFFFF), borderStyle = urand(0, 5), borderColor = urand(0xFF000000, 0xFFFFFFFF);
+        arenateam->SetEmblem(backgroundColor, emblemStyle, emblemColor, borderStyle, borderColor);
+        // set random kills (wip)
+        //arenateam->SetStats(STAT_TYPE_GAMES_WEEK, urand(0, 30));
+        //arenateam->SetStats(STAT_TYPE_WINS_WEEK, urand(0, arenateam->GetStats().games_week));
+        //arenateam->SetStats(STAT_TYPE_GAMES_SEASON, urand(arenateam->GetStats().games_week, arenateam->GetStats().games_week * 5));
+        //arenateam->SetStats(STAT_TYPE_WINS_SEASON, urand(arenateam->GetStats().wins_week, arenateam->GetStats().games
+        arenateam->SaveToDB();
+
         sArenaTeamMgr->AddArenaTeam(arenateam);
         sPlayerbotAIConfig->randomBotArenaTeams.push_back(arenateam->GetId());
     }

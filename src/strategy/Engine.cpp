@@ -136,10 +136,10 @@ bool Engine::DoNextAction(Unit* unit, uint32 depth, bool minimal)
 
     time_t currentTime = time(nullptr);
     aiObjectContext->Update();
-    ProcessTriggers();
+    ProcessTriggers(minimal);
 
     uint32 iterations = 0;
-    uint32 iterationsPerTick = queue.Size() * (minimal ? 1 : sPlayerbotAIConfig->iterationsPerTick);
+    uint32 iterationsPerTick = queue.Size() * (minimal ? 2 : sPlayerbotAIConfig->iterationsPerTick);
     do
     {
         basket = queue.Peek();
@@ -192,7 +192,7 @@ bool Engine::DoNextAction(Unit* unit, uint32 depth, bool minimal)
                         }
                     }
 
-                    PerformanceMonitorOperation* pmo = sPerformanceMonitor->start(PERF_MON_ACTION, action->getName());
+                    PerformanceMonitorOperation* pmo = sPerformanceMonitor->start(PERF_MON_ACTION, action->getName(), &aiObjectContext->performanceStack);
                     actionExecuted = ListenAndExecute(action, event);
                     if (pmo)
                         pmo->finish();
@@ -428,7 +428,7 @@ bool Engine::HasStrategy(std::string const& name)
     return strategies.find(name) != strategies.end();
 }
 
-void Engine::ProcessTriggers()
+void Engine::ProcessTriggers(bool minimal)
 {
     std::map<Trigger*, Event> fires;
     for (std::vector<TriggerNode*>::iterator i = triggers.begin(); i != triggers.end(); i++)
@@ -449,7 +449,10 @@ void Engine::ProcessTriggers()
 
         if (testMode || trigger->needCheck())
         {
-            PerformanceMonitorOperation* pmo = sPerformanceMonitor->start(PERF_MON_TRIGGER, trigger->getName());
+            if (minimal && node->getFirstRelevance() < 100)
+                continue;
+
+            PerformanceMonitorOperation* pmo = sPerformanceMonitor.start(PERF_MON_TRIGGER, trigger->getName(), &aiObjectContext->performanceStack);
             Event event = trigger->Check();
             if (pmo)
                 pmo->finish();
@@ -569,6 +572,9 @@ bool Engine::ListenAndExecute(Action* action, Event event)
             out << " 0 (";
 
         out << action->getRelevance() << ")";
+
+        if (!event.getSource().empty())
+            out << " [" << event.getSource() << "]";
 
         botAI->TellMasterNoFacing(out);
     }

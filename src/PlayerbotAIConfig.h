@@ -8,6 +8,17 @@
 #include "Common.h"
 #include "TalentSpec.h"
 
+enum class BotCheatMask : uint32
+{
+    none    = 0,
+    taxi    = 1,
+    gold    = 2,
+    health  = 4,
+    mana    = 8,
+    power   = 16,
+    maxMask = 32
+};
+
 class PlayerbotAIConfig
 {
     public:
@@ -72,6 +83,7 @@ class PlayerbotAIConfig
         std::string commandPrefix, commandSeparator;
         std::string randomBotAccountPrefix;
         uint32 randomBotAccountCount;
+        bool randomBotRandomPassword;
         bool deleteRandomBotAccounts;
         uint32 randomBotGuildCount;
         bool deleteRandomBotGuilds;
@@ -97,6 +109,9 @@ class PlayerbotAIConfig
         std::mutex m_logMtx;
         std::vector<std::string> allowedLogFiles;
         std::unordered_map<std::string, std::pair<FILE*, bool>> logFiles;
+
+        std::list<string> botCheats;
+        uint32 botCheatMask = 0;
 
         struct worldBuff
         {

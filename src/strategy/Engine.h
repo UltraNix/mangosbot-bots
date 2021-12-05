@@ -101,7 +101,7 @@ class Engine : public PlayerbotAIAware
     private:
         bool MultiplyAndPush(NextAction** actions, float forceRelevance, bool skipPrerequisites, Event event, const char* pushType);
         void Reset();
-        void ProcessTriggers();
+        void ProcessTriggers(bool minimal);
         void PushDefaultActions();
         void PushAgain(ActionNode* actionNode, float relevance, Event event);
         ActionNode* CreateActionNode(std::string const& name);

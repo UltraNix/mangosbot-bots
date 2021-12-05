@@ -5,6 +5,7 @@
 #ifndef _PLAYERBOT_POSITIONVALUE_H
 #define _PLAYERBOT_POSITIONVALUE_H
 
+#include "TravelMgr.h"
 #include "Value.h"
 
 class PlayerbotAI;
@@ -46,13 +47,29 @@ typedef std::map<std::string, PositionInfo> PositionMap;
 class PositionValue : public ManualSetValue<PositionMap&>
 {
 	public:
-        PositionValue(PlayerbotAI* botAI);
+        PositionValue(PlayerbotAI* botAI, string name = "position");
 
         std::string const& Save() override;
         bool Load(std::string const& value) override;
 
 	private:
         PositionMap positions;
+};
+
+class CurrentPositionValue : public LogCalculatedValue<WorldPosition>
+{
+    public:
+        CurrentPositionValue(PlayerbotAI* ai, string name = "current position", uint32 checkInterval = 1) : LogCalculatedValue<WorldPosition>(ai, name, checkInterval) { minChangeInterval = 60;  logLength = 30; };
+
+        bool EqualToLast(WorldPosition value) override
+        {
+            return value.fDist(lastValue) < sPlayerbotAIConfig.tooCloseDistance;
+        }
+
+        WorldPosition Calculate() override
+        {
+            return WorldPosition(bot);
+        }
 };
 
 #endif

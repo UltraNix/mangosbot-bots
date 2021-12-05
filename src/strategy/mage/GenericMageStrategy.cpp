@@ -53,7 +53,7 @@ class GenericMageStrategyActionNodeFactory : public NamedObjectFactory<ActionNod
             return new ActionNode ("frost nova",
                 /*P*/ nullptr,
                 /*A*/ nullptr,
-                /*C*/ nullptr);
+               /*C*/ NextAction::array(0, new NextAction("flee"), NULL));
         }
 
         static ActionNode* icy_veins(PlayerbotAI* botAI)
@@ -122,12 +122,15 @@ void GenericMageStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     CombatStrategy::InitTriggers(triggers);
 
+    triggers.push_back(new TriggerNode("enemy out of spell", NextAction::array(0, new NextAction("reach spell", ACTION_MOVE + 9), NULL)));
     triggers.push_back(new TriggerNode("enemy is close", NextAction::array(0, new NextAction("frost nova", 50.0f), nullptr)));
     triggers.push_back(new TriggerNode("counterspell on enemy healer", NextAction::array(0, new NextAction("counterspell on enemy healer", 40.0f), nullptr)));
 	triggers.push_back(new TriggerNode("critical health", NextAction::array(0, new NextAction("ice block", 80.0f), nullptr)));
 	triggers.push_back(new TriggerNode("spellsteal", NextAction::array(0, new NextAction("spellsteal", 40.0f), nullptr)));
     triggers.push_back(new TriggerNode("medium threat", NextAction::array(0, new NextAction("invisibility", 60.0f), nullptr)));
     triggers.push_back(new TriggerNode("low mana", NextAction::array(0, new NextAction("evocation", ACTION_EMERGENCY + 5), nullptr)));
+    triggers.push_back(new TriggerNode("fire ward", NextAction::array(0, new NextAction("fire ward", ACTION_EMERGENCY), NULL)));
+    triggers.push_back(new TriggerNode("frost ward", NextAction::array(0, new NextAction("frost ward", ACTION_EMERGENCY), NULL)));
 }
 
 void MageCureStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)

@@ -14,25 +14,25 @@ class Unit;
 class HealthValue : public Uint8CalculatedValue, public Qualified
 {
     public:
-        HealthValue(PlayerbotAI* botAI) : Uint8CalculatedValue(botAI) { }
+        HealthValue(PlayerbotAI* botAI, string name = "health") : Uint8CalculatedValue(ai, name) {}
 
-        Unit* GetTarget();
+        Unit* GetTarget() override;
         uint8 Calculate() override;
 };
 
 class IsDeadValue : public BoolCalculatedValue, public Qualified
 {
     public:
-        IsDeadValue(PlayerbotAI* botAI) : BoolCalculatedValue(botAI) { }
+        IsDeadValue(PlayerbotAI* botAI, string name = "dead") : BoolCalculatedValue(ai, name) {}
 
-        Unit* GetTarget();
+        Unit* GetTarget()override;
         bool Calculate() override;
 };
 
 class PetIsDeadValue : public BoolCalculatedValue
 {
     public:
-        PetIsDeadValue(PlayerbotAI* botAI) : BoolCalculatedValue(botAI) { }
+        PetIsDeadValue(PlayerbotAI* botAI, string name = "pet dead") : BoolCalculatedValue(ai, name) {}
 
         bool Calculate() override;
 };
@@ -40,7 +40,7 @@ class PetIsDeadValue : public BoolCalculatedValue
 class PetIsHappyValue : public BoolCalculatedValue
 {
     public:
-        PetIsHappyValue(PlayerbotAI* botAI) : BoolCalculatedValue(botAI) { }
+        PetIsHappyValue(PlayerbotAI* botAI, string name = "pet happy") : BoolCalculatedValue(ai, name) {}
 
         bool Calculate() override;
 };
@@ -48,70 +48,71 @@ class PetIsHappyValue : public BoolCalculatedValue
 class RageValue : public Uint8CalculatedValue, public Qualified
 {
     public:
-        RageValue(PlayerbotAI* botAI) : Uint8CalculatedValue(botAI) { }
+        RageValue(PlayerbotAI* botAI, string name = "rage") : Uint8CalculatedValue(ai, name) {}
 
-        Unit* GetTarget();
+        Unit* GetTarget() override;
         uint8 Calculate() override;
 };
 
 class EnergyValue : public Uint8CalculatedValue, public Qualified
 {
     public:
-        EnergyValue(PlayerbotAI* botAI) : Uint8CalculatedValue(botAI) { }
+        EnergyValue(PlayerbotAI* botAI, string name = "energy") : Uint8CalculatedValue(ai, name) {}
 
-        Unit* GetTarget();
+        Unit* GetTarget() override;
         uint8 Calculate() override;
 };
 
 class ManaValue : public Uint8CalculatedValue, public Qualified
 {
     public:
-        ManaValue(PlayerbotAI* botAI) : Uint8CalculatedValue(botAI) { }
+        ManaValue(PlayerbotAI* botAI, string name = "mana") : Uint8CalculatedValue(ai, name) {}
 
-        Unit* GetTarget();
+        Unit* GetTarget()override;
         uint8 Calculate() override;
 };
 
 class HasManaValue : public BoolCalculatedValue, public Qualified
 {
     public:
-        HasManaValue(PlayerbotAI* botAI) : BoolCalculatedValue(botAI) { }
+        HasManaValue(PlayerbotAI* botAI, string name = "has mana") : BoolCalculatedValue(ai, name) {}
 
-        Unit* GetTarget();
+        Unit* GetTarget()override;
         bool Calculate() override;
 };
 
 class ComboPointsValue : public Uint8CalculatedValue, public Qualified
 {
     public:
-        ComboPointsValue(PlayerbotAI* botAI) : Uint8CalculatedValue(botAI) { }
+        ComboPointsValue(PlayerbotAI* botAI, string name = "combo points") : Uint8CalculatedValue(ai, name) {}
 
-        Unit* GetTarget();
+        Unit* GetTarget() override;
         uint8 Calculate() override;
 };
 
 class IsMountedValue : public BoolCalculatedValue, public Qualified
 {
     public:
-        IsMountedValue(PlayerbotAI* botAI) : BoolCalculatedValue(botAI) { }
+        IsMountedValue(PlayerbotAI* botAI, string name = "mounted") : BoolCalculatedValue(ai, name) {}
 
-        Unit* GetTarget();
+        Unit* GetTarget() override;
         bool Calculate() override;
 };
 
-class IsInCombatValue : public BoolCalculatedValue, public Qualified
+class IsInCombatValue : public MemoryCalculatedValue<bool>, public Qualified
 {
     public:
-        IsInCombatValue(PlayerbotAI* botAI) : BoolCalculatedValue(botAI) { }
+        IsInCombatValue(PlayerbotAI* botAI, string name = "combat") : MemoryCalculatedValue(ai, name) {}
 
-        Unit* GetTarget();
+        Unit* GetTarget() override;
         bool Calculate() override;
+        bool EqualToLast(bool value) override;
 };
 
 class BagSpaceValue : public Uint8CalculatedValue
 {
     public:
-        BagSpaceValue(PlayerbotAI* botAI) : Uint8CalculatedValue(botAI) { }
+        BagSpaceValue(PlayerbotAI* botAI, string name = "bag space") : Uint8CalculatedValue(ai, name) {}
 
         uint8 Calculate() override;
 };
@@ -119,32 +120,24 @@ class BagSpaceValue : public Uint8CalculatedValue
 class DurabilityValue : public Uint8CalculatedValue
 {
     public:
-        DurabilityValue(PlayerbotAI* botAI) : Uint8CalculatedValue(botAI) { }
+        DurabilityValue(PlayerbotAI* botAI, string name = "durability") : Uint8CalculatedValue(ai, name) {}
 
         uint8 Calculate() override;
-};
-
-class RepairCostValue : public Uint32CalculatedValue
-{
-    public:
-        RepairCostValue(PlayerbotAI* botAI) : Uint32CalculatedValue(botAI) { }
-
-        uint32 Calculate() override;
 };
 
 class SpeedValue : public Uint8CalculatedValue, public Qualified
 {
     public:
-        SpeedValue(PlayerbotAI* botAI) : Uint8CalculatedValue(botAI) { }
+        SpeedValue(PlayerbotAI* botAI, string name = "speed") : Uint8CalculatedValue(ai, name) {}
 
-        Unit* GetTarget();
+        Unit* GetTarget()override;
         uint8 Calculate() override;
 };
 
 class IsInGroupValue : public BoolCalculatedValue
 {
     public:
-        IsInGroupValue(PlayerbotAI* botAI) : BoolCalculatedValue(botAI) { }
+        IsInGroupValue(PlayerbotAI* botAI, string name = "in group") : BoolCalculatedValue(ai, name) {}
 
         bool Calculate() override;
 };
@@ -152,7 +145,23 @@ class IsInGroupValue : public BoolCalculatedValue
 class DeathCountValue : public ManualSetValue<uint32>
 {
     public:
-        DeathCountValue(PlayerbotAI* botAI) : ManualSetValue<uint32>(botAI, 0, "death_count") { }
+        DeathCountValue(PlayerbotAI* botAI, string name = "death count") : ManualSetValue<uint32>(ai, 0, name) {}
+};
+
+class ExperienceValue : public MemoryCalculatedValue<uint32>
+{
+    public:
+        ExperienceValue(PlayerbotAI* ai, string name = "experience", uint32 checkInterval = 60) : MemoryCalculatedValue<uint32>(ai, name, checkInterval) {}
+
+        bool EqualToLast(uint32 value) override
+        {
+            return value != lastValue;
+        }
+
+        uint32 Calculate() override
+        {
+            return bot->GetUInt32Value(PLAYER_XP);
+        }
 };
 
 #endif

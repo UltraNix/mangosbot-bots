@@ -10,6 +10,7 @@
 #include "AutoLearnSpellAction.h"
 #include "BattlegroundTactics.h"
 #include "BattlegroundJoinAction.h"
+#include "BuyAction.h"
 #include "CastCustomSpellAction.h"
 #include "ChangeStrategyAction.h"
 #include "ChangeTalentsAction.h"
@@ -20,11 +21,15 @@
 #include "ChooseRpgTargetAction.h"
 #include "CombatActions.h"
 #include "DelayAction.h"
+#include "DestroyItemAction.h"
 #include "EmoteAction.h"
 #include "GenericActions.h"
 #include "GenericSpellActions.h"
 #include "GiveItemAction.h"
 #include "GreetAction.h"
+#include "GuildAcceptAction.h"
+#include "GuildCreateActions.h"
+#include "GuildManagementActions.h"
 #include "ImbueAction.h"
 #include "InviteToGroupAction.h"
 #include "LeaveGroupAction.h"
@@ -40,8 +45,10 @@
 #include "ReachTargetActions.h"
 #include "ReleaseSpiritAction.h"
 #include "RemoveAuraAction.h"
+#include "ResetInstancesAction.h"
 #include "RevealGatheringItemAction.h"
 #include "RpgAction.h"
+#include "RpgSubActions.h"
 #include "RtiAction.h"
 #include "SayAction.h"
 #include "StayActions.h"
@@ -60,6 +67,7 @@ class ActionContext : public NamedObjectContext<Action>
             creators["mark rti"] = &ActionContext::mark_rti;
             creators["set return position"] = &ActionContext::set_return_position;
             creators["rpg"] = &ActionContext::rpg;
+            creators["crpg"] = &ActionContext::crpg;
             creators["choose rpg target"] = &ActionContext::choose_rpg_target;
             creators["move to rpg target"] = &ActionContext::move_to_rpg_target;
             creators["travel"] = &ActionContext::travel;
@@ -139,6 +147,7 @@ class ActionContext : public NamedObjectContext<Action>
             creators["auto learn spell"] = &ActionContext::auto_learn_spell;
             creators["xp gain"] = &ActionContext::xp_gain;
             creators["invite nearby"] = &ActionContext::invite_nearby;
+            creators["invite guild"] = &ActionContext::invite_guild;
             creators["leave far away"] = &ActionContext::leave_far_away;
             creators["move to dark portal"] = &ActionContext::move_to_dark_portal;
             creators["move from dark portal"] = &ActionContext::move_from_dark_portal;
@@ -148,7 +157,18 @@ class ActionContext : public NamedObjectContext<Action>
             creators["cast random spell"] = &ActionContext::cast_random_spell;
             creators["free bg join"] = &ActionContext::free_bg_join;
             creators["use random recipe"] = &ActionContext::use_random_recipe;
+            creators["use random quest item"] = &ActionContext::use_random_quest_item;
             creators["craft random item"] = &ActionContext::craft_random_item;
+            creators["smart destroy item"] = &ActionContext::smart_destroy_item;
+            creators["disenchant random item"] = &ActionContext::disenchant_random_item;
+            creators["enchant random item"] = &ActionContext::enchant_random_item;
+            creators["reset instances"] = &ActionContext::reset_instances;
+            creators["buy petition"] = &ActionContext::buy_petition;
+            creators["offer petition"] = &ActionContext::offer_petition;
+            creators["offer petition nearby"] = &ActionContext::offer_petition_nearby;
+            creators["turn in petition"] = &ActionContext::turn_in_petition;
+            creators["buy tabard"] = &ActionContext::buy_tabard;
+            creators["guild manage nearby"] = &ActionContext::guild_manage_nearby;
 
             // BG Tactics
             creators["bg tactics"] = &ActionContext::bg_tactics;
@@ -161,6 +181,29 @@ class ActionContext : public NamedObjectContext<Action>
             creators["bg use buff"] = &ActionContext::bg_use_buff;
             creators["attack enemy flag carrier"] = &ActionContext::attack_enemy_fc;
             creators["bg check flag"] = &ActionContext::bg_check_flag;
+
+            //Rpg
+            creators["rpg stay"] = &ActionContext::rpg_stay;
+            creators["rpg work"] = &ActionContext::rpg_work;
+            creators["rpg emote"] = &ActionContext::rpg_emote;
+            creators["rpg cancel"] = &ActionContext::rpg_cancel;
+            creators["rpg taxi"] = &ActionContext::rpg_taxi;
+            creators["rpg discover"] = &ActionContext::rpg_discover;
+            creators["rpg start quest"] = &ActionContext::rpg_start_quest;
+            creators["rpg end quest"] = &ActionContext::rpg_end_quest;
+            creators["rpg buy"] = &ActionContext::rpg_buy;
+            creators["rpg sell"] = &ActionContext::rpg_sell;
+            creators["rpg repair"] = &ActionContext::rpg_repair;
+            creators["rpg train"] = &ActionContext::rpg_train;
+            creators["rpg heal"] = &ActionContext::rpg_heal;
+            creators["rpg home bind"] = &ActionContext::rpg_home_bind;
+            creators["rpg queue bg"] = &ActionContext::rpg_queue_bg;
+            creators["rpg buy petition"] = &ActionContext::rpg_buy_petition;
+            creators["rpg use"] = &ActionContext::rpg_use;
+            creators["rpg spell"] = &ActionContext::rpg_spell;
+            creators["rpg craft"] = &ActionContext::rpg_craft;
+            creators["rpg trade useful"] = &ActionContext::rpg_trade_useful;
+            creators["rpg duel"] = &ActionContext::rpg_duel;
         }
 
     private:
@@ -170,6 +213,7 @@ class ActionContext : public NamedObjectContext<Action>
         static Action* mark_rti(PlayerbotAI* botAI) { return new MarkRtiAction(botAI); }
         static Action* set_return_position(PlayerbotAI* botAI) { return new SetReturnPositionAction(botAI); }
         static Action* rpg(PlayerbotAI* botAI) { return new RpgAction(botAI); }
+        static Action* crpg(PlayerbotAI* ai) { return new CRpgAction(ai); }
         static Action* choose_rpg_target(PlayerbotAI* botAI) { return new ChooseRpgTargetAction(botAI); }
         static Action* move_to_rpg_target(PlayerbotAI* botAI) { return new MoveToRpgTargetAction(botAI); }
         static Action* travel(PlayerbotAI* botAI) { return new TravelAction(botAI); }
@@ -246,6 +290,7 @@ class ActionContext : public NamedObjectContext<Action>
         static Action* auto_learn_spell(PlayerbotAI* botAI) { return new AutoLearnSpellAction(botAI); }
         static Action* xp_gain(PlayerbotAI* botAI) { return new XpGainAction(botAI); }
         static Action* invite_nearby(PlayerbotAI* botAI) { return new InviteNearbyToGroupAction(botAI); }
+        static Action* invite_guild(PlayerbotAI* ai) { return new InviteGuildToGroupAction(ai); }
         static Action* leave_far_away(PlayerbotAI* botAI) { return new LeaveFarAwayAction(botAI); }
         static Action* move_to_dark_portal(PlayerbotAI* botAI) { return new MoveToDarkPortalAction(botAI); }
         static Action* use_dark_portal_azeroth(PlayerbotAI* botAI) { return new DarkPortalAzerothAction(botAI); }
@@ -256,7 +301,18 @@ class ActionContext : public NamedObjectContext<Action>
         static Action* free_bg_join(PlayerbotAI* botAI) { return new FreeBGJoinAction(botAI); }
 
         static Action* use_random_recipe(PlayerbotAI* botAI) { return new UseRandomRecipe(botAI); }
+        static Action* use_random_quest_item(PlayerbotAI* ai) { return new UseRandomQuestItem(ai); }
         static Action* craft_random_item(PlayerbotAI* botAI) { return new CraftRandomItemAction(botAI); }
+        static Action* smart_destroy_item(PlayerbotAI* ai) { return new SmartDestroyItemAction(ai); }
+        static Action* disenchant_random_item(PlayerbotAI* ai) { return new DisEnchantRandomItemAction(ai); }
+        static Action* enchant_random_item(PlayerbotAI* ai) { return new EnchantRandomItemAction(ai); }
+        static Action* reset_instances(PlayerbotAI* ai) { return new ResetInstancesAction(ai); }
+        static Action* buy_petition(PlayerbotAI* ai) { return new BuyPetitionAction(ai); }
+        static Action* offer_petition(PlayerbotAI* ai) { return new PetitionOfferAction(ai); }
+        static Action* offer_petition_nearby(PlayerbotAI* ai) { return new PetitionOfferNearbyAction(ai); }
+        static Action* turn_in_petition(PlayerbotAI* ai) { return new PetitionTurnInAction(ai); }
+        static Action* buy_tabard(PlayerbotAI* ai) { return new BuyTabardAction(ai); }
+        static Action* guild_manage_nearby(PlayerbotAI* ai) { return new GuildManageNearbyAction(ai); }
 
         // BG Tactics
         static Action* bg_tactics(PlayerbotAI* botAI) { return new BGTactics(botAI); }
@@ -269,6 +325,27 @@ class ActionContext : public NamedObjectContext<Action>
         static Action* attack_enemy_fc(PlayerbotAI* botAI) { return new AttackEnemyFlagCarrierAction(botAI); }
         static Action* bg_use_buff(PlayerbotAI* botAI) { return new BGTactics(botAI, "use buff"); }
         static Action* bg_check_flag(PlayerbotAI* botAI) { return new BGTactics(botAI, "check flag"); }
-};
+
+        //Rpg
+        static Action* rpg_stay(PlayerbotAI* ai) { return new RpgStayAction(ai); }
+        static Action* rpg_work(PlayerbotAI* ai) { return new RpgWorkAction(ai); }
+        static Action* rpg_emote(PlayerbotAI* ai) { return new RpgEmoteAction(ai); }
+        static Action* rpg_cancel(PlayerbotAI* ai) { return new RpgCancelAction(ai); }
+        static Action* rpg_taxi(PlayerbotAI* ai) { return new RpgTaxiAction(ai); }
+        static Action* rpg_discover(PlayerbotAI* ai) { return new RpgDiscoverAction(ai); }
+        static Action* rpg_start_quest(PlayerbotAI* ai) { return new RpgStartQuestAction(ai); }
+        static Action* rpg_end_quest(PlayerbotAI* ai) { return new RpgEndQuestAction(ai); }
+        static Action* rpg_buy(PlayerbotAI* ai) { return new RpgBuyAction(ai); }
+        static Action* rpg_sell(PlayerbotAI* ai) { return new RpgSellAction(ai); }
+        static Action* rpg_repair(PlayerbotAI* ai) { return new RpgRepairAction(ai); }
+        static Action* rpg_train(PlayerbotAI* ai) { return new RpgTrainAction(ai); }
+        static Action* rpg_heal(PlayerbotAI* ai) { return new RpgHealAction(ai); }
+        static Action* rpg_home_bind(PlayerbotAI* ai) { return new RpgHomeBindAction(ai); }
+        static Action* rpg_queue_bg(PlayerbotAI* ai) { return new RpgQueueBgAction(ai); }
+        static Action* rpg_buy_petition(PlayerbotAI* ai) { return new RpgBuyPetitionAction(ai); }
+        static Action* rpg_use(PlayerbotAI* ai) { return new RpgUseAction(ai); }
+        static Action* rpg_spell(PlayerbotAI* ai) { return new RpgSpellAction(ai); }
+        static Action* rpg_craft(PlayerbotAI* ai) { return new RpgCraftAction(ai); }
+        static Action* rpg_trade_useful(PlayerbotAI* ai) { return new RpgTradeUsefulAction(ai); }
 
 #endif

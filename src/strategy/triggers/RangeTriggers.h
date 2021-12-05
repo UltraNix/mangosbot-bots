@@ -29,7 +29,7 @@ class EnemyTooCloseForShootTrigger : public Trigger
 class EnemyTooCloseForMeleeTrigger : public Trigger
 {
     public:
-        EnemyTooCloseForMeleeTrigger(PlayerbotAI* botAI) : Trigger(botAI, "enemy too close for melee") { }
+        EnemyTooCloseForMeleeTrigger(PlayerbotAI* botAI) : Trigger(botAI, "enemy too close for melee", 5) { }
 
         bool IsActive() override;
 };
@@ -58,12 +58,16 @@ class EnemyOutOfMeleeTrigger : public OutOfRangeTrigger
 {
     public:
         EnemyOutOfMeleeTrigger(PlayerbotAI* botAI) : OutOfRangeTrigger(botAI, "enemy out of melee range", sPlayerbotAIConfig->meleeDistance) { }
+
+        bool IsActive() override;
 };
 
 class EnemyOutOfSpellRangeTrigger : public OutOfRangeTrigger
 {
     public:
         EnemyOutOfSpellRangeTrigger(PlayerbotAI* botAI) : OutOfRangeTrigger(botAI, "enemy out of spell range", botAI->GetRange("spell")) { }
+
+        bool IsActive() override;
 };
 
 class PartyMemberToHealOutOfSpellRangeTrigger : public OutOfRangeTrigger
@@ -71,6 +75,7 @@ class PartyMemberToHealOutOfSpellRangeTrigger : public OutOfRangeTrigger
     public:
         PartyMemberToHealOutOfSpellRangeTrigger(PlayerbotAI* botAI) : OutOfRangeTrigger(botAI, "party member to heal out of spell range", botAI->GetRange("heal")) { }
 
+        bool IsActive() override;
         std::string const& GetTargetName() override { return "party member to heal"; }
 };
 
@@ -89,15 +94,7 @@ class FarFromMasterTrigger : public Trigger
 class OutOfReactRangeTrigger : public FarFromMasterTrigger
 {
     public:
-        OutOfReactRangeTrigger(PlayerbotAI* botAI) : FarFromMasterTrigger(botAI, "out of react range", 40.0f, 5) { }
-};
-
-class HearthIsFasterTrigger : public Trigger
-{
-    public:
-        HearthIsFasterTrigger(PlayerbotAI* botAI) : Trigger(botAI, "hearth is faster", 5) { }
-
-        bool IsActive() override;
+        OutOfReactRangeTrigger(PlayerbotAI* botAI) : FarFromMasterTrigger(botAI, "out of react range", 50.0f, 5) { }
 };
 
 #endif

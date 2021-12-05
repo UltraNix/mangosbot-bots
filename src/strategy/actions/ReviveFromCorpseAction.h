@@ -9,6 +9,7 @@
 
 class Event;
 class PlayerbotAI;
+class WorldSafeLocsEntry;
 
 class ReviveFromCorpseAction : public MovementAction
 {
@@ -30,9 +31,11 @@ class FindCorpseAction : public MovementAction
 class SpiritHealerAction : public MovementAction
 {
 	public:
-	    SpiritHealerAction(PlayerbotAI* botAI) : Action(botAI, "spirit healer") { }
+	    SpiritHealerAction(PlayerbotAI* ai, string name = "spirit healer") : MovementAction(ai, name) {}
 
+        WorldSafeLocsEntry const* GetGrave(bool startZone);
         bool Execute(Event event) override;
+        bool isUseful() override;
 };
 
 #endif

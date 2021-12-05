@@ -29,17 +29,17 @@ bool PrayerOfFortitudeTrigger::IsActive()
 {
     return BuffOnPartyTrigger::IsActive() &&
         !botAI->HasAura("prayer of fortitude", GetTarget()) &&
-        (botAI->GetBot()->IsInSameGroupWith((Player*)GetTarget()) || botAI->GetBot()->IsInSameRaidWith((Player*)GetTarget())) &&
-        botAI->GetBuffedCount((Player*)GetTarget(), "prayer of fortitude") < 5 && botAI->GetBuffedCount((Player*)GetTarget(), "power word: fortitude") < 5;
+        botAI->GetBot()->IsInSameGroupWith((Player*)GetTarget()) &&
+        ai->GetBuffedCount((Player*)GetTarget(), "prayer of fortitude") < 4 && !ai->GetBuffedCount((Player*)GetTarget(), "power word: fortitude");
 }
 
 bool PrayerOfSpiritTrigger::IsActive()
 {
     BuffOnPartyTrigger::IsActive() &&
-        !botAI->HasAura("prayer of spirit", GetTarget()) && /*!botAI->HasAura("divine spirit", GetTarget()) &&*/
-        (botAI->GetBot()->IsInSameGroupWith((Player*)GetTarget()) || botAI->GetBot()->IsInSameRaidWith((Player*)GetTarget())) &&
+        !botAI->HasAura("prayer of spirit", GetTarget()) &&
+        botAI->GetBot()->IsInSameGroupWith((Player*)GetTarget()) &&
         //botAI->GetManaPercent() > 50 &&
-        botAI->GetBuffedCount((Player*)GetTarget(), "prayer of spirit") < 5 && botAI->GetBuffedCount((Player*)GetTarget(), "divine spirit") < 5;
+        ai->GetBuffedCount((Player*) GetTarget(), "prayer of spirit") < 4 && !ai->GetBuffedCount((Player*) GetTarget(), "divine spirit");
 }
 
 bool InnerFireTrigger::IsActive()
@@ -51,4 +51,18 @@ bool InnerFireTrigger::IsActive()
 bool ShadowformTrigger::IsActive()
 {
     return !botAI->HasAura("shadowform", bot);
+}
+
+bool ShadowfiendTrigger::IsActive()
+{
+    return BoostTrigger::IsActive() && bot->IsSpellReady(34433);
+}
+
+BindingHealTrigger::BindingHealTrigger(PlayerbotAI* ai) : PartyMemberLowHealthTrigger(ai, "binding heal", sPlayerbotAIConfig.lowHealth, 0)
+{
+}
+
+bool BindingHealTrigger::IsActive()
+{
+    return PartyMemberLowHealthTrigger::IsActive() && AI_VALUE2(uint8, "health", "self target") < sPlayerbotAIConfig.mediumHealth;
 }

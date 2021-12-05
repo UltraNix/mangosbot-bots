@@ -42,13 +42,8 @@ float DistanceValue::Calculate()
     Unit* target = nullptr;
     if (qualifier == "rpg target")
     {
-        ObjectGuid rpgTarget = AI_VALUE(ObjectGuid, qualifier);
-        target = botAI->GetUnit(rpgTarget);
-        if (!target)
-        {
-            if (GameObject* go = botAI->GetGameObject(rpgTarget))
-                return sServerFacade->GetDistance2d(botAI->GetBot(), go);
-        }
+        GuidPosition rpgTarget = AI_VALUE(GuidPosition, qualifier);
+        return rpgTarget.distance(bot);
     }
     else if (qualifier == "travel target")
     {

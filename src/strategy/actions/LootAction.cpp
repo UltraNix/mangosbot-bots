@@ -360,7 +360,7 @@ bool StoreLootAction::Execute(Event event)
         if (!proto)
             continue;
 
-        if (AI_VALUE(uint8, "bag space") > 80)
+        if (!ai->HasActivePlayerMaster() && AI_VALUE(uint8, "bag space") > 80)
         {
             uint32 maxStack = proto->GetMaxStackSize();
             if (maxStack == 1)
@@ -400,11 +400,11 @@ bool StoreLootAction::Execute(Event event)
         packet << itemindex;
         bot->GetSession()->HandleAutostoreLootItemOpcode(packet);
 
-        if (proto->Quality > ITEM_QUALITY_NORMAL && !urand(0, 50))
-            botAI->PlaySound(TEXT_EMOTE_CHEER);
+        if (proto->Quality > ITEM_QUALITY_NORMAL && !urand(0, 50) && ai->HasStrategy("emote", BOT_STATE_NON_COMBAT))
+            ai->PlayEmote(TEXT_EMOTE_CHEER);
 
-        if (proto->Quality >= ITEM_QUALITY_RARE)
-            botAI->PlaySound(TEXT_EMOTE_CHEER);
+        if (proto->Quality >= ITEM_QUALITY_RARE && ai->HasStrategy("emote", BOT_STATE_NON_COMBAT))
+            ai->PlayEmote(TEXT_EMOTE_CHEER);
 
         std::ostringstream out;
         out << "Looting " << chat->formatItem(proto);
@@ -463,21 +463,21 @@ bool StoreLootAction::IsLootAllowed(uint32 itemid, PlayerbotAI* botAI)
         {
             if (quest->RequiredItemId[i] == itemid)
             {
-                if (quest->RequiredItemId[i] == itemid && AI_VALUE2(uint8, "item count", proto->Name1) < quest->RequiredItemCount[i])
+                if (quest->RequiredItemId[i] == itemid && AI_VALUE2(uint32, "item count", proto->Name1) < quest->RequiredItemCount[i])
                 {
                     if (botAI->GetMaster() && sPlayerbotAIConfig->syncQuestWithPlayer)
                         return false; //Quest is autocomplete for the bot so no item needed.
                 }
 
-                if (AI_VALUE2(uint8, "item count", proto->Name1) < quest->RequiredItemCount[i])
+                if (AI_VALUE2(uint32, "item count", proto->Name1) < quest->RequiredItemCount[i])
                     return true;
             }
         }
     }
 
     bool canLoot = lootStrategy->CanLoot(proto, context);
-    if (canLoot && proto->Bonding == BIND_WHEN_PICKED_UP)
-        canLoot = sPlayerbotAIConfig->IsInRandomAccountList(sObjectMgr->GetPlayerAccountIdByGUID(botAI->GetBot()->GetGUID().GetCounter()));
+    //if (canLoot && proto->Bonding == BIND_WHEN_PICKED_UP && ai->HasActivePlayerMaster())
+        //canLoot = sPlayerbotAIConfig->IsInRandomAccountList(sObjectMgr->GetPlayerAccountIdByGUID(botAI->GetBot()->GetGUID().GetCounter()));
 
     return canLoot;
 }

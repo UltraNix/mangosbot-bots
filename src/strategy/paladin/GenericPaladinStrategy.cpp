@@ -15,8 +15,6 @@ void GenericPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     CombatStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode("medium health", NextAction::array(0, new NextAction("flash of light", ACTION_MEDIUM_HEAL + 1), nullptr)));
-    triggers.push_back(new TriggerNode("party member medium health", NextAction::array(0, new NextAction("flash of light on party", ACTION_MEDIUM_HEAL), nullptr)));
     triggers.push_back(new TriggerNode("low health", NextAction::array(0, new NextAction("divine protection", ACTION_CRITICAL_HEAL + 2), new NextAction("holy light", ACTION_CRITICAL_HEAL + 2), nullptr)));
     triggers.push_back(new TriggerNode("party member low health", NextAction::array(0, new NextAction("holy light on party", ACTION_CRITICAL_HEAL + 1), nullptr)));
 	triggers.push_back(new TriggerNode("hammer of justice interrupt", NextAction::array(0, new NextAction("hammer of justice", ACTION_INTERRUPT), nullptr)));
@@ -26,6 +24,7 @@ void GenericPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 	triggers.push_back(new TriggerNode("party member critical health", NextAction::array(0, new NextAction("lay on hands on party", ACTION_EMERGENCY), nullptr)));
 	triggers.push_back(new TriggerNode("target critical health", NextAction::array(0, new NextAction("hammer of wrath", ACTION_HIGH + 1), nullptr)));
     triggers.push_back(new TriggerNode("often", NextAction::array(0, new NextAction("apply stone", 1.0f), nullptr)));
+    triggers.push_back(new TriggerNode("protect party member", NextAction::array(0, new NextAction("blessing of protection on party", ACTION_EMERGENCY + 2), NULL)));
 }
 
 void PaladinCureStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)

@@ -14,7 +14,7 @@ class Unit;
 class ThreatValue : public Uint8CalculatedValue, public Qualified
 {
 	public:
-        ThreatValue(PlayerbotAI* botAI) : Uint8CalculatedValue(botAI) { }
+        ThreatValue(PlayerbotAI* botAI, string name = "threat") : Uint8CalculatedValue(ai, name) {}
 
     	uint8 Calculate() override;
 

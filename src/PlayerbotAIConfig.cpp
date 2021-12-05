@@ -110,10 +110,10 @@ bool PlayerbotAIConfig::Initialize()
     minRandomBots = sConfigMgr->GetIntDefault("AiPlayerbot.MinRandomBots", 50);
     maxRandomBots = sConfigMgr->GetIntDefault("AiPlayerbot.MaxRandomBots", 200);
     randomBotUpdateInterval = sConfigMgr->GetIntDefault("AiPlayerbot.RandomBotUpdateInterval", 60);
-    randomBotCountChangeMinInterval = sConfigMgr->GetIntDefault("AiPlayerbot.RandomBotCountChangeMinInterval", 1800);
-    randomBotCountChangeMaxInterval = sConfigMgr->GetIntDefault("AiPlayerbot.RandomBotCountChangeMaxInterval", 7200);
-    minRandomBotInWorldTime = sConfigMgr->GetIntDefault("AiPlayerbot.MinRandomBotInWorldTime", 24 * 3600);
-    maxRandomBotInWorldTime = sConfigMgr->GetIntDefault("AiPlayerbot.MaxRandomBotInWorldTime", 14 * 24 * 3600);
+    randomBotCountChangeMinInterval = config.GetIntDefault("AiPlayerbot.RandomBotCountChangeMinInterval", 1 * 1800);
+    randomBotCountChangeMaxInterval = config.GetIntDefault("AiPlayerbot.RandomBotCountChangeMaxInterval", 2 * 3600);
+    minRandomBotInWorldTime = config.GetIntDefault("AiPlayerbot.MinRandomBotInWorldTime", 2 * 3600);
+    maxRandomBotRandomizeTime = config.GetIntDefault("AiPlayerbot.MaxRandomRandomizeTime", 12 * 3600);
     minRandomBotRandomizeTime = sConfigMgr->GetIntDefault("AiPlayerbot.MinRandomBotRandomizeTime", 2 * 3600);
     maxRandomBotRandomizeTime = sConfigMgr->GetIntDefault("AiPlayerbot.MaxRandomRandomizeTime", 14 * 24 * 3600);
     minRandomBotChangeStrategyTime = sConfigMgr->GetIntDefault("AiPlayerbot.MinRandomBotChangeStrategyTime", 1800);
@@ -138,8 +138,8 @@ bool PlayerbotAIConfig::Initialize()
 
     randomChangeMultiplier = sConfigMgr->GetFloatDefault("AiPlayerbot.RandomChangeMultiplier", 1.0);
 
-    randomBotCombatStrategies = sConfigMgr->GetStringDefault("AiPlayerbot.RandomBotCombatStrategies", "+dps assist,-threat,+custom::say");
-    randomBotNonCombatStrategies = sConfigMgr->GetStringDefault("AiPlayerbot.RandomBotNonCombatStrategies", "+grind,+loot,+rpg,+custom::say");
+    randomBotCombatStrategies = config.GetStringDefault("AiPlayerbot.RandomBotCombatStrategies", "-threat");
+    randomBotNonCombatStrategies = config.GetStringDefault("AiPlayerbot.RandomBotNonCombatStrategies", ""); zmienione
     combatStrategies = sConfigMgr->GetStringDefault("AiPlayerbot.CombatStrategies", "+custom::say");
     nonCombatStrategies = sConfigMgr->GetStringDefault("AiPlayerbot.NonCombatStrategies", "+custom::say,+return");
 
@@ -213,6 +213,22 @@ bool PlayerbotAIConfig::Initialize()
         }
     }
 
+    botCheats.clear();
+    LoadListString<list<string>>(config.GetStringDefault("AiPlayerbot.BotCheats", "taxi"), botCheats);
+
+    botCheatMask = 0;
+
+    if (std::find(botCheats.begin(), botCheats.end(), "taxi") != botCheats.end())
+        botCheatMask |= (uint32)BotCheatMask::taxi;
+    if (std::find(botCheats.begin(), botCheats.end(), "gold") != botCheats.end())
+        botCheatMask |= (uint32)BotCheatMask::gold;
+    if (std::find(botCheats.begin(), botCheats.end(), "health") != botCheats.end())
+        botCheatMask |= (uint32)BotCheatMask::health;
+    if (std::find(botCheats.begin(), botCheats.end(), "mana") != botCheats.end())
+        botCheatMask |= (uint32)BotCheatMask::mana;
+    if (std::find(botCheats.begin(), botCheats.end(), "power") != botCheats.end())
+        botCheatMask |= (uint32)BotCheatMask::power;
+
     LoadListString<std::vector<std::string>>(sConfigMgr->GetStringDefault("AiPlayerbot.AllowedLogFiles", ""), allowedLogFiles);
 
     worldBuffs.clear();
@@ -255,6 +271,7 @@ bool PlayerbotAIConfig::Initialize()
     // SPP switches
     enableGreet = sConfigMgr->GetBoolDefault("AiPlayerbot.EnableGreet", true);
     disableRandomLevels = sConfigMgr->GetBoolDefault("AiPlayerbot.DisableRandomLevels", false);
+    randomBotRandomPassword = config.GetBoolDefault("AiPlayerbot.RandomBotRandomPassword", true);
     playerbotsXPrate = sConfigMgr->GetIntDefault("AiPlayerbot.KillXPRate", 1);
     botActiveAlone = sConfigMgr->GetIntDefault("AiPlayerbot.BotActiveAlone", 10);
     randombotsWalkingRPG = sConfigMgr->GetBoolDefault("AiPlayerbot.RandombotsWalkingRPG", false);

@@ -63,6 +63,8 @@ class MoonfireTrigger : public DebuffTrigger
 {
     public:
         MoonfireTrigger(PlayerbotAI* botAI) : DebuffTrigger(botAI, "moonfire") { }
+
+        bool IsActive() override;
 };
 
 class FaerieFireTrigger : public DebuffTrigger
@@ -99,6 +101,14 @@ class EntanglingRootsTrigger : public HasCcTargetTrigger
 {
     public:
         EntanglingRootsTrigger(PlayerbotAI* botAI) : HasCcTargetTrigger(botAI, "entangling roots") { }
+};
+
+class EntanglingRootsKiteTrigger : public DebuffTrigger
+{
+    public:
+        EntanglingRootsKiteTrigger(PlayerbotAI* ai) : DebuffTrigger(ai, "entangling roots") {}
+
+        bool IsActive() override;
 };
 
 class HibernateTrigger : public HasCcTargetTrigger

@@ -13,7 +13,7 @@ class Unit;
 class SelfTargetValue : public UnitCalculatedValue
 {
 	public:
-        SelfTargetValue(PlayerbotAI* botAI) : UnitCalculatedValue(botAI) { }
+        SelfTargetValue(PlayerbotAI* botAI, string name = "self target") : UnitCalculatedValue(ai, name) {}
 
         Unit* Calculate() override;
 };

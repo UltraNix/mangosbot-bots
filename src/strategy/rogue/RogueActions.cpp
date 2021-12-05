@@ -8,8 +8,8 @@
 
 bool CastStealthAction::isPossible()
 {
-    // do not use with WSG flag
-    return !botAI->HasAura(23333, bot) && !botAI->HasAura(23335, bot);
+    // do not use with WSG flag or EYE flag
+    return !botAI->HasAura(23333, bot) && !botAI->HasAura(23335, bot) && !ai->HasAura(34976, bot);
 }
 
 bool CastStealthAction::Execute(Event event)
@@ -46,6 +46,6 @@ bool CheckStealthAction::Execute(Event event)
 
 bool CastVanishAction::isUseful()
 {
-    // do not use with WSG flag
-    return !botAI->HasAura(23333, bot) && !botAI->HasAura(23335, bot);
+    // do not use with WSG flag or EYE flag
+    return !botAI->HasAura(23333, bot) && !botAI->HasAura(23335, bot) && !ai->HasAura(34976, bot);
 }

@@ -93,11 +93,15 @@ class MageTriggerFactoryInternal : public NamedObjectContext<Trigger>
             creators["counterspell on enemy healer"] = &MageTriggerFactoryInternal::counterspell_enemy_healer;
             creators["arcane power"] = &MageTriggerFactoryInternal::arcane_power;
             creators["presence of mind"] = &MageTriggerFactoryInternal::presence_of_mind;
+            creators["fire ward"] = &TriggerFactoryInternal::fire_ward;
+            creators["frost ward"] = &TriggerFactoryInternal::frost_ward;
 
         }
 
     private:
         static Trigger* presence_of_mind(PlayerbotAI* botAI) { return new PresenceOfMindTrigger(botAI); }
+        static Trigger* frost_ward(PlayerbotAI* ai) { return new FrostWardTrigger(ai); }
+        static Trigger* fire_ward(PlayerbotAI* ai) { return new FireWardTrigger(ai); }
         static Trigger* arcane_power(PlayerbotAI* botAI) { return new ArcanePowerTrigger(botAI); }
         static Trigger* hot_streak(PlayerbotAI* botAI) { return new HotStreakTrigger(botAI); }
         static Trigger* fireball(PlayerbotAI* botAI) { return new FireballTrigger(botAI); }
@@ -160,10 +164,14 @@ class MageAiObjectContextInternal : public NamedObjectContext<Action>
             creators["arcane barrage"] = &MageAiObjectContextInternal::arcane_barrage;
             creators["arcane missiles"] = &MageAiObjectContextInternal::arcane_missiles;
             creators["counterspell on enemy healer"] = &MageAiObjectContextInternal::counterspell_on_enemy_healer;
+            creators["fire ward"] = &AiObjectContextInternal::fire_ward;
+            creators["frost ward"] = &AiObjectContextInternal::frost_ward;
         }
 
     private:
         static Action* presence_of_mind(PlayerbotAI* botAI) { return new CastPresenceOfMindAction(botAI); }
+        static Action* frost_ward(PlayerbotAI* ai) { return new CastFrostWardAction(ai); }
+        static Action* fire_ward(PlayerbotAI* ai) { return new CastFireWardAction(ai); }
         static Action* arcane_power(PlayerbotAI* botAI) { return new CastArcanePowerAction(botAI); }
         static Action* arcane_missiles(PlayerbotAI* botAI) { return new CastArcaneMissilesAction(botAI); }
         static Action* arcane_barrage(PlayerbotAI* botAI) { return new CastArcaneBarrageAction(botAI); }

@@ -20,10 +20,13 @@
 #include "FleeStrategy.h"
 #include "FollowMasterStrategy.h"
 #include "GrindingStrategy.h"
+#include "GroupStrategy.h"
 #include "GuardStrategy.h"
+#include "GuildStrategy.h"
 #include "KiteStrategy.h"
 #include "LfgStrategy.h"
 #include "LootNonCombatStrategy.h"
+#include "MaintenanceStrategy.h"
 #include "MarkRtiStrategy.h"
 #include "MeleeCombatStrategy.h"
 #include "NonCombatStrategy.h"
@@ -37,7 +40,7 @@
 #include "RTSCStrategy.h"
 #include "RunawayStrategy.h"
 #include "StayStrategy.h"
-#include "TankAoeStrategy.h"
+#include "TankAssistStrategy.h"
 #include "TellTargetStrategy.h"
 #include "ThreatStrategy.h"
 #include "TravelStrategy.h"
@@ -63,6 +66,7 @@ class StrategyContext : public NamedObjectContext<Strategy>
             creators["dead"] = &StrategyContext::dead;
             creators["flee"] = &StrategyContext::flee;
             creators["duel"] = &StrategyContext::duel;
+            creators["start duel"] = &StrategyContext::start_duel;
             creators["kite"] = &StrategyContext::kite;
             creators["potions"] = &StrategyContext::potions;
             creators["cast time"] = &StrategyContext::cast_time;
@@ -90,6 +94,7 @@ class StrategyContext : public NamedObjectContext<Strategy>
             creators["warsong"] = &StrategyContext::warsong;
             creators["alterac"] = &StrategyContext::alterac;
             creators["arathi"] = &StrategyContext::arathi;
+            creators["eye"] = &StrategyContext::eye;
             creators["arena"] = &StrategyContext::arena;
             creators["mount"] = &StrategyContext::mount;
             creators["rtsc"] = &StrategyContext::rtsc;
@@ -98,6 +103,10 @@ class StrategyContext : public NamedObjectContext<Strategy>
             creators["debug move"] = &StrategyContext::debug_move;
             creators["debug rpg"] = &StrategyContext::debug_rpg;
             creators["debug spell"] = &StrategyContext::debug_spell;
+            creators["maintenance"] = &StrategyContext::maintenance;
+            creators["group"] = &StrategyContext::group;
+            creators["guild"] = &StrategyContext::guild;
+            creators["grind"] = &StrategyContext::grind;
         }
 
     private:
@@ -111,6 +120,7 @@ class StrategyContext : public NamedObjectContext<Strategy>
         static Strategy* potions(PlayerbotAI* botAI) { return new UsePotionsStrategy(botAI); }
         static Strategy* kite(PlayerbotAI* botAI) { return new KiteStrategy(botAI); }
         static Strategy* duel(PlayerbotAI* botAI) { return new DuelStrategy(botAI); }
+        static Strategy* start_duel(PlayerbotAI* ai) { return new StartDuelStrategy(ai); }
         static Strategy* flee(PlayerbotAI* botAI) { return new FleeStrategy(botAI); }
         static Strategy* dead(PlayerbotAI* botAI) { return new DeadStrategy(botAI); }
         static Strategy* racials(PlayerbotAI* botAI) { return new RacialsStrategy(botAI); }
@@ -142,6 +152,7 @@ class StrategyContext : public NamedObjectContext<Strategy>
         static Strategy* warsong(PlayerbotAI* botAI) { return new WarsongStrategy(botAI); }
         static Strategy* alterac(PlayerbotAI* botAI) { return new AlteracStrategy(botAI); }
         static Strategy* arathi(PlayerbotAI* botAI) { return new ArathiStrategy(botAI); }
+        static Strategy* eye(PlayerbotAI* ai) { return new EyeStrategy(ai); }
         static Strategy* arena(PlayerbotAI* botAI) { return new ArenaStrategy(botAI); }
         static Strategy* rtsc(PlayerbotAI* botAI) { return new RTSCStrategy(botAI); }
         static Strategy* attack_tagged(PlayerbotAI* botAI) { return new AttackTaggedStrategy(botAI); }
@@ -149,6 +160,10 @@ class StrategyContext : public NamedObjectContext<Strategy>
         static Strategy* debug_move(PlayerbotAI* botAI) { return new DebugMoveStrategy(botAI); }
         static Strategy* debug_rpg(PlayerbotAI* botAI) { return new DebugRpgStrategy(botAI); }
         static Strategy* debug_spell(PlayerbotAI* botAI) { return new DebugSpellStrategy(botAI); }
+        static Strategy* maintenance(PlayerbotAI* ai) { return new MaintenanceStrategy(ai); }
+        static Strategy* group(PlayerbotAI* ai) { return new GroupStrategy(ai); }
+        static Strategy* guild (PlayerbotAI* ai) { return new GuildStrategy(ai); }
+        static Strategy* grind(PlayerbotAI* ai) { return new GrindingStrategy(ai); }
 };
 
 class MovementStrategyContext : public NamedObjectContext<Strategy>
@@ -178,15 +193,13 @@ class MovementStrategyContext : public NamedObjectContext<Strategy>
         {
             creators["dps assist"] = &AssistStrategyContext::dps_assist;
             creators["dps aoe"] = &AssistStrategyContext::dps_aoe;
-            creators["tank aoe"] = &AssistStrategyContext::tank_aoe;
-            creators["grind"] = &AssistStrategyContext::grind;
+            creators["tank assist"] = &AssistStrategyContext::tank_assist;
         }
 
     private:
         static Strategy* dps_assist(PlayerbotAI* botAI) { return new DpsAssistStrategy(botAI); }
         static Strategy* dps_aoe(PlayerbotAI* botAI) { return new DpsAoeStrategy(botAI); }
-        static Strategy* tank_aoe(PlayerbotAI* botAI) { return new TankAoeStrategy(botAI); }
-        static Strategy* grind(PlayerbotAI* botAI) { return new GrindingStrategy(botAI); }
+        static Strategy* tank_assist(PlayerbotAI* botAI) { return new TankAssistStrategy(botAI); }
 };
 
 class QuestStrategyContext : public NamedObjectContext<Strategy>

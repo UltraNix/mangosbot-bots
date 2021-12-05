@@ -20,7 +20,7 @@ class GenericPriestStrategy : public CombatStrategy
 class PriestCureStrategy : public Strategy
 {
     public:
-        PriestCureStrategy(PlayerbotAI* botAI) : Strategy(botAI) { }
+        PriestCureStrategy(PlayerbotAI* botAI);
 
         void InitTriggers(std::vector<TriggerNode*>& triggers) override;
         std::string const& getName() override { return "cure"; }

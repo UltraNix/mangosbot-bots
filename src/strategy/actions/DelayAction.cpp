@@ -17,5 +17,5 @@ bool DelayAction::Execute(Event event)
 
 bool DelayAction::isUseful()
 {
-    return !botAI->AllowActive(ALL_ACTIVITY);
+    return !botAI->AllowActivity(ALL_ACTIVITY);
 }

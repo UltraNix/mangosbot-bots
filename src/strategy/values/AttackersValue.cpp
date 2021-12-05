@@ -10,11 +10,12 @@
 GuidVector AttackersValue::Calculate()
 {
     std::set<Unit*> targets;
-    AddAttackersOf(bot, targets);
 
     GuidVector result;
-    if (!botAI->AllowActive(ALL_ACTIVITY))
+    if (!botAI->AllowActivity(ALL_ACTIVITY))
         return std::move(result);
+
+    AddAttackersOf(bot, targets);
 
     if (Group* group = bot->GetGroup())
         AddAttackersOf(group, targets);
@@ -69,7 +70,7 @@ void AttackersValue::AddAttackersOf(Player* player, std::set<Unit*>& targets)
     {
         if (!player->GetGroup())
         {
-            if (!unit->getThreatManager().getThreat(player))
+            if (!unit->getThreatManager().getThreat(player) && (!unit->getThreatManager().getCurrentVictim() || unit->getThreatManager().getCurrentVictim()->getTarget() != player))
                 continue;
         }
 
@@ -111,12 +112,13 @@ bool AttackersValue::IsPossibleTarget(Unit *attacker, Player *bot)
         isMemberBotGroup = true;
 
     return attacker && attacker->IsInWorld() && attacker->GetMapId() == bot->GetMapId() && !attacker->isDead() && !attacker->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE) &&
-        !attacker->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE) && !attacker->isInvisibleForAlive() && !attacker->HasStealthAura() && !attacker->HasInvisibilityAura() &&
-        /*!attacker->hasUnitState(UNIT_STAT_STUNNED) &&*/!((attacker->IsPolymorphed() || botAI->HasAura("sap", attacker) || attacker->IsCharmed() || attacker->isFeared()) && !rti) &&
+        !attacker->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE) && attacker->IsVisibleForOrDetect(bot, attacker, false) &&
+        !(attacker->IsStunned() && ai->HasAura("shackle undead", attacker)) && !((attacker->IsPolymorphed() || botAI->HasAura("sap", attacker) || attacker->IsCharmed() || attacker->isFeared()) && !rti) &&
         /*!sServerFacade->IsInRoots(attacker) &&*/!attacker->IsFriendlyTo(bot) && bot->IsWithinDistInMap(attacker, sPlayerbotAIConfig->sightDistance) &&
-        !(attacker->GetCreatureType() == CREATURE_TYPE_CRITTER) && !(sPlayerbotAIConfig->IsInPvpProhibitedZone(attacker->GetAreaId()) && (attacker->GetGUID().IsPlayer() ||
-        attacker->GetGUID().IsPet())) && (!c || (!c->IsInEvadeMode() && ((!isMemberBotGroup && botAI->HasStrategy("attack tagged", BOT_STATE_NON_COMBAT)) ||
-        leaderHasThreat || !c->hasLootRecipient() || c->isTappedBy(bot))));
+        !(attacker->GetCreatureType() == CREATURE_TYPE_CRITTER && !attacker->IsInCombat()) && !(sPlayerbotAIConfig->IsInPvpProhibitedZone(attacker->GetAreaId()) &&
+        (attacker->GetGUID().IsPlayer() || attacker->GetGUID().IsPet())) && (!c || (!c->IsInEvadeMode() && ((!isMemberBotGroup && ai->HasStrategy("attack tagged", BOT_STATE_NON_COMBAT)) ||
+        leaderHasThreat || (!c->HasLootRecipient() && (!c->GetVictim() || c->GetVictim() && ((bot->IsInGroup(c->GetVictim())) || (ai->GetMaster() && c->GetVictim() == ai->GetMaster())))) ||
+        c->IsTappedBy(bot))));
 }
 
 bool AttackersValue::IsValidTarget(Unit *attacker, Player *bot)

@@ -46,6 +46,15 @@ Position const AV_WAITING_POS_HORDE = { -1381.865f, -544.872f, 54.773f, 0.76f };
 Position const AV_ICEBLOOD_GARRISON_WAITING_ALLIANCE = { -492.17f, -187.077f, 57.1342f, 2.77f };
 Position const AV_STONEHEARTH_WAITING_HORDE = { 28.1264f, -302.593f, 15.076f, 2.96f };
 
+Position const EY_WAITING_POS_HORDE = { 1809.102f, 1540.854f, 1267.142f, 6.18f };
+Position const EY_WAITING_POS_ALLIANCE = { 2526.020f, 1596.787f, 1270.127f, 3.14f };
+Position const EY_FLAG_RETURN_POS_REAVER_RUINS = { 2044.097f, 1730.323f, 1189.822f, 0.0f };
+Position const EY_FLAG_RETURN_POS_BLOOD_ELF_TOWER = { 2048.933f, 1394.058f, 1194.419f, 0.0f };
+Position const EY_FLAG_RETURN_POS_DRAENEI_RUINS = { 2286.754f, 1402.372f, 1197.120f, 0.0f };
+Position const EY_FLAG_RETURN_POS_MAGE_TOWER = { 2284.585f, 1731.297f, 1189.862f, 0.0f };
+Position const EY_FLAG_RETURN_POS_RETREAT_HORDE = { 1885.529f, 1532.157f, 1200.635f, 0.0f };
+Position const EY_FLAG_RETURN_POS_RETREAT_ALLIANCE = { 2452.253f, 1602.356f, 1203.617f, 0.0f };
+
 enum BattleBotWsgWaitSpot
 {
     BB_WSG_WAIT_SPOT_SPAWN,
@@ -1542,6 +1551,144 @@ BattleBotPath vPath_AV_Frostdagger_Pass_Lower_to_Iceblood_Garrison =
     { -492.17f, -187.077f, 57.1342f, nullptr },
 };
 
+BattleBotPath vPath_EY_Horde_Spawn_to_Crossroad1Horde =
+{
+    { 1809.102f, 1540.854f, 1267.142f, nullptr },
+    { 1832.335f, 1539.495f, 1256.417f, nullptr },
+    { 1846.995f, 1539.792f, 1243.077f, nullptr },
+    { 1846.243f, 1530.716f, 1238.477f, nullptr },
+    { 1883.154f, 1532.143f, 1202.143f, nullptr },
+    { 1941.452f, 1549.086f, 1176.700f, nullptr }
+};
+
+BattleBotPath vPath_EY_Horde_Crossroad1Horde_to_Crossroad2Horde =
+{
+    { 1951.647f, 1545.187f, 1174.831f, nullptr },
+    { 1992.266f, 1546.962f, 1169.816f, nullptr },
+    { 2045.865f, 1543.925f, 1163.759f, nullptr }
+};
+
+BattleBotPath vPath_EY_Crossroad1Horde_to_Blood_Elf_Tower =
+{
+    { 1952.907f, 1539.857f, 1174.638f, nullptr },
+    { 2000.130f, 1508.182f, 1169.778f, nullptr },
+    { 2044.239f, 1483.860f, 1166.165f, nullptr },
+    { 2048.773f, 1389.578f, 1193.903f, nullptr }
+};
+
+BattleBotPath vPath_EY_Crossroad1Horde_to_Fel_Reaver_Ruins =
+{
+    { 1944.301f, 1557.170f, 1176.370f, nullptr },
+    { 1992.953f, 1625.188f, 1173.616f, nullptr },
+    { 2040.421f, 1676.989f, 1177.079f, nullptr },
+    { 2045.527f, 1736.398f, 1189.661f, nullptr }
+};
+
+BattleBotPath vPath_EY_Crossroad2Horde_to_Blood_Elf_Tower =
+{
+    { 2049.363f, 1532.337f, 1163.178f, nullptr },
+    { 2050.149f, 1484.721f, 1165.099f, nullptr },
+    { 2046.865f, 1423.937f, 1188.882f, nullptr },
+    { 2048.478f, 1389.491f, 1193.878f, nullptr }
+};
+
+BattleBotPath vPath_EY_Crossroad2Horde_to_Fel_Reaver_Ruins =
+{
+    { 2052.267f, 1555.692f, 1163.147f, nullptr },
+    { 2047.684f, 1614.272f, 1165.397f, nullptr },
+    { 2045.993f, 1668.937f, 1174.978f, nullptr },
+    { 2044.286f, 1733.128f, 1189.739f, nullptr }
+};
+
+BattleBotPath vPath_EY_Crossroad2Horde_to_Flag =
+{
+    { 2059.276f, 1546.143f, 1162.394f, nullptr },
+    { 2115.978f, 1559.244f, 1156.362f, nullptr },
+    { 2149.140f, 1556.570f, 1158.412f, nullptr },
+    { 2170.601f, 1567.113f, 1159.456f, nullptr }
+};
+
+BattleBotPath vPath_EY_Alliance_Spawn_to_Crossroad1Alliance =
+{
+    { 2502.110f, 1604.330f, 1260.750f, nullptr },
+    { 2497.077f, 1596.198f, 1257.302f, nullptr },
+    { 2483.930f, 1597.062f, 1244.660f, nullptr },
+    { 2486.549f, 1617.651f, 1225.837f, nullptr },
+    { 2449.150f, 1601.792f, 1201.552f, nullptr },
+    { 2395.737f, 1588.287f, 1176.570f, nullptr }
+};
+
+BattleBotPath vPath_EY_Alliance_Crossroad1Alliance_to_Crossroad2Alliance =
+{
+    { 2380.262f, 1586.757f, 1173.567f, nullptr },
+    { 2333.956f, 1586.052f, 1169.873f, nullptr },
+    { 2291.210f, 1591.435f, 1166.048f, nullptr },
+};
+
+BattleBotPath vPath_EY_Crossroad1Alliance_to_Mage_Tower =
+{
+    { 2380.973f, 1593.445f, 1173.189f, nullptr },
+    { 2335.762f, 1621.922f, 1169.007f, nullptr },
+    { 2293.526f, 1643.972f, 1166.501f, nullptr },
+    { 2288.198f, 1688.568f, 1172.790f, nullptr },
+    { 2284.286f, 1737.889f, 1189.708f, nullptr }
+};
+
+BattleBotPath vPath_EY_Crossroad1Alliance_to_Draenei_Ruins =
+{
+    { 2388.687f, 1576.089f, 1175.975f, nullptr },
+    { 2354.921f, 1522.763f, 1176.060f, nullptr },
+    { 2300.056f, 1459.208f, 1184.181f, nullptr },
+    { 2289.880f, 1415.640f, 1196.755f, nullptr },
+    { 2279.870f, 1387.461f, 1195.003f, nullptr }
+};
+
+BattleBotPath vPath_EY_Crossroad2Alliance_to_Mage_Tower =
+{
+    { 2282.525f, 1597.721f, 1164.553f, nullptr },
+    { 2281.028f, 1651.310f, 1165.426f, nullptr },
+    { 2284.633f, 1736.082f, 1189.708f, nullptr }
+};
+
+BattleBotPath vPath_EY_Crossroad2Alliance_to_Draenei_Ruins =
+{
+    { 2282.487f, 1581.630f, 1165.318f, nullptr },
+    { 2284.728f, 1525.618f, 1170.812f, nullptr },
+    { 2287.697f, 1461.228f, 1183.450f, nullptr },
+    { 2290.861f, 1413.606f, 1197.115f, nullptr }
+};
+
+BattleBotPath vPath_EY_Crossroad2Alliance_to_Flag =
+{
+    { 2275.622f, 1586.123f, 1164.469f, nullptr },
+    { 2221.334f, 1575.123f, 1158.277f, nullptr },
+    { 2178.372f, 1572.144f, 1159.462f, nullptr }
+};
+
+BattleBotPath vPath_EY_Draenei_Ruins_to_Blood_Elf_Tower =
+{
+    { 2287.925f, 1406.976f, 1197.004f, nullptr },
+    { 2283.283f, 1454.769f, 1184.243f, nullptr },
+    { 2237.519f, 1398.161f, 1178.191f, nullptr },
+    { 2173.150f, 1388.084f, 1170.185f, nullptr },
+    { 2105.039f, 1381.507f, 1162.911f, nullptr },
+    { 2074.315f, 1404.387f, 1178.141f, nullptr },
+    { 2047.649f, 1411.681f, 1192.032f, nullptr },
+    { 2049.197f, 1387.392f, 1193.799f, nullptr }
+};
+
+BattleBotPath vPath_EY_Fel_Reaver_to_Mage_Tower =
+{
+    { 2044.519f, 1726.113f, 1189.395f, nullptr },
+    { 2045.408f, 1682.986f, 1177.574f, nullptr },
+    { 2097.595f, 1736.117f, 1170.419f, nullptr },
+    { 2158.866f, 1746.998f, 1161.184f, nullptr },
+    { 2220.635f, 1757.837f, 1151.886f, nullptr },
+    { 2249.922f, 1721.807f, 1161.550f, nullptr },
+    { 2281.021f, 1694.735f, 1174.020f, nullptr },
+    { 2284.522f, 1728.234f, 1189.015f, nullptr }
+};
+
 std::vector<BattleBotPath*> const vPaths_WS =
 {
     &vPath_WSG_HordeFlagRoom_to_HordeGraveyard,
@@ -1641,6 +1788,22 @@ std::vector<BattleBotPath*> const vPaths_AV =
 
 std::vector<BattleBotPath*> const vPaths_EY =
 {
+    &vPath_EY_Horde_Spawn_to_Crossroad1Horde,
+    &vPath_EY_Horde_Crossroad1Horde_to_Crossroad2Horde,
+    &vPath_EY_Crossroad1Horde_to_Blood_Elf_Tower,
+    &vPath_EY_Crossroad1Horde_to_Fel_Reaver_Ruins,
+    &vPath_EY_Crossroad2Horde_to_Blood_Elf_Tower,
+    &vPath_EY_Crossroad2Horde_to_Fel_Reaver_Ruins,
+    &vPath_EY_Crossroad2Horde_to_Flag,
+    &vPath_EY_Alliance_Spawn_to_Crossroad1Alliance,
+    &vPath_EY_Alliance_Crossroad1Alliance_to_Crossroad2Alliance,
+    &vPath_EY_Crossroad1Alliance_to_Mage_Tower,
+    &vPath_EY_Crossroad1Alliance_to_Draenei_Ruins,
+    &vPath_EY_Crossroad2Alliance_to_Mage_Tower,
+    &vPath_EY_Crossroad2Alliance_to_Draenei_Ruins,
+    &vPath_EY_Crossroad2Alliance_to_Flag,
+    &vPath_EY_Draenei_Ruins_to_Blood_Elf_Tower,
+    &vPath_EY_Fel_Reaver_to_Mage_Tower,
 };
 
 std::vector<BattleBotPath*> const vPaths_NoReverseAllowed =
@@ -1719,6 +1882,14 @@ static uint32 AB_AttackObjectives[] =
     { BG_AB_NODE_FARM },
     { BG_AB_NODE_LUMBER_MILL },
     { BG_AB_NODE_GOLD_MINE }
+};
+
+static uint32 EY_AttackObjectives[] =
+{
+    { NODE_FEL_REAVER_RUINS },
+    { NODE_BLOOD_ELF_TOWER },
+    { NODE_DRAENEI_RUINS },
+    { NODE_MAGE_TOWER }
 };
 
 //
@@ -2041,7 +2212,10 @@ bool BGTactics::Execute(Event event)
 {
     Battleground* bg = bot->GetBattleground();
     if (!bg)
+    {
+        ai->ResetStrategies();
         return false;
+    }
 
     if (bg->GetStatus() == STATUS_WAIT_LEAVE)
         return false;
@@ -2051,7 +2225,11 @@ bool BGTactics::Execute(Event event)
 
     std::vector<BattleBotPath*> const* vPaths;
     std::vector<uint32> const* vFlagIds;
-    switch (bot->GetBattleground()->GetBgTypeID())
+    BattleGroundTypeId bgType = bg->GetTypeId();
+    if (bgType == BATTLEGROUND_RB)
+        bgType = bot->GetBattleGround()->GetTypeId(true);
+
+    switch (bgType)
     {
         case BATTLEGROUND_AB:
         {
@@ -2128,7 +2306,7 @@ bool BGTactics::Execute(Event event)
         if (useBuff())
             return true;
 
-        if (bot->IsInCombat() && !(bot->HasAura(BG_WS_SPELL_WARSONG_FLAG) || bot->HasAura(BG_WS_SPELL_SILVERWING_FLAG)))
+        if (sServerFacade.IsInCombat(bot) && !(bot->HasAura(BG_WS_SPELL_WARSONG_FLAG) || bot->HasAura(BG_WS_SPELL_SILVERWING_FLAG) || bot->HasAura(EY_SPELL_NETHERSTORM_FLAG)))
         {
             //bot->GetMotionMaster()->MovementExpired();
             return false;
@@ -2143,7 +2321,7 @@ bool BGTactics::Execute(Event event)
             return true;
 
         // bot with flag should only move to objective
-        if (bot->HasAura(BG_WS_SPELL_WARSONG_FLAG) || bot->HasAura(BG_WS_SPELL_SILVERWING_FLAG))
+        if (bot->HasAura(BG_WS_SPELL_WARSONG_FLAG) || bot->HasAura(BG_WS_SPELL_SILVERWING_FLAG) || bot->HasAura(EY_SPELL_NETHERSTORM_FLAG))
             return false;
 
         if (startNewPathBegin(*vPaths))
@@ -2184,7 +2362,11 @@ bool BGTactics::moveToStart()
     if (bg->GetStatus() != STATUS_WAIT_JOIN)
         return false;
 
-    if (bg->GetBgTypeID() == BATTLEGROUND_WS)
+    BattleGroundTypeId bgType = bg->GetTypeId();
+    if (bgType == BATTLEGROUND_RB)
+        bgType = bg->GetTypeId(true);
+
+    if (bgType == BATTLEGROUND_WS)
     {
         uint32 role = context->GetValue<uint32>("bg role")->Get();
 
@@ -2204,19 +2386,26 @@ bool BGTactics::moveToStart()
                 MoveTo(bg->GetMapId(), WS_WAITING_POS_ALLIANCE_2.GetPositionX() + frand(-2.0f, 2.0f), WS_WAITING_POS_ALLIANCE_2.GetPositionY() + frand(-2.0f, 2.0f), WS_WAITING_POS_ALLIANCE_2.GetPositionZ());
         }
     }
-    else if (bg->GetBgTypeID() == BATTLEGROUND_AB)
+    else if (bgType == BATTLEGROUND_AB)
     {
         if (bot->GetTeamId() == TEAM_HORDE)
             MoveTo(bg->GetMapId(), AB_WAITING_POS_HORDE.GetPositionX() + frand(-2.0f, 2.0f), AB_WAITING_POS_HORDE.GetPositionY() + frand(-2.0f, 2.0f), AB_WAITING_POS_HORDE.GetPositionZ());
         else
             MoveTo(bg->GetMapId(), AB_WAITING_POS_ALLIANCE.GetPositionX() + frand(-2.0f, 2.0f), AB_WAITING_POS_ALLIANCE.GetPositionY() + frand(-2.0f, 2.0f), AB_WAITING_POS_ALLIANCE.GetPositionZ());
     }
-    else if (bg->GetBgTypeID() == BATTLEGROUND_AV)
+    else if (bgType == BATTLEGROUND_AV)
     {
         if (bot->GetTeamId() == TEAM_HORDE)
             MoveTo(bg->GetMapId(), AV_WAITING_POS_HORDE.GetPositionX() + frand(-3.0f, 3.0f), AV_WAITING_POS_HORDE.GetPositionY() + frand(-3.0f, 3.0f), AV_WAITING_POS_HORDE.GetPositionZ());
         else
             MoveTo(bg->GetMapId(), AV_WAITING_POS_ALLIANCE.GetPositionX() + frand(-3.0f, 3.0f), AV_WAITING_POS_ALLIANCE.GetPositionY() + frand(-3.0f, 3.0f), AV_WAITING_POS_ALLIANCE.GetPositionZ());
+    }
+    else if (bgType == BATTLEGROUND_EY)
+    {
+        if (bot->GetTeam() == HORDE)
+            MoveTo(bg->GetMapId(), EY_WAITING_POS_HORDE.x + frand(-3.0f, 3.0f), EY_WAITING_POS_HORDE.y + frand(-3.0f, 3.0f), EY_WAITING_POS_HORDE.z);
+        else
+            MoveTo(bg->GetMapId(), EY_WAITING_POS_ALLIANCE.x + frand(-3.0f, 3.0f), EY_WAITING_POS_ALLIANCE.y + frand(-3.0f, 3.0f), EY_WAITING_POS_ALLIANCE.z);
     }
 
     return true;
@@ -2238,7 +2427,11 @@ bool BGTactics::selectObjective(bool reset)
 
     WorldObject* BgObjective = nullptr;
 
-    switch (bg->GetBgTypeID())
+    BattleGroundTypeId bgType = bg->GetTypeId();
+    if (bgType == BATTLEGROUND_RB)
+        bgType = bg->GetTypeId(true);
+
+    switch (bgType)
     {
         case BATTLEGROUND_AV:
         {
@@ -2786,15 +2979,185 @@ bool BGTactics::selectObjective(bool reset)
 
             break;
         }
-        case BATTLEGROUND_EY:
+        case BATTLEGROUND_EY: // Role < 4: Defender, else Attacker. In the beginning split for all points. Afterwards pick random strategies
         {
-            if (GameObject* pGO = bg->GetBGObject(BG_EY_OBJECT_FLAG_NETHERSTORM))
+            //Variables
+            uint8 rootTeamIndex = TEAM_INDEX_NEUTRAL;
+            uint32 role = context->GetValue<uint32>("bg role")->Get();
+
+            uint32 attackObjectivesFront[2];
+            uint32 attackObjectivesBack[2];
+            uint32 areaTrigger;
+            Position flagDeliverPoint;
+            Team rootTeam = bot->GetTeam();
+
+            //Set attackobjectives for teams
+            if (rootTeam == HORDE)
             {
-                if (pGO->isSpawned())
+                attackObjectivesFront[0] = EY_AttackObjectives[0];
+                attackObjectivesFront[1] = EY_AttackObjectives[1];
+                attackObjectivesBack[0] = EY_AttackObjectives[2];
+                attackObjectivesBack[1] = EY_AttackObjectives[3];
+                rootTeamIndex = TEAM_INDEX_HORDE;
+            }
+            else if (rootTeam == ALLIANCE)
+            {
+                attackObjectivesFront[0] = EY_AttackObjectives[2];
+                attackObjectivesFront[1] = EY_AttackObjectives[3];
+                attackObjectivesBack[0] = EY_AttackObjectives[0];
+                attackObjectivesBack[1] = EY_AttackObjectives[1];
+                rootTeamIndex = TEAM_INDEX_ALLIANCE;
+            }
+
+            //Get BgObjective if not set
+            if (!bot->HasAura(EY_SPELL_NETHERSTORM_FLAG))
+            {
+                if (role == 1) //Harass left back
                 {
-                    BgObjective = pGO;
+                    BgObjective = bot->GetMap()->GetGameObject(bg->GetSingleGameObjectGuid(attackObjectivesBack[0], 0));
+                }
+                else if (role == 2) //Harass right back
+                {
+                    BgObjective = bot->GetMap()->GetGameObject(bg->GetSingleGameObjectGuid(attackObjectivesBack[1], 0));
+                }
+                else if (role < 8) //Attack and Defend
+                {
+                    while (BgObjective == nullptr)
+                    {
+                        if (!bg->IsActiveEvent(attackObjectivesFront[0], rootTeamIndex) || !bg->IsActiveEvent(attackObjectivesFront[1], rootTeamIndex))
+                        { //Capture front objectives before attacking back objectives
+                            //sLog.outBasic("Bot #%d %s:%d <%s>: Get Front Objectives", bot->GetGUIDLow(), bot->GetTeam() == ALLIANCE ? "A" : "H", bot->getLevel(), bot->GetName());
+                            if (role < 6) {
+                                BgObjective = bot->GetMap()->GetGameObject(bg->GetSingleGameObjectGuid(attackObjectivesFront[0], 0));
+                            }
+                            else if (role < 8)
+                            {
+                                BgObjective = bot->GetMap()->GetGameObject(bg->GetSingleGameObjectGuid(attackObjectivesFront[1], 0));
+                            }
+                        }
+                        else
+                        { //Now capture all objectives with priority on back
+                            //sLog.outBasic("Bot #%d %s:%d <%s>: Get All Objectives", bot->GetGUIDLow(), bot->GetTeam() == ALLIANCE ? "A" : "H", bot->getLevel(), bot->GetName());
+                            if (role < 4)
+                            {
+                                BgObjective = bot->GetMap()->GetGameObject(bg->GetSingleGameObjectGuid(attackObjectivesFront[0], 0));
+                            }
+                            else if (role < 5)
+                            {
+                                BgObjective = bot->GetMap()->GetGameObject(bg->GetSingleGameObjectGuid(attackObjectivesFront[1], 0));
+                            }
+                            else if (role < 8) {
+                                if (!bg->IsActiveEvent(attackObjectivesBack[0], rootTeamIndex))
+                                {
+                                    BgObjective = bot->GetMap()->GetGameObject(bg->GetSingleGameObjectGuid(attackObjectivesBack[0], 0));
+                                }
+                                else if (!bg->IsActiveEvent(attackObjectivesBack[1], rootTeamIndex))
+                                {
+                                    BgObjective = bot->GetMap()->GetGameObject(bg->GetSingleGameObjectGuid(attackObjectivesBack[1], 0));
+                                }
+                            }
+                        }
+
+                        if (bg->IsActiveEvent(attackObjectivesFront[0], rootTeamIndex) && bg->IsActiveEvent(attackObjectivesFront[1], rootTeamIndex) && bg->IsActiveEvent(attackObjectivesBack[0], rootTeamIndex) && bg->IsActiveEvent(attackObjectivesBack[1], rootTeamIndex))
+                        {
+                            role = urand(0, 9);
+                        }
+                    }
+                }
+                else if (role < 10)
+                {
+                    //Get the flag or defend flag carrier
+                    Unit* teamFC = AI_VALUE(Unit*, "team flag carrier");
+                    if (teamFC)
+                    {
+                        BgObjective = teamFC;
+                        //pos.Set(teamFC->GetPositionX(), teamFC->GetPositionY(), teamFC->GetPositionZ(), bot->GetMapId());
+                        if (sServerFacade.GetDistance2d(bot, teamFC) < 50.0f)
+                            Follow(teamFC);
+                    }
+                    else
+                    {
+                        Unit* enemyFC = AI_VALUE(Unit*, "enemy flag carrier");
+                        if (enemyFC)
+                        {
+                            BgObjective = enemyFC;
+                            //pos.Set(enemyFC->GetPositionX(), enemyFC->GetPositionY(), enemyFC->GetPositionZ(), bot->GetMapId());
+                        }
+                        else
+                        {
+                            if (GameObject* pGO = bot->GetMap()->GetGameObject(bg->GetSingleGameObjectGuid(EY_EVENT_CAPTURE_FLAG, EY_EVENT2_FLAG_CENTER)))
+                            {
+                                if (pGO->IsSpawned())
+                                {
+                                    BgObjective = pGO;
+                                }
+                            }
+                        }
+                    }
                 }
             }
+
+            if (bot->HasAura(EY_SPELL_NETHERSTORM_FLAG))
+            {
+                BgObjective = nullptr;
+
+                if (!bg->IsActiveEvent(attackObjectivesFront[0], rootTeamIndex) && !bg->IsActiveEvent(attackObjectivesFront[1], rootTeamIndex) && !bg->IsActiveEvent(attackObjectivesBack[0], rootTeamIndex) && !bg->IsActiveEvent(attackObjectivesBack[1], rootTeamIndex))
+                {
+                    //Retreat with flag
+                    //sLog.outBasic("Bot #%d %s:%d <%s>: Retreat with flag", bot->GetGUIDLow(), bot->GetTeam() == ALLIANCE ? "A" : "H", bot->getLevel(), bot->GetName());
+                    if (rootTeam == HORDE)
+                    {
+                        areaTrigger = NULL;
+                        flagDeliverPoint = EY_FLAG_RETURN_POS_RETREAT_HORDE;
+                    }
+                    else
+                    {
+                        areaTrigger = NULL;
+                        flagDeliverPoint = EY_FLAG_RETURN_POS_RETREAT_ALLIANCE;
+                    }
+                }
+                else
+                {
+                    //Deliver flag
+                    //sLog.outBasic("Bot #%d %s:%d <%s>: Deliver flag", bot->GetGUIDLow(), bot->GetTeam() == ALLIANCE ? "A" : "H", bot->getLevel(), bot->GetName());
+                    if (bg->IsActiveEvent(EY_AttackObjectives[0], rootTeamIndex))
+                    {
+                        areaTrigger = AREATRIGGER_FEL_REAVER_RUINS_POINT;
+                        flagDeliverPoint = EY_FLAG_RETURN_POS_REAVER_RUINS;
+                    }
+                    else if (bg->IsActiveEvent(EY_AttackObjectives[1], rootTeamIndex))
+                    {
+                        areaTrigger = AREATRIGGER_BLOOD_ELF_TOWER_POINT;
+                        flagDeliverPoint = EY_FLAG_RETURN_POS_BLOOD_ELF_TOWER;
+                    }
+                    else if (bg->IsActiveEvent(EY_AttackObjectives[2], rootTeamIndex))
+                    {
+                        areaTrigger = AREATRIGGER_DRAENEI_RUINS_POINT;
+                        flagDeliverPoint = EY_FLAG_RETURN_POS_DRAENEI_RUINS;
+                    }
+                    else if (bg->IsActiveEvent(EY_AttackObjectives[3], rootTeamIndex))
+                    {
+                        areaTrigger = AREATRIGGER_MAGE_TOWER_POINT;
+                        flagDeliverPoint = EY_FLAG_RETURN_POS_MAGE_TOWER;
+                    }
+
+                    if (bot->IsWithinDist3d(flagDeliverPoint.x, flagDeliverPoint.y, flagDeliverPoint.z, INTERACTION_DISTANCE))
+                    {
+                        WorldPacket data(CMSG_AREATRIGGER);
+                        data << uint32(areaTrigger);
+                        bot->GetSession()->HandleAreaTriggerOpcode(data);
+                    }
+                }
+
+                if (!MoveTo(bot->GetMapId(), flagDeliverPoint.x, flagDeliverPoint.y, flagDeliverPoint.z))
+                {
+                    pos.Set(flagDeliverPoint.x, flagDeliverPoint.y, flagDeliverPoint.z, bot->GetMapId());
+                    posMap["bg objective"] = pos;
+                }
+
+                return true;
+            }
+
             if (BgObjective)
             {
                 pos.Set(BgObjective->GetPositionX(), BgObjective->GetPositionY(), BgObjective->GetPositionZ(), BgObjective->GetMapId());
@@ -2813,6 +3176,10 @@ bool BGTactics::moveToObjective()
     Battleground *bg = bot->GetBattleground();
     if (!bg)
         return false;
+
+    BattleGroundTypeId bgType = bg->GetTypeId();
+    if (bgType == BATTLEGROUND_RB)
+        bgType = bg->GetTypeId(true);
 
     PositionInfo pos = context->GetValue<PositionMap&>("position")->Get()["bg objective"];
     if (!pos.isSet())
@@ -2839,7 +3206,7 @@ bool BGTactics::moveToObjective()
         //bot->Say(out.str(), LANG_UNIVERSAL);
 
         // more precise position for wsg
-        if (bg->GetBgTypeID() == BATTLEGROUND_WS)
+        if (bgType == BATTLEGROUND_WS)
             return MoveTo(bot->GetMapId(), pos.x, pos.y, pos.z);
         else
             return MoveNear(bot->GetMapId(), pos.x, pos.y, pos.z, 3.0f);
@@ -2853,13 +3220,17 @@ bool BGTactics::selectObjectiveWp(std::vector<BattleBotPath*> const& vPaths)
     if (!bg)
         return false;
 
+    BattleGroundTypeId bgType = bg->GetTypeId();
+    if (bgType == BATTLEGROUND_RB)
+        bgType = bg->GetTypeId(true);
+
     PositionMap& posMap = context->GetValue<PositionMap&>("position")->Get();
     PositionInfo pos = context->GetValue<PositionMap&>("position")->Get()["bg objective"];
     if (!pos.isSet())
         return false;
 
     // use Rym's waypoints for WSG
-    if (bg->GetBgTypeID() == BATTLEGROUND_WS/* && (bot->HasAura(BG_WS_SPELL_WARSONG_FLAG) || bot->HasAura(BG_WS_SPELL_SILVERWING_FLAG))*/)
+    if (bgType == BATTLEGROUND_WS /* && (bot->HasAura(BG_WS_SPELL_WARSONG_FLAG) || bot->HasAura(BG_WS_SPELL_SILVERWING_FLAG))*/)
         return wsgPaths();
 
     BattleBotPath* pClosestPath = nullptr;
@@ -2963,7 +3334,7 @@ bool BGTactics::resetObjective()
         return false;
 
     // sometimes change role
-    if (!urand(0, 5) && !(bot->HasAura(BG_WS_SPELL_WARSONG_FLAG) || bot->HasAura(BG_WS_SPELL_SILVERWING_FLAG)))
+    if (!urand(0, 5) && !(bot->HasAura(BG_WS_SPELL_WARSONG_FLAG) || bot->HasAura(BG_WS_SPELL_SILVERWING_FLAG) || bot->HasAura(EY_SPELL_NETHERSTORM_FLAG)))
         context->GetValue<uint32>("bg role")->Set(urand(0, 9));
 
     PositionMap& posMap = context->GetValue<PositionMap&>("position")->Get();
@@ -2982,7 +3353,7 @@ bool BGTactics::moveToObjectiveWp(BattleBotPath* const& currentPath, uint32 curr
     uint32 const lastPointInPath = reverse ? 0 : ((*currentPath).size() - 1);
 
     if ((currentPoint == lastPointInPath) ||
-        (bot->IsInCombat() && !(bot->HasAura(BG_WS_SPELL_WARSONG_FLAG) || bot->HasAura(BG_WS_SPELL_SILVERWING_FLAG))) || !bot->IsAlive())
+        (bot->IsInCombat() && !(bot->HasAura(BG_WS_SPELL_WARSONG_FLAG) || bot->HasAura(BG_WS_SPELL_SILVERWING_FLAG) || bot->HasAura(EY_SPELL_NETHERSTORM_FLAG))) || !bot->IsAlive())
     {
         // Path is over.
         //std::ostringstream out;
@@ -3035,7 +3406,7 @@ bool BGTactics::startNewPathBegin(std::vector<BattleBotPath*> const& vPaths)
             continue;
 
         BattleBotWaypoint* pStart = &((*pPath)[0]);
-        if (sqrt(bot->GetDistance(pStart->x, pStart->y, pStart->z) < INTERACTION_DISTANCE))
+        if (sqrt(bot->GetDistance(pStart->x, pStart->y, pStart->z, DIST_CALC_NONE)) < INTERACTION_DISTANCE)
             availablePaths.emplace_back(AvailablePath(pPath, false));
 
         // Some paths are not allowed backwards.
@@ -3043,7 +3414,7 @@ bool BGTactics::startNewPathBegin(std::vector<BattleBotPath*> const& vPaths)
             continue;
 
         BattleBotWaypoint* pEnd = &((*pPath)[(*pPath).size() - 1]);
-        if (sqrt(bot->GetDistance(pEnd->x, pEnd->y, pEnd->z) < INTERACTION_DISTANCE))
+        if (sqrt(bot->GetDistance(pEnd->x, pEnd->y, pEnd->z, DIST_CALC_NONE)) < INTERACTION_DISTANCE)
             availablePaths.emplace_back(AvailablePath(pPath, true));
     }
 
@@ -3104,11 +3475,15 @@ bool BGTactics::atFlag(std::vector<BattleBotPath*> const& vPaths, std::vector<ui
     if (!bg)
         return false;
 
+    BattleGroundTypeId bgType = bg->GetTypeId();
+    if (bgType == BATTLEGROUND_RB)
+        bgType = bg->GetTypeId(true);
+
     GuidVector closeObjects;
     GuidVector closePlayers;
     float flagRange;
 
-    switch (bg->GetBgTypeID())
+    switch (bgType)
     {
         case BATTLEGROUND_AV:
         case BATTLEGROUND_AB:
@@ -3119,8 +3494,10 @@ bool BGTactics::atFlag(std::vector<BattleBotPath*> const& vPaths, std::vector<ui
             break;
         }
         case BATTLEGROUND_WS:
+        case BATTLEGROUND_EY:
         {
             closeObjects = *context->GetValue<GuidVector>("nearest game objects no los");
+            closePlayers = *context->GetValue<GuidVector>("closest friendly players");
             flagRange = 25.0f;
             break;
         }
@@ -3161,7 +3538,7 @@ bool BGTactics::atFlag(std::vector<BattleBotPath*> const& vPaths, std::vector<ui
         if (!go->isSpawned() || !go->GetGoState() == GO_STATE_READY)
             continue;
 
-        if (!bot->CanUseBattlegroundObject(go) && bg->GetBgTypeID() != BATTLEGROUND_WS)
+        if (!bot->CanUseBattlegroundObject(go) && bgType != BATTLEGROUND_WS)
             continue;
 
         if (flagRange)
@@ -3169,10 +3546,15 @@ bool BGTactics::atFlag(std::vector<BattleBotPath*> const& vPaths, std::vector<ui
                 continue;
 
         bool atBase = go->GetEntry() == vFlagsWS[bot->GetTeamId()];
-        if (atBase && !(bot->HasAura(BG_WS_SPELL_WARSONG_FLAG) || bot->HasAura(BG_WS_SPELL_SILVERWING_FLAG)))
+        if (bgType == BATTLEGROUND_EY)
+        {
+            atBase = go->GetEntry() == vFlagsEY[0];
+        }
+
+        if (atBase && bgType == BATTLEGROUND_WS && !(bot->HasAura(BG_WS_SPELL_WARSONG_FLAG) || bot->HasAura(BG_WS_SPELL_SILVERWING_FLAG)))
             continue;
 
-        switch (bg->GetBgTypeID())
+        switch (bgType)
         {
             case BATTLEGROUND_AV:
             case BATTLEGROUND_AB:
@@ -3254,6 +3636,45 @@ bool BGTactics::atFlag(std::vector<BattleBotPath*> const& vPaths, std::vector<ui
                 }
                 break;
             }
+            case BATTLEGROUND_EY:
+            {
+                if (bot->IsWithinDistInMap(go, INTERACTION_DISTANCE))
+                {
+                    if (bot->IsMounted())
+                        bot->RemoveSpellsCausingAura(SPELL_AURA_MOUNTED);
+
+                    if (bot->IsInDisallowedMountForm())
+                        bot->RemoveSpellsCausingAura(SPELL_AURA_MOD_SHAPESHIFT);
+
+                    // Flag at center requires casting spell
+                    if (atBase)
+                    {
+                        SpellEntry const* spellInfo = sServerFacade.LookupSpellInfo(SPELL_CAPTURE_BANNER);
+                        if (!spellInfo)
+                            return false;
+
+                        Spell* spell = new Spell(bot, spellInfo, false);
+                        spell->m_targets.setGOTarget(go);
+                        spell->SpellStart(&spell->m_targets);
+                        ai->WaitForSpellCast(spell);
+                        resetObjective();
+                        return true;
+                    }
+
+                    // Dropped flag is instant use
+                    WorldPacket data(CMSG_GAMEOBJ_USE);
+                    data << go->GetObjectGuid();
+                    bot->GetSession()->HandleGameObjectUseOpcode(data);
+
+                    resetObjective();
+                    return true;
+                }
+                else
+                {
+                    return MoveTo(bot->GetMapId(), go->GetPositionX(), go->GetPositionY(), go->GetPositionZ());
+                }
+                break;
+            }
         }
     }
 
@@ -3293,13 +3714,20 @@ bool BGTactics::protectFC()
 
 bool BGTactics::useBuff()
 {
-    GuidVector closeObjects = AI_VALUE(GuidVector, "nearest game objects no los");
+    BattleGround* bg = bot->GetBattleGround();
+    if (!bg)
+        return false;
 
+    BattleGroundTypeId bgType = bg->GetTypeId();
+    if (bgType == BATTLEGROUND_RB)
+        bgType = bg->GetTypeId(true);
+
+    GuidVector closeObjects = AI_VALUE(GuidVector, "nearest game objects no los");
     if (closeObjects.empty())
         return false;
 
-    bool needRegen = bot->GetHealthPct() < sPlayerbotAIConfig->lowHealth || (AI_VALUE2(bool, "has mana", "self target") && AI_VALUE2(uint8, "mana", "self target") < sPlayerbotAIConfig->lowMana);
-    bool needSpeed = (bot->HasAura(BG_WS_SPELL_WARSONG_FLAG) || bot->HasAura(BG_WS_SPELL_SILVERWING_FLAG)) || !(teamFlagTaken() || flagTaken());
+    bool needRegen = bot->GetHealthPercent() < sPlayerbotAIConfig.mediumHealth || (AI_VALUE2(bool, "has mana", "self target") && AI_VALUE2(uint8, "mana", "self target") < sPlayerbotAIConfig.mediumMana);
+    bool needSpeed = (bgType != BATTLEGROUND_WS || bot->HasAura(BG_WS_SPELL_WARSONG_FLAG) || bot->HasAura(BG_WS_SPELL_SILVERWING_FLAG) || bot->HasAura(EY_SPELL_NETHERSTORM_FLAG)) || !(teamFlagTaken() || flagTaken());
     bool foundBuff = false;
 
     for (ObjectGuid const guid : closeObjects)
@@ -3322,7 +3750,8 @@ bool BGTactics::useBuff()
             foundBuff = true;
 
         // do not move to Berserk buff if bot is healer or has flag
-        if (!(bot->HasAura(BG_WS_SPELL_WARSONG_FLAG) || bot->HasAura(BG_WS_SPELL_SILVERWING_FLAG)) && !botAI->IsHeal(bot) && go->GetEntry() == Buff_Entries[2])
+        if (!(bot->HasAura(BG_WS_SPELL_WARSONG_FLAG) || bot->HasAura(BG_WS_SPELL_SILVERWING_FLAG) || bot->HasAura(EY_SPELL_NETHERSTORM_FLAG)) &&
+            !botAI->IsHeal(bot) && go->GetEntry() == Buff_Entries[2])
             foundBuff = true;
 
         if (foundBuff)
@@ -3379,13 +3808,16 @@ bool ArenaTactics::Execute(Event event)
         return false;
     }
 
-    if (bot->GetBattleground()->GetStatus() == STATUS_WAIT_LEAVE)
+    if (bot->GetBattleGround()->GetStatus() != STATUS_IN_PROGRESS)
         return false;
 
     if (bot->isDead())
     {
         return false;
     }
+
+    if (bot->IsMoving())
+        return false;
 
     Battleground* bg = bot->GetBattleground();
     if (!bg)

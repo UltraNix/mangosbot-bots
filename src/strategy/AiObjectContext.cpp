@@ -134,16 +134,26 @@ Value<T>* AiObjectContext::GetValue(std::string const& name, std::string const& 
 }
 
 template<class T>
-Value<T>* AiObjectContext::GetValue(std::string const& name, uint32 param)
+Value<T>* AiObjectContext::GetValue(std::string const& name, int32 param)
 {
     std::ostringstream out;
     out << param;
     return GetValue<T>(name, out.str());
 }
 
+set<string> AiObjectContext::GetValues()
+{
+    return valueContexts.GetCreated();
+}
+
 std::set<std::string> AiObjectContext::GetSupportedStrategies()
 {
     return strategyContexts.supports();
+}
+
+set<string> AiObjectContext::GetSupportedActions()
+{
+    return actionContexts.supports();
 }
 
 std::string AiObjectContext::FormatValues()

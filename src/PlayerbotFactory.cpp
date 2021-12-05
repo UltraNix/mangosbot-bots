@@ -1329,7 +1329,7 @@ void PlayerbotFactory::UpdateTradeSkills()
 void PlayerbotFactory::InitSkills()
 {
     uint32 maxValue = level * 5;
-    SetRandomSkill(SKILL_DEFENSE);
+    bot->UpdateSkillsForLevel(true);
 
     uint16 step = bot->GetSkillValue(SKILL_RIDING) ? bot->GetSkillStep(SKILL_RIDING) : 1;
 
@@ -1756,8 +1756,9 @@ void PlayerbotFactory::InitMounts()
     if (bot->getLevel() < firstmount)
         return;
 
-    std::map<uint8, std::map<int32, std::vector<uint32>>> mounts;
-    std::initializer_list<uint32> slow, fast, fslow, ffast;
+    map<uint8, map<uint32, vector<uint32>>> mounts;
+    vector<uint32> slow, fast, fslow, ffast;
+
     switch (bot->getRace())
     {
         case RACE_HUMAN:
@@ -1814,10 +1815,10 @@ void PlayerbotFactory::InitMounts()
             break;
     }
 
-    mounts[bot->getRace()][0].insert(mounts[bot->getRace()][0].end(), slow);
-    mounts[bot->getRace()][1].insert(mounts[bot->getRace()][1].end(), fast);
-    mounts[bot->getRace()][2].insert(mounts[bot->getRace()][0].end(), fslow);
-    mounts[bot->getRace()][3].insert(mounts[bot->getRace()][1].end(), ffast);
+    mounts[bot->getRace()][0] = slow;
+    mounts[bot->getRace()][1] = fast;
+    mounts[bot->getRace()][2] = fslow;
+    mounts[bot->getRace()][3] = ffast;
 
     for (uint32 type = 0; type < 4; type++)
     {
@@ -1832,7 +1833,7 @@ void PlayerbotFactory::InitMounts()
 
         uint32 index = urand(0, mounts[bot->getRace()][type].size() - 1);
         uint32 spell = mounts[bot->getRace()][type][index];
-        if (spell && spell != 0)
+        if (spell)
         {
             bot->learnSpell(spell);
             LOG_INFO("playerbots", "Bot %s (%d) learned %s mount %d", bot->GetGUID().ToString().c_str(), bot->getLevel(), type == 0 ? "slow" : (type == 1 ? "fast" : "flying"), spell);
@@ -2345,14 +2346,7 @@ void PlayerbotFactory::InitArenaTeam()
         if (botcaptain && botcaptain->GetTeamId() == bot->GetTeamId()) //need?
         {
             arenateam->AddMember(bot->GetGUID());
-
-            uint32 backgroundColor = urand(0xFF000000, 0xFFFFFFFF);
-            uint32 emblemStyle = urand(0, 5);
-            uint32 emblemColor = urand(0xFF000000, 0xFFFFFFFF);
-            uint32 borderStyle = urand(0, 5);
-            uint32 borderColor = urand(0xFF000000, 0xFFFFFFFF);
-
-            arenateam->SetEmblem(backgroundColor, emblemStyle, emblemColor, borderStyle, borderColor);
+            arenateam->SaveToDB();
         }
     }
 

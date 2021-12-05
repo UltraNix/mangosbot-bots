@@ -12,7 +12,7 @@ class PlayerbotAI;
 class LeastHpTargetValue : public TargetValue
 {
 	public:
-        LeastHpTargetValue(PlayerbotAI* botAI) : TargetValue(botAI) { }
+        LeastHpTargetValue(PlayerbotAI* botAI, string name = "least hp target") : TargetValue(ai, name) {}
 
         Unit* Calculate() override;
 };

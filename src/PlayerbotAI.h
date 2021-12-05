@@ -158,13 +158,14 @@ enum ShieldWardDisplayId
     GREATER_WARD_OFSHIELDING = 38760
 };
 
-enum BotTypeNumber
+enum class BotTypeNumber : uint8
 {
-    GROUPER_TYPE_NUMBER     = 1,
-    ACTIVITY_TYPE_NUMBER    = 2
+    ACTIVITY_TYPE_NUMBER = 1,
+    GROUPER_TYPE_NUMBER  = 2,
+    GUILDER_TYPE_NUMBER  = 3,
 };
 
-enum GrouperType
+enum class GrouperType : uint8
 {
     SOLO        = 0,
     MEMBER      = 1,
@@ -172,6 +173,16 @@ enum GrouperType
     LEADER_3    = 3,
     LEADER_4    = 4,
     LEADER_5    = 5
+};
+
+enum class GuilderType : uint8
+{
+    SOLO   = 0,
+    TINY   = 30,
+    SMALL  = 50,
+    MEDIUM = 70,
+    LARGE  = 120,
+    HUGE   = 250
 };
 
 enum ActivityType
@@ -182,7 +193,10 @@ enum ActivityType
     OUT_OF_PARTY_ACTIVITY   = 4,
     PACKET_ACTIVITY         = 5,
     DETAILED_MOVE_ACTIVITY  = 6,
-    ALL_ACTIVITY            = 7
+    PARTY_ACTIVITY          = 7,
+    ALL_ACTIVITY            = 8,
+
+    MAX_ACTIVITY_TYPE
 };
 
 enum BotRoles : uint8
@@ -230,7 +244,9 @@ class PlayerbotAI : public PlayerbotAIBase
 	    PlayerbotAI(Player* bot);
 	    virtual ~PlayerbotAI();
 
-	    void UpdateAIInternal(uint32 elapsed) override;
+        void UpdateAI(uint32 elapsed, bool minimal = false) override;
+	    void UpdateAIInternal(uint32 elapsed, bool minimal = false) override;
+
         std::string HandleRemoteCommand(std::string command);
         void HandleCommand(uint32 type, std::string const& text, Player* fromPlayer);
 	    void HandleBotOutgoingPacket(WorldPacket const& packet);
@@ -238,16 +254,17 @@ class PlayerbotAI : public PlayerbotAIBase
         void HandleMasterOutgoingPacket(WorldPacket const& packet);
 	    void HandleTeleportAck();
         void ChangeEngine(BotState type);
-        void DoNextAction();
+        void DoNextAction(, bool minimal = false);
         virtual bool DoSpecificAction(std::string const& name, Event event = Event(), bool silent = false, std::string const& qualifier = "");
         void ChangeStrategy(std::string name, BotState type);
         void ClearStrategies(BotState type);
         std::vector<std::string> GetStrategies(BotState type);
         bool ContainsStrategy(StrategyType type);
         bool HasStrategy(std::string name, BotState type);
+        BotState GetState() { return currentState; };
         void ResetStrategies(bool load = true);
         void ReInitCurrentEngine();
-        void Reset();
+        void Reset(bool full = false);
         bool IsTank(Player* player);
         bool IsHeal(Player* player);
         bool IsRanged(Player* player);
@@ -269,6 +286,7 @@ class PlayerbotAI : public PlayerbotAIBase
         void RemoveShapeshift();
         void WaitForSpellCast(Spell* spell);
         bool PlaySound(uint32 emote);
+        bool PlayEmote(uint32 emote);
         void Ping(float x, float y);
         Item* FindPoison() const;
         Item* FindBandage() const;
@@ -290,6 +308,7 @@ class PlayerbotAI : public PlayerbotAIBase
         virtual bool IsInterruptableSpellCasting(Unit* player, std::string const& spell);
         virtual bool HasAuraToDispel(Unit* player, uint32 dispelType);
         bool CanCastSpell(uint32 spellid, Unit* target, bool checkHasSpell = true, Item* itemTarget = nullptr);
+        bool CanCastSpell(uint32 spellid, GameObject* goTarget, uint8 effectMask, bool checkHasSpell = true);
         bool CanCastSpell(uint32 spellid, float x, float y, float z, uint8 effectMask, bool checkHasSpell = true, Item* itemTarget = nullptr);
 
         bool HasAura(uint32 spellId, Unit const* player);
@@ -312,14 +331,23 @@ class PlayerbotAI : public PlayerbotAIBase
         //Bot has a master that is activly playing.
         bool HasActivePlayerMaster() { return master && !master->GetPlayerbotAI(); }
         //Get the group leader or the master of the bot.
+        //Checks if the bot is summoned as alt of a player
+        bool IsAlt();
         Player* GetGroupMaster();
         //Returns a semi-random (cycling) number that is fixed for each bot.
         uint32 GetFixedBotNumer(BotTypeNumber typeNumber, uint32 maxNum = 100, float cyclePerMin = 1);
         GrouperType GetGrouperType();
+        GuilderType GetGuilderType();
         bool HasPlayerNearby(WorldPosition* pos, float range = sPlayerbotAIConfig->reactDistance);
         bool HasPlayerNearby(float range = sPlayerbotAIConfig->reactDistance);
         bool HasManyPlayersNearby(uint32 trigerrValue = 20, float range = sPlayerbotAIConfig->sightDistance);
         bool AllowActive(ActivityType activityType);
+        bool AllowActivity(ActivityType activityType = ALL_ACTIVITY, bool checkNow = false);
+
+        bool HasCheat(BotCheatMask mask) { return ((uint32)mask & (uint32)cheatMask) != 0 || ((uint32)mask & (uint32)sPlayerbotAIConfig.botCheatMask) != 0; }
+        BotCheatMask GetCheat() { return cheatMask; }
+        void SetCheat(BotCheatMask mask) { cheatMask = mask; }
+
         void SetMaster(Player* master) { master = master; }
         AiObjectContext* GetAiObjectContext() { return aiObjectContext; }
         ChatHelper* GetChatHelper() { return &chatHelper; }
@@ -349,6 +377,10 @@ class PlayerbotAI : public PlayerbotAIBase
         std::map<std::string, time_t> whispers;
         std::pair<ChatMsg, time_t> currentChat;
         static std::set<std::string> unsecuredCommands;
+        bool allowActive[MAX_ACTIVITY_TYPE];
+        time_t allowActiveCheckTimer[MAX_ACTIVITY_TYPE];
+        bool inCombat = false;
+        BotCheatMask cheatMask = BotCheatMask::none;
 };
 
 #endif

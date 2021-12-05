@@ -6,24 +6,68 @@
 #include "Playerbot.h"
 #include "SharedValueContext.h"
 
+//What kind of a relation does this entry have with this quest.
+entryQuestRelationMap EntryQuestRelationMapValue::Calculate()
+{
+	entryQuestRelationMap rMap;
+
+	//Quest givers takers
+	QuestObjectMgr* questObjectMgr = (QuestObjectMgr*)&sObjectMgr;
+
+	for (auto relation : questObjectMgr->GetCreatureQuestRelationsMap())
+		rMap[relation.first][relation.second] |= (int)QuestRelationFlag::questGiver;
+
+	for (auto relation : questObjectMgr->GetCreatureQuestInvolvedRelationsMap())
+		rMap[relation.first][relation.second] |= (int)QuestRelationFlag::questTaker;
+
+	for (auto relation : questObjectMgr->GetGOQuestRelationsMap())
+		rMap[-(int32)relation.first][relation.second] |= (int)QuestRelationFlag::questGiver;
+
+	for (auto relation : questObjectMgr->GetGOQuestInvolvedRelationsMap())
+		rMap[-(int32)relation.first][relation.second] |= (int)QuestRelationFlag::questGiver;
+
+	//Quest objectives
+	ObjectMgr::QuestMap const& questMap = sObjectMgr.GetQuestTemplates();
+
+	for (auto& questItr : questMap)
+	{
+		uint32 questId = questItr.first;
+		Quest* quest = questItr.second;
+
+		for (uint32 objective = 0; objective < QUEST_OBJECTIVES_COUNT; objective++)
+		{
+			uint32 relationFlag = 1 << objective;
+
+			//Kill objective
+			if (quest->ReqCreatureOrGOId[objective])
+				rMap[quest->ReqCreatureOrGOId[objective]][questId] |= relationFlag;
+
+			//Loot objective
+			if (quest->ReqItemId[objective])
+			{
+				for (auto& entry : GAI_VALUE2(list<int32>, "item drop list", quest->ReqItemId[objective]))
+					rMap[entry][questId] |= relationFlag;
+			}
+		}
+
+		//Target entry of source item of quest.
+		if (quest->GetSrcItemId())
+		{
+			ItemRequiredTargetMapBounds bounds = sObjectMgr.GetItemRequiredTargetMapBounds(quest->GetSrcItemId());
+
+			if (bounds.first != bounds.second) //Add target of source item to second quest objective.
+				for (ItemRequiredTargetMap::const_iterator itr = bounds.first; itr != bounds.second; ++itr)
+					rMap[itr->second.m_uiTargetEntry][questId] |= (int)QuestRelationFlag::objective2;
+		}
+	}
+
+	return rMap;
+}
+
 //Get all the objective entries for a specific quest.
 void FindQuestObjectData::GetObjectiveEntries()
 {
-	ObjectMgr::QuestMap const& questMap = sObjectMgr->GetQuestTemplates();
-
-	for (auto& quest : questMap)
-	{
-		for (uint32 objective = 0; objective < QUEST_OBJECTIVES_COUNT; objective++)
-		{
-			vector<uint32> entries;
-
-			if (quest.second->ReqCreatureOrGOId[objective] && quest.second->ReqCreatureOrGOCount[objective] > 0)
-				entryMap[quest.second->ReqCreatureOrGOId[objective]].push_back(make_pair(quest.first, QuestRelationType(objective)));
-
-			if (quest.second->ReqItemId[objective] && quest.second->ReqItemCount[objective] > 0)
-				itemMap[quest.second->ReqItemId[objective]].push_back(make_pair(quest.first, QuestRelationType(objective)));
-		}
-	}
+    relationMap = GAI_VALUE(entryQuestRelationMap, "entry quest relation");
 }
 
 //Data worker. Checks for a specific creature what quest they are needed for and puts them in the proper place in the quest map.
@@ -31,43 +75,12 @@ bool FindQuestObjectData::operator()(CreatureDataPair const& dataPair)
 {
 	uint32 entry = dataPair.second.id;
 
-	QuestRelationsMapBounds	rbounds = sObjectMgr->GetCreatureQuestRelationsMapBounds(entry);
-
-	for (QuestRelationsMap::const_iterator itr = rbounds.first; itr != rbounds.second; ++itr)
+	for (auto& relation : relationMap[entry])
 	{
-		data[itr->second][QuestRelationType::questGiver].push_back(GuidPosition(&dataPair));
-	}
+		uint32 questId = relation.first;
+		uint32 flag = relation.second;
 
-	QuestRelationsMapBounds	ibounds = sObjectMgr->GetCreatureQuestInvolvedRelationsMapBounds(entry);
-
-	for (QuestRelationsMap::const_iterator itr = ibounds.first; itr != ibounds.second; ++itr)
-	{
-		data[itr->second][QuestRelationType::questTaker].push_back(GuidPosition(&dataPair));
-	}
-
-	for (auto entryPair : entryMap[entry])
-	{
-		data[entryPair.first][entryPair.second].push_back(GuidPosition(&dataPair));
-	}
-
-	CreatureInfo const* info = sObjectMgr->GetCreatureTemplate(entry);
-
-	if (!info || info->LootId == 0)
-		return false;
-
-	LootTemplate const* lTemplate = LootTemplates_Creature.GetLootFor(info->LootId);
-
-	if (!lTemplate)
-		return false;
-
-	LootTemplateAccess const* lTemplateA = reinterpret_cast<LootTemplateAccess const*>(lTemplate);
-
-	for (auto& item : lTemplateA->Entries)
-	{
-		for (auto& itemPair : itemMap[item.itemid])
-		{
-			data[itemPair.first][itemPair.second].push_back(GuidPosition(&dataPair));
-		}
+		data[questId][flag][entry].push_back(GuidPosition(&dataPair));
 	}
 
 	return false;
@@ -76,45 +89,14 @@ bool FindQuestObjectData::operator()(CreatureDataPair const& dataPair)
 //GameObject data worker. Checks for a specific gameObject what quest they are needed for and puts them in the proper place in the quest map.
 bool FindQuestObjectData::operator()(GameObjectDataPair const& dataPair)
 {
-	int32 entry = dataPair.second.id;
+	int32 entry = dataPair.second.id * -1;
 
-	QuestRelationsMapBounds	rbounds = sObjectMgr->GetGOQuestRelationsMapBounds(entry);
-
-	for (QuestRelationsMap::const_iterator itr = rbounds.first; itr != rbounds.second; ++itr)
+	for (auto& relation : relationMap[entry])
 	{
-		data[itr->second][QuestRelationType::questGiver].push_back(GuidPosition(&dataPair));
-	}
+		uint32 questId = relation.first;
+		uint32 flag = relation.second;
 
-	QuestRelationsMapBounds	ibounds = sObjectMgr->GetGOQuestInvolvedRelationsMapBounds(entry);
-
-	for (QuestRelationsMap::const_iterator itr = ibounds.first; itr != ibounds.second; ++itr)
-	{
-		data[itr->second][QuestRelationType::questTaker].push_back(GuidPosition(&dataPair));
-	}
-
-	for (auto entryPair : entryMap[entry * -1]) //GameObjectData entry is negative in quest objectives.
-	{
-		data[entryPair.first][entryPair.second].push_back(GuidPosition(&dataPair));
-	}
-
-	GameObjectInfo const* info = sObjectMgr->GetGameObjectInfo(entry);
-
-	if (!info || info->GetLootId() == 0)
-		return false;
-
-	LootTemplate const* lTemplate = LootTemplates_Gameobject.GetLootFor(info->GetLootId());
-
-	if (!lTemplate)
-		return false;
-
-	LootTemplateAccess const* lTemplateA = reinterpret_cast<LootTemplateAccess const*>(lTemplate);
-
-	for (auto& item : lTemplateA->Entries)
-	{
-		for (auto& itemPair : itemMap[item.itemid])
-		{
-			data[itemPair.first][itemPair.second].push_back(GuidPosition(&dataPair));
-		}
+		data[questId][flag][entry].push_back(GuidPosition(&dataPair));
 	}
 
 	return false;
@@ -130,9 +112,9 @@ questGuidpMap QuestGuidpMapValue::Calculate()
 }
 
 //Selects all questgivers for a specific level (range).
-questGivers QuestGiversValue::Calculate()
+questGiverMap QuestGiversValue::Calculate()
 {
-	int level = 0;
+	uint32 level = 0;
 	string q = getQualifier();
 	bool hasQualifier = !q.empty();
 
@@ -141,23 +123,26 @@ questGivers QuestGiversValue::Calculate()
 
 	questGuidpMap questMap = GAI_VALUE(questGuidpMap, "quest guidp map");
 
-	questGivers guidps;
+	questGiverMap guidps;
 
 	for (auto& qPair : questMap)
 	{
-		for (auto& guidp : qPair.second[QuestRelationType::questGiver])
+		for (auto& entry : qPair.second[(int)QuestRelationFlag::questGiver])
 		{
-			uint32 questId = qPair.first;
-
-			if (hasQualifier)
+			for (auto& guidp : entry.second)
 			{
-				Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
+				uint32 questId = qPair.first;
 
-				if (quest && (level < quest->GetMinLevel() || level > quest->GetQuestLevel() + 10))
-					continue;
+				if (hasQualifier)
+				{
+					Quest const* quest = sObjectMgr.GetQuestTemplate(questId);
+
+    			    if (quest && (level < quest->GetMinLevel() || (int)level > quest->GetQuestLevel() + 10))
+						continue;
+				}
+
+				guidps[questId].push_back(guidp);
 			}
-
-			guidps[questId].push_back(guidp);
 		}
 	}
 
@@ -166,7 +151,7 @@ questGivers QuestGiversValue::Calculate()
 
 list<GuidPosition> ActiveQuestGiversValue::Calculate()
 {
-	questGivers qGivers = GAI_VALUE2(questGivers, "quest givers", bot->getLevel());
+    questGiverMap qGivers = GAI_VALUE2(questGiverMap, "quest givers", bot->getLevel());
 
 	list<GuidPosition> retQuestGivers;
 
@@ -237,25 +222,29 @@ list<GuidPosition> ActiveQuestTakersValue::Calculate()
 		if (q == questMap.end())
 			continue;
 
-		auto qt = q->second.find(QuestRelationType::questTaker);
+		auto qt = q->second.find((int) QuestRelationFlag::questTaker);
 
 		if (qt == q->second.end())
 			continue;
 
-		for (auto& guidp : qt->second)
+		for (auto& entry : qt->second)
 		{
-			CreatureInfo const* creatureInfo = guidp.GetCreatureTemplate();
-
-			if (creatureInfo)
+			if (entry.first > 0)
 			{
-				if (!botAI->IsFriendlyTo(creatureInfo->Faction))
-					continue;
+				if (CreatureInfo const* info = sObjectMgr.GetCreatureTemplate(entry.first))
+				{
+					if (!ai->IsFriendlyTo(info->Faction))
+						continue;
+				}
 			}
 
-			if (guidp.isDead())
-				continue;
+			for (auto& guidp : entry.second)
+			{
+				if (guidp.isDead())
+					continue;
 
-			retQuestTakers.push_back(guidp);
+			    retQuestTakers.push_back(guidp);
+			}
 		}
 	}
 
@@ -296,7 +285,8 @@ list<GuidPosition> ActiveQuestObjectivesValue::Calculate()
 				if (!reqCount || hasCount >= reqCount)
 					continue;
 			}
-			else
+
+            if (quest->ReqCreatureOrGOCount[objective])
 			{
 				uint32 reqCount = quest->ReqCreatureOrGOCount[objective];
 				uint32 hasCount = statusData.m_creatureOrGOcount[objective];
@@ -310,17 +300,20 @@ list<GuidPosition> ActiveQuestObjectivesValue::Calculate()
 			if (q == questMap.end())
 				continue;
 
-			auto qt = q->second.find((QuestRelationType)objective);
+			auto qt = q->second.find((int) QuestRelationFlag(1 << objective));
 
 			if (qt == q->second.end())
 				continue;
 
-			for (auto& guidp : qt->second)
+			for (auto& entry : qt->second)
 			{
-				if (guidp.isDead())
-					continue;
+				for (auto& guidp : entry.second)
+				{
+					if (guidp.isDead())
+						continue;
 
-				retQuestObjectives.push_back(guidp);
+				    retQuestObjectives.push_back(guidp);
+                }
 			}
 		}
 	}
@@ -347,3 +340,141 @@ uint8 FreeQuestLogSlotValue::Calculate()
 
 	return MAX_QUEST_LOG_SIZE - numQuest;
 }
+
+uint32 DialogStatusValue::getDialogStatus(Player* bot, int32 questgiver, uint32 questId)
+{
+	uint32 dialogStatus = DIALOG_STATUS_NONE;
+
+	QuestRelationsMapBounds rbounds;                        // QuestRelations (quest-giver)
+	QuestRelationsMapBounds irbounds;                       // InvolvedRelations (quest-finisher)
+
+	if (questgiver > 0)
+	{
+		rbounds = sObjectMgr.GetCreatureQuestRelationsMapBounds(questgiver);
+		irbounds = sObjectMgr.GetCreatureQuestInvolvedRelationsMapBounds(questgiver);
+	}
+	else
+	{
+		rbounds = sObjectMgr.GetGOQuestRelationsMapBounds(questgiver * -1);
+		irbounds = sObjectMgr.GetGOQuestInvolvedRelationsMapBounds(questgiver * -1);
+	}
+
+	// Check markings for quest-finisher
+	for (QuestRelationsMap::const_iterator itr = irbounds.first; itr != irbounds.second; ++itr)
+	{
+		if (questId && itr->second != questId)
+			continue;
+
+		Quest const* pQuest = sObjectMgr.GetQuestTemplate(itr->second);
+
+		uint32 dialogStatusNew = DIALOG_STATUS_NONE;
+
+		if (!pQuest || !pQuest->IsActive())
+		{
+			continue;
+		}
+
+		QuestStatus status = bot->GetQuestStatus(itr->second);
+
+		if ((status == QUEST_STATUS_COMPLETE && !bot->GetQuestRewardStatus(itr->second)) ||
+			(pQuest->IsAutoComplete() && bot->CanTakeQuest(pQuest, false)))
+		{
+			if (pQuest->IsAutoComplete() && pQuest->IsRepeatable())
+			{
+				dialogStatusNew = DIALOG_STATUS_REWARD_REP;
+			}
+			else
+			{
+				dialogStatusNew = DIALOG_STATUS_REWARD2;
+			}
+		}
+		else if (status == QUEST_STATUS_INCOMPLETE)
+		{
+			dialogStatusNew = DIALOG_STATUS_INCOMPLETE;
+		}
+
+		if (dialogStatusNew > dialogStatus)
+		{
+			dialogStatus = dialogStatusNew;
+		}
+	}
+
+	// check markings for quest-giver
+	for (QuestRelationsMap::const_iterator itr = rbounds.first; itr != rbounds.second; ++itr)
+	{
+		if (questId && itr->second != questId)
+			continue;
+
+		Quest const* pQuest = sObjectMgr.GetQuestTemplate(itr->second);
+
+		uint32 dialogStatusNew = DIALOG_STATUS_NONE;
+
+		if (!pQuest || !pQuest->IsActive())
+		{
+			continue;
+		}
+
+		QuestStatus status = bot->GetQuestStatus(itr->second);
+
+		if (status == QUEST_STATUS_NONE)                    // For all other cases the mark is handled either at some place else, or with involved-relations already
+		{
+			if (bot->CanSeeStartQuest(pQuest))
+			{
+				if (bot->SatisfyQuestLevel(pQuest, false))
+				{
+					int32 lowLevelDiff = sWorld.getConfig(CONFIG_INT32_QUEST_LOW_LEVEL_HIDE_DIFF);
+					if (pQuest->IsAutoComplete() || (pQuest->IsRepeatable() && bot->getQuestStatusMap()[itr->second].m_rewarded))
+					{
+						dialogStatusNew = DIALOG_STATUS_REWARD_REP;
+					}
+					else if (lowLevelDiff < 0 || bot->getLevel() <= bot->GetQuestLevelForPlayer(pQuest) + uint32(lowLevelDiff))
+					{
+						dialogStatusNew = DIALOG_STATUS_AVAILABLE;
+					}
+					else
+					{
+						dialogStatusNew = DIALOG_STATUS_CHAT;
+					}
+				}
+				else
+				{
+					dialogStatusNew = DIALOG_STATUS_UNAVAILABLE;
+				}
+			}
+		}
+
+		if (dialogStatusNew > dialogStatus)
+		{
+			dialogStatus = dialogStatusNew;
+		}
+	}
+
+	return dialogStatus;
+}
+
+uint32 DialogStatusValue::Calculate()
+{
+    return getDialogStatus(bot, stoi(getQualifier()));
+}
+
+uint32 DialogStatusQuestValue::Calculate()
+{
+    return getDialogStatus(bot, getMultiQualifier(getQualifier(), 0), getMultiQualifier(getQualifier(), 1));
+}
+
+bool CanAcceptQuestValue::Calculate()
+{
+    return AI_VALUE2(uint32, "dialog status", getQualifier()) == DIALOG_STATUS_AVAILABLE;
+};
+
+bool CanAcceptQuestLowLevelValue::Calculate()
+{
+    uint32 dialogStatus = AI_VALUE2(uint32, "dialog status", getQualifier());
+    return dialogStatus == DIALOG_STATUS_CHAT;
+};
+
+bool CanTurnInQuestValue::Calculate()
+{
+    uint32 dialogStatus = AI_VALUE2(uint32, "dialog status", getQualifier());
+    return dialogStatus == DIALOG_STATUS_REWARD2 || dialogStatus == DIALOG_STATUS_REWARD || dialogStatus == DIALOG_STATUS_REWARD_REP;
+};

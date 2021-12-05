@@ -13,7 +13,7 @@ class PlayerbotAI;
 class CollisionValue : public BoolCalculatedValue, public Qualified
 {
 	public:
-        CollisionValue(PlayerbotAI* botAI) : BoolCalculatedValue(botAI), Qualified() { }
+        CollisionValue(PlayerbotAI* botAI, string name = "collision") : BoolCalculatedValue(ai, name), Qualified() {}
 
         bool Calculate() override;
 };

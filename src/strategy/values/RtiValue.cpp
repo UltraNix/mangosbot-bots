@@ -5,7 +5,7 @@
 #include "RtiValue.h"
 #include "Playerbot.h"
 
-RtiValue::RtiValue(PlayerbotAI* botAI) : ManualSetValue<std::string>(botAI, "skull")
+RtiValue::RtiValue(PlayerbotAI* botAI) : ManualSetValue<std::string>(botAI, "skull", "rti")
 {
 }
 
@@ -20,7 +20,7 @@ bool RtiValue::Load(std::string const& text)
     return true;
 }
 
-RtiCcValue::RtiCcValue(PlayerbotAI* botAI) : ManualSetValue<std::string>(botAI, "moon")
+RtiCcValue::RtiCcValue(PlayerbotAI* botAI) : ManualSetValue<std::string>(botAI, "moon", "rti cc")
 {
 }
 

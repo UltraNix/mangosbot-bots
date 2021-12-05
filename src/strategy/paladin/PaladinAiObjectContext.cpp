@@ -213,9 +213,11 @@ class PaladinAiObjectContextInternal : public NamedObjectContext<Action>
             creators["hammer of justice on snare target"] = &PaladinAiObjectContextInternal::hammer_of_justice_on_snare_target;
             creators["divine favor"] = &PaladinAiObjectContextInternal::divine_favor;
             creators["turn undead"] = &PaladinAiObjectContextInternal::turn_undead;
+            creators["blessing of protection on party"]   = &PaladinAiObjectContextInternal::blessing_of_protection_on_party;
         }
 
     private:
+        static Action* blessing_of_protection_on_party(PlayerbotAI* ai) { return new CastBlessingOfProtectionProtectAction(ai); }
         static Action* turn_undead(PlayerbotAI* botAI) { return new CastTurnUndeadAction(botAI); }
         static Action* divine_favor(PlayerbotAI* botAI) { return new CastDivineFavorAction(botAI); }
         static Action* righteous_fury(PlayerbotAI* botAI) { return new CastRighteousFuryAction(botAI); }

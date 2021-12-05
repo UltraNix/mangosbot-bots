@@ -99,7 +99,6 @@ void SellAction::Sell(Item* item)
 
     GuidVector vendors = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
 
-    bool bought = false;
     for (ObjectGuid const vendorguid : vendors)
     {
         Creature* pCreature = bot->GetNPCIfCanInteractWith(vendorguid,UNIT_NPC_FLAG_VENDOR);
@@ -109,11 +108,21 @@ void SellAction::Sell(Item* item)
         ObjectGuid itemguid = item->GetGUID();
         uint32 count = item->GetCount();
 
+        uint32 botMoney = bot->GetMoney();
+
         WorldPacket p;
         p << vendorguid << itemguid << count;
         bot->GetSession()->HandleSellItemOpcode(p);
 
+        if (ai->HasCheat(BotCheatMask::gold))
+        {
+            bot->SetMoney(botMoney);
+        }
+
         out << "Selling " << chat->formatItem(item->GetTemplate());
         botAI->TellMaster(out);
+
+        bot->PlayDistanceSound(120);
+        break;
     }
 }

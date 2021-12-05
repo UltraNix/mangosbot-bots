@@ -13,7 +13,7 @@ class Unit;
 class RtiTargetValue : public TargetValue
 {
     public:
-        RtiTargetValue(PlayerbotAI* botAI, std::string const& type = "rti") : type(type), TargetValue(botAI) { }
+        RtiTargetValue(PlayerbotAI* botAI, std::string const& type = "rti", string name = "rti target") : type(type), TargetValue(ai,name)
 
         static int32 GetRtiIndex(std::string const& rti);
         Unit* Calculate() override;
@@ -25,7 +25,7 @@ class RtiTargetValue : public TargetValue
 class RtiCcTargetValue : public RtiTargetValue
 {
     public:
-        RtiCcTargetValue(PlayerbotAI* botAI) : RtiTargetValue(botAI, "rti cc") { }
+        RtiCcTargetValue(PlayerbotAI* botAI, string name = "rti cc target") : RtiTargetValue(ai, "rti cc", name) {}
 };
 
 #endif

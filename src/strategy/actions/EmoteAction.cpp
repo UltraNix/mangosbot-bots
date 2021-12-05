@@ -85,12 +85,9 @@ void EmoteActionBase::InitEmotes()
     textEmotes["train"] = 264;
 }
 
-bool EmoteActionBase::Emote(Unit* target, uint32 type)
+bool EmoteActionBase::Emote(Unit* target, uint32 type, bool textEmote)
 {
-    if (bot->isMoving())
-        return false;
-
-    if (target && !bot->HasInArc(EMOTE_ANGLE_IN_FRONT, target, sPlayerbotAIConfig->sightDistance))
+    if (target && !bot->HasInArc(M_PI_F, target, sPlayerbotAIConfig->sightDistance))
         bot->SetFacingToObject(target);
 
     ObjectGuid oldSelection = bot->GetTarget();
@@ -99,11 +96,20 @@ bool EmoteActionBase::Emote(Unit* target, uint32 type)
         bot->SetTarget(target->GetGUID());
 
         Player* player = dynamic_cast<Player*>(target);
-        if (player && player->GetPlayerbotAI() && !player->HasInArc(EMOTE_ANGLE_IN_FRONT, bot, sPlayerbotAIConfig->sightDistance))
+        if (player && player->GetPlayerbotAI() && !player->HasInArc(M_PI_F, bot, sPlayerbotAIConfig->sightDistance))
             player->SetFacingToObject(bot);
     }
 
-    bot->HandleEmoteCommand(type);
+    if (textEmote)
+    {
+        WorldPacket data(SMSG_TEXT_EMOTE);
+        data << type;
+        data << GetNumberOfEmoteVariants((TextEmotes)type, bot->getRace(), bot->getGender());
+        data << ((bot->GetSelectionGuid() && urand(0, 1)) ? bot->GetSelectionGuid() : ObjectGuid());
+        bot->GetSession()->HandleTextEmoteOpcode(data);
+    }
+    else
+        bot->HandleEmoteCommand(type);
 
     if (oldSelection)
         bot->SetTarget(oldSelection);
@@ -130,411 +136,471 @@ Unit* EmoteActionBase::GetTarget()
     return target;
 }
 
-bool EmoteActionBase::ReceiveEmote(Player* source, uint32 emote)
+bool EmoteActionBase::ReceiveEmote(Player* source, uint32 emote, bool verbal)
 {
     uint32 emoteId = 0;
+    uint32 textEmote = 0;
     std::string emoteText;
     std::string emoteYell;
 
     switch (emote)
     {
-        case TEXT_EMOTE_BONK:
+        case TEXTEMOTE_BONK:
             emoteId = EMOTE_ONESHOT_CRY;
+            textEmote = TEXTEMOTE_CRY;
             break;
-        case TEXT_EMOTE_SALUTE:
+        case TEXTEMOTE_SALUTE:
             emoteId = EMOTE_ONESHOT_SALUTE;
+            textEmote = TEXTEMOTE_SALUTE;
             break;
         case 325:
-            if (botAI->GetMaster() == source)
+            if (ai->GetMaster() == source)
             {
-                botAI->ChangeStrategy("-follow,+stay", BOT_STATE_NON_COMBAT);
-                botAI->TellMasterNoFacing("Fine.. I'll stay right here..");
+                ai->ChangeStrategy("-follow,+stay", BOT_STATE_NON_COMBAT);
+                ai->TellMasterNoFacing("Fine.. I'll stay right here..");
             }
             break;
-        case TEXT_EMOTE_BECKON:
+        case TEXTEMOTE_BECKON:
         case 324:
-            if (botAI->GetMaster() == source)
+            if (ai->GetMaster() == source)
             {
-                botAI->ChangeStrategy("+follow", BOT_STATE_NON_COMBAT);
-                botAI->TellMasterNoFacing("Wherever you go, I'll follow..");
+                ai->ChangeStrategy("+follow", BOT_STATE_NON_COMBAT);
+                ai->TellMasterNoFacing("Wherever you go, I'll follow..");
             }
             break;
-        case TEXT_EMOTE_WAVE:
-        case TEXT_EMOTE_GREET:
-        case TEXT_EMOTE_HAIL:
-        case TEXT_EMOTE_HELLO:
-        case TEXT_EMOTE_WELCOME:
-        case TEXT_EMOTE_INTRODUCE:
+        case TEXTEMOTE_WAVE:
+        case TEXTEMOTE_GREET:
+        case TEXTEMOTE_HAIL:
+        case TEXTEMOTE_HELLO:
+        case TEXTEMOTE_WELCOME:
+        case TEXTEMOTE_INTRODUCE:
             emoteText = "Hey there!";
             emoteId = EMOTE_ONESHOT_WAVE;
+            textEmote = TEXTEMOTE_HELLO;
             break;
-        case TEXT_EMOTE_DANCE:
+        case TEXTEMOTE_DANCE:
             emoteText = "Shake what your mama gave you!";
             emoteId = EMOTE_ONESHOT_DANCE;
+            textEmote = TEXTEMOTE_DANCE;
             break;
-        case TEXT_EMOTE_FLIRT:
-        case TEXT_EMOTE_KISS:
-        case TEXT_EMOTE_HUG:
-        case TEXT_EMOTE_BLUSH:
-        case TEXT_EMOTE_SMILE:
-        case TEXT_EMOTE_LOVE:
-            //case TEXT_EMOTE_HOLDHAND:
+        case TEXTEMOTE_FLIRT:
+        case TEXTEMOTE_KISS:
+        case TEXTEMOTE_HUG:
+        case TEXTEMOTE_BLUSH:
+        case TEXTEMOTE_SMILE:
+        case TEXTEMOTE_LOVE:
+            //case TEXTEMOTE_HOLDHAND:
             emoteText = "Awwwww...";
             emoteId = EMOTE_ONESHOT_SHY;
+            textEmote = TEXTEMOTE_SHY;
             break;
-        case TEXT_EMOTE_FLEX:
+        case TEXTEMOTE_FLEX:
             emoteText = "Hercules! Hercules!";
             emoteId = EMOTE_ONESHOT_APPLAUD;
+            textEmote = TEXTEMOTE_APPLAUD;
             break;
-        case TEXT_EMOTE_ANGRY:
-            //case TEXT_EMOTE_FACEPALM:
-        case TEXT_EMOTE_GLARE:
-        case TEXT_EMOTE_BLAME:
-            //case TEXT_EMOTE_FAIL:
-            //case TEXT_EMOTE_REGRET:
-            //case TEXT_EMOTE_SCOLD:
-            //case TEXT_EMOTE_CROSSARMS:
+        case TEXTEMOTE_ANGRY:
+            //case TEXTEMOTE_FACEPALM:
+        case TEXTEMOTE_GLARE:
+        case TEXTEMOTE_BLAME:
+            //case TEXTEMOTE_FAIL:
+            //case TEXTEMOTE_REGRET:
+            //case TEXTEMOTE_SCOLD:
+            //case TEXTEMOTE_CROSSARMS:
             emoteText = "Did I do thaaaaat?";
             emoteId = EMOTE_ONESHOT_QUESTION;
+            textEmote = TEXTEMOTE_SHRUG;
             break;
-        case TEXT_EMOTE_FART:
-        case TEXT_EMOTE_BURP:
-        case TEXT_EMOTE_GASP:
-        case TEXT_EMOTE_NOSEPICK:
-        case TEXT_EMOTE_SNIFF:
-        case TEXT_EMOTE_STINK:
+        case TEXTEMOTE_FART:
+        case TEXTEMOTE_BURP:
+        case TEXTEMOTE_GASP:
+        case TEXTEMOTE_NOSEPICK:
+        case TEXTEMOTE_SNIFF:
+        case TEXTEMOTE_STINK:
             emoteText = "Wasn't me! Just sayin'..";
             emoteId = EMOTE_ONESHOT_POINT;
+            textEmote = TEXTEMOTE_POINT;
             break;
-        case TEXT_EMOTE_JOKE:
+        case TEXTEMOTE_JOKE:
             emoteId = EMOTE_ONESHOT_LAUGH;
+            textEmote = TEXTEMOTE_LAUGH;
             emoteText = "Oh.. was I not supposed to laugh so soon?";
             break;
-        case TEXT_EMOTE_CHICKEN:
+        case TEXTEMOTE_CHICKEN:
             emoteText = "We'll see who's chicken soon enough!";
             emoteId = EMOTE_ONESHOT_RUDE;
+            textEmote = TEXTEMOTE_RUDE;
             break;
-        case TEXT_EMOTE_APOLOGIZE:
+        case TEXTEMOTE_APOLOGIZE:
             emoteId = EMOTE_ONESHOT_POINT;
+            textEmote = TEXTEMOTE_APOLOGIZE;
             emoteText = "You damn right you're sorry!";
             break;
-        case TEXT_EMOTE_APPLAUD:
-        case TEXT_EMOTE_CLAP:
-        case TEXT_EMOTE_CONGRATULATE:
-        case TEXT_EMOTE_HAPPY:
-            //case TEXT_EMOTE_GOLFCLAP:
+        case TEXTEMOTE_APPLAUD:
+        case TEXTEMOTE_CLAP:
+        case TEXTEMOTE_CONGRATULATE:
+        case TEXTEMOTE_HAPPY:
+            //case TEXTEMOTE_GOLFCLAP:
             emoteId = EMOTE_ONESHOT_BOW;
+            textEmote = TEXTEMOTE_BOW;
             emoteText = "Thank you.. Thank you.. I'm here all week.";
             break;
-        case TEXT_EMOTE_BEG:
-        case TEXT_EMOTE_GROVEL:
-        case TEXT_EMOTE_PLEAD:
+        case TEXTEMOTE_BEG:
+        case TEXTEMOTE_GROVEL:
+        case TEXTEMOTE_PLEAD:
             emoteId = EMOTE_ONESHOT_NO;
+            textEmote = TEXTEMOTE_NO;
             emoteText = "Beg all you want.. I have nothing for you.";
             break;
-        case TEXT_EMOTE_BITE:
-        case TEXT_EMOTE_POKE:
-        case TEXT_EMOTE_SCRATCH:
-            //case TEXT_EMOTE_PINCH:
-            //case TEXT_EMOTE_PUNCH:
+        case TEXTEMOTE_BITE:
+        case TEXTEMOTE_POKE:
+        case TEXTEMOTE_SCRATCH:
+            //case TEXTEMOTE_PINCH:
+            //case TEXTEMOTE_PUNCH:
             emoteId = EMOTE_ONESHOT_ROAR;
+            textEmote = TEXTEMOTE_ROAR;
             emoteYell = "OUCH! Dammit, that hurt!";
             break;
-        case TEXT_EMOTE_BORED:
+        case TEXTEMOTE_BORED:
             emoteId = EMOTE_ONESHOT_NO;
+            textEmote = TEXTEMOTE_NO;
             emoteText = "My job description doesn't include entertaining you..";
             break;
-        case TEXT_EMOTE_BOW:
-        case TEXT_EMOTE_CURTSEY:
+        case TEXTEMOTE_BOW:
+        case TEXTEMOTE_CURTSEY:
             emoteId = EMOTE_ONESHOT_BOW;
+            textEmote = TEXTEMOTE_BOW;
             break;
-        case TEXT_EMOTE_BRB:
-        case TEXT_EMOTE_SIT:
+        case TEXTEMOTE_BRB:
+        case TEXTEMOTE_SIT:
             emoteId = EMOTE_ONESHOT_EAT;
+            textEmote = TEXTEMOTE_EAT;
             emoteText = "Looks like time for an AFK break..";
             break;
-        case TEXT_EMOTE_AGREE:
-        case TEXT_EMOTE_NOD:
+        case TEXTEMOTE_AGREE:
+        case TEXTEMOTE_NOD:
             emoteId = EMOTE_ONESHOT_EXCLAMATION;
+            textEmote = TEXTEMOTE_NOD;
             emoteText = "At least SOMEONE agrees with me!";
             break;
-        case TEXT_EMOTE_AMAZE:
-        case TEXT_EMOTE_COWER:
-        case TEXT_EMOTE_CRINGE:
-        case TEXT_EMOTE_EYE:
-        case TEXT_EMOTE_KNEEL:
-        case TEXT_EMOTE_PEER:
-        case TEXT_EMOTE_SURRENDER:
-        case TEXT_EMOTE_PRAISE:
-        case TEXT_EMOTE_SCARED:
-        case TEXT_EMOTE_COMMEND:
-            //case TEXT_EMOTE_AWE:
-            //case TEXT_EMOTE_JEALOUS:
-            //case TEXT_EMOTE_PROUD:
+        case TEXTEMOTE_AMAZE:
+        case TEXTEMOTE_COWER:
+        case TEXTEMOTE_CRINGE:
+        case TEXTEMOTE_EYE:
+        case TEXTEMOTE_KNEEL:
+        case TEXTEMOTE_PEER:
+        case TEXTEMOTE_SURRENDER:
+        case TEXTEMOTE_PRAISE:
+        case TEXTEMOTE_SCARED:
+        case TEXTEMOTE_COMMEND:
+            //case TEXTEMOTE_AWE:
+            //case TEXTEMOTE_JEALOUS:
+            //case TEXTEMOTE_PROUD:
             emoteId = EMOTE_ONESHOT_FLEX;
+            textEmote = TEXTEMOTE_FLEX;
             emoteText = "Yes, Yes. I know I'm amazing..";
             break;
-        case TEXT_EMOTE_BLEED:
-        case TEXT_EMOTE_MOURN:
-        case TEXT_EMOTE_FLOP:
-            //case TEXT_EMOTE_FAINT:
-            //case TEXT_EMOTE_PULSE:
+        case TEXTEMOTE_BLEED:
+        case TEXTEMOTE_MOURN:
+        case TEXTEMOTE_FLOP:
+            //case TEXTEMOTE_FAINT:
+            //case TEXTEMOTE_PULSE:
             emoteId = EMOTE_ONESHOT_KNEEL;
+            textEmote = TEXTEMOTE_KNEEL;
             emoteText = "MEDIC! Stat!";
             break;
-        case TEXT_EMOTE_BLINK:
+        case TEXTEMOTE_BLINK:
             emoteId = EMOTE_ONESHOT_KICK;
             emoteText = "What? You got something in your eye?";
             break;
-        case TEXT_EMOTE_BOUNCE:
-        case TEXT_EMOTE_BARK:
+        case TEXTEMOTE_BOUNCE:
+        case TEXTEMOTE_BARK:
             emoteId = EMOTE_ONESHOT_POINT;
+            textEmote = TEXTEMOTE_POINT;
             emoteText = "Who's a good doggy? You're a good doggy!";
             break;
-        case TEXT_EMOTE_BYE:
+        case TEXTEMOTE_BYE:
             emoteId = EMOTE_ONESHOT_WAVE;
+            textEmote = TEXTEMOTE_WAVE;
             emoteText = "Umm.... wait! Where are you going?!";
             break;
-        case TEXT_EMOTE_CACKLE:
-        case TEXT_EMOTE_LAUGH:
-        case TEXT_EMOTE_CHUCKLE:
-        case TEXT_EMOTE_GIGGLE:
-        case TEXT_EMOTE_GUFFAW:
-        case TEXT_EMOTE_ROFL:
-        case TEXT_EMOTE_SNICKER:
-            //case TEXT_EMOTE_SNORT:
+        case TEXTEMOTE_CACKLE:
+        case TEXTEMOTE_LAUGH:
+        case TEXTEMOTE_CHUCKLE:
+        case TEXTEMOTE_GIGGLE:
+        case TEXTEMOTE_GUFFAW:
+        case TEXTEMOTE_ROFL:
+        case TEXTEMOTE_SNICKER:
+            //case TEXTEMOTE_SNORT:
             emoteId = EMOTE_ONESHOT_LAUGH;
+            textEmote = TEXTEMOTE_LAUGH;
             emoteText = "Wait... what are we laughing at again?";
             break;
-        case TEXT_EMOTE_CONFUSED:
-        case TEXT_EMOTE_CURIOUS:
-        case TEXT_EMOTE_FIDGET:
-        case TEXT_EMOTE_FROWN:
-        case TEXT_EMOTE_SHRUG:
-        case TEXT_EMOTE_SIGH:
-        case TEXT_EMOTE_STARE:
-        case TEXT_EMOTE_TAP:
-        case TEXT_EMOTE_SURPRISED:
-        case TEXT_EMOTE_WHINE:
-        case TEXT_EMOTE_BOGGLE:
-        case TEXT_EMOTE_LOST:
-        case TEXT_EMOTE_PONDER:
-        case TEXT_EMOTE_SNUB:
-        case TEXT_EMOTE_SERIOUS:
-        case TEXT_EMOTE_EYEBROW:
+        case TEXTEMOTE_CONFUSED:
+        case TEXTEMOTE_CURIOUS:
+        case TEXTEMOTE_FIDGET:
+        case TEXTEMOTE_FROWN:
+        case TEXTEMOTE_SHRUG:
+        case TEXTEMOTE_SIGH:
+        case TEXTEMOTE_STARE:
+        case TEXTEMOTE_TAP:
+        case TEXTEMOTE_SURPRISED:
+        case TEXTEMOTE_WHINE:
+        case TEXTEMOTE_BOGGLE:
+        case TEXTEMOTE_LOST:
+        case TEXTEMOTE_PONDER:
+        case TEXTEMOTE_SNUB:
+        case TEXTEMOTE_SERIOUS:
+        case TEXTEMOTE_EYEBROW:
             emoteId = EMOTE_ONESHOT_QUESTION;
+            textEmote = TEXTEMOTE_SHRUG;
             emoteText = "Don't look at  me.. I just work here";
             break;
-        case TEXT_EMOTE_COUGH:
-        case TEXT_EMOTE_DROOL:
-        case TEXT_EMOTE_SPIT:
-        case TEXT_EMOTE_LICK:
-        case TEXT_EMOTE_BREATH:
-            //case TEXT_EMOTE_SNEEZE:
-            //case TEXT_EMOTE_SWEAT:
+        case TEXTEMOTE_COUGH:
+        case TEXTEMOTE_DROOL:
+        case TEXTEMOTE_SPIT:
+        case TEXTEMOTE_LICK:
+        case TEXTEMOTE_BREATH:
+            //case TEXTEMOTE_SNEEZE:
+            //case TEXTEMOTE_SWEAT:
             emoteId = EMOTE_ONESHOT_POINT;
+            textEmote = TEXTEMOTE_POINT;
             emoteText = "Ewww! Keep your nasty germs over there!";
             break;
-        case TEXT_EMOTE_CRY:
+        case TEXTEMOTE_CRY:
             emoteId = EMOTE_ONESHOT_CRY;
+            textEmote = TEXTEMOTE_CRY;
             emoteText = "Don't you start crying or it'll make me start crying!";
             break;
-        case TEXT_EMOTE_CRACK:
+        case TEXTEMOTE_CRACK:
             emoteId = EMOTE_ONESHOT_ROAR;
+            textEmote = TEXTEMOTE_ROAR;
             emoteText = "It's clobbering time!";
             break;
-        case TEXT_EMOTE_EAT:
-        case TEXT_EMOTE_DRINK:
+        case TEXTEMOTE_EAT:
+        case TEXTEMOTE_DRINK:
             emoteId = EMOTE_ONESHOT_EAT;
+            textEmote = TEXTEMOTE_EAT;
             emoteText = "I hope you brought enough for the whole class...";
             break;
-        case TEXT_EMOTE_GLOAT:
-        case TEXT_EMOTE_MOCK:
-        case TEXT_EMOTE_TEASE:
-        case TEXT_EMOTE_EMBARRASS:
+        case TEXTEMOTE_GLOAT:
+        case TEXTEMOTE_MOCK:
+        case TEXTEMOTE_TEASE:
+        case TEXTEMOTE_EMBARRASS:
             emoteId = EMOTE_ONESHOT_CRY;
+            textEmote = TEXTEMOTE_CRY;
             emoteText = "Doesn't mean you need to be an ass about it..";
             break;
-        case TEXT_EMOTE_HUNGRY:
+        case TEXTEMOTE_HUNGRY:
             emoteId = EMOTE_ONESHOT_EAT;
+            textEmote = TEXTEMOTE_EAT;
             emoteText = "What? You want some of this?";
             break;
-        case TEXT_EMOTE_LAYDOWN:
-        case TEXT_EMOTE_TIRED:
-        case TEXT_EMOTE_YAWN:
+        case TEXTEMOTE_LAYDOWN:
+        case TEXTEMOTE_TIRED:
+        case TEXTEMOTE_YAWN:
             emoteId = EMOTE_ONESHOT_KNEEL;
+            textEmote = TEXTEMOTE_KNEEL;
             emoteText = "Is it break time already?";
             break;
-        case TEXT_EMOTE_MOAN:
-        case TEXT_EMOTE_MOON:
-        case TEXT_EMOTE_SEXY:
-        case TEXT_EMOTE_SHAKE:
-        case TEXT_EMOTE_WHISTLE:
-        case TEXT_EMOTE_CUDDLE:
-        case TEXT_EMOTE_PURR:
-        case TEXT_EMOTE_SHIMMY:
-        case TEXT_EMOTE_SMIRK:
-        case TEXT_EMOTE_WINK:
-            //case TEXT_EMOTE_CHARM:
+        case TEXTEMOTE_MOAN:
+        case TEXTEMOTE_MOON:
+        case TEXTEMOTE_SEXY:
+        case TEXTEMOTE_SHAKE:
+        case TEXTEMOTE_WHISTLE:
+        case TEXTEMOTE_CUDDLE:
+        case TEXTEMOTE_PURR:
+        case TEXTEMOTE_SHIMMY:
+        case TEXTEMOTE_SMIRK:
+        case TEXTEMOTE_WINK:
+            //case TEXTEMOTE_CHARM:
             emoteId = EMOTE_ONESHOT_NO;
+            textEmote = TEXTEMOTE_NO;
             emoteText = "Keep it in your pants, boss..";
             break;
-        case TEXT_EMOTE_NO:
-        case TEXT_EMOTE_VETO:
-        case TEXT_EMOTE_DISAGREE:
-        case TEXT_EMOTE_DOUBT:
+        case TEXTEMOTE_NO:
+        case TEXTEMOTE_VETO:
+        case TEXTEMOTE_DISAGREE:
+        case TEXTEMOTE_DOUBT:
             emoteId = EMOTE_ONESHOT_QUESTION;
+            textEmote = TEXTEMOTE_SHRUG;
             emoteText = "Aww.... why not?!";
             break;
-        case TEXT_EMOTE_PANIC:
+        case TEXTEMOTE_PANIC:
             emoteId = EMOTE_ONESHOT_EXCLAMATION;
+            textEmote = TEXTEMOTE_CALM;
             emoteText = "Now is NOT the time to panic!";
             break;
-        case TEXT_EMOTE_POINT:
+        case TEXTEMOTE_POINT:
             emoteId = EMOTE_ONESHOT_POINT;
+            textEmote = TEXTEMOTE_POINT;
             emoteText = "What?! I can do that TOO!";
             break;
-        case TEXT_EMOTE_RUDE:
-        case TEXT_EMOTE_RASP:
+        case TEXTEMOTE_RUDE:
+        case TEXTEMOTE_RASP:
             emoteId = EMOTE_ONESHOT_RUDE;
+            textEmote = TEXTEMOTE_RASP;
             emoteText = "Right back at you, bub!", LANG_UNIVERSAL;
             break;
-        case TEXT_EMOTE_ROAR:
-        case TEXT_EMOTE_THREATEN:
-        case TEXT_EMOTE_CALM:
-        case TEXT_EMOTE_DUCK:
-        case TEXT_EMOTE_TAUNT:
-        case TEXT_EMOTE_PITY:
-        case TEXT_EMOTE_GROWL:
-            //case TEXT_EMOTE_TRAIN:
-            //case TEXT_EMOTE_INCOMING:
-            //case TEXT_EMOTE_CHARGE:
-            //case TEXT_EMOTE_FLEE:
-            //case TEXT_EMOTE_ATTACKMYTARGET:
-        case TEXT_EMOTE_OPENFIRE:
-        case TEXT_EMOTE_ENCOURAGE:
-        case TEXT_EMOTE_ENEMY:
-            //case TEXT_EMOTE_CHALLENGE:
-            //case TEXT_EMOTE_REVENGE:
-            //case TEXT_EMOTE_SHAKEFIST:
+        case TEXTEMOTE_ROAR:
+        case TEXTEMOTE_THREATEN:
+        case TEXTEMOTE_CALM:
+        case TEXTEMOTE_DUCK:
+        case TEXTEMOTE_TAUNT:
+        case TEXTEMOTE_PITY:
+        case TEXTEMOTE_GROWL:
+            //case TEXTEMOTE_TRAIN:
+            //case TEXTEMOTE_INCOMING:
+            //case TEXTEMOTE_CHARGE:
+            //case TEXTEMOTE_FLEE:
+            //case TEXTEMOTE_ATTACKMYTARGET:
+        case TEXTEMOTE_OPENFIRE:
+        case TEXTEMOTE_ENCOURAGE:
+        case TEXTEMOTE_ENEMY:
+            //case TEXTEMOTE_CHALLENGE:
+            //case TEXTEMOTE_REVENGE:
+            //case TEXTEMOTE_SHAKEFIST:
             emoteId = EMOTE_ONESHOT_ROAR;
+            textEmote = TEXTEMOTE_ROAR;
             emoteYell = "RAWR!";
             break;
-        case TEXT_EMOTE_TALK:
-        case TEXT_EMOTE_TALKEX:
-        case TEXT_EMOTE_TALKQ:
-        case TEXT_EMOTE_LISTEN:
+        case TEXTEMOTE_TALK:
             emoteId = EMOTE_ONESHOT_TALK;
+            textEmote = TEXTEMOTE_LISTEN;
+            break;
+        case TEXTEMOTE_TALKEX:
+            emoteId = EMOTE_ONESHOT_YES;
+            textEmote = TEXTEMOTE_AGREE;
+            break;
+        case TEXTEMOTE_TALKQ:
+        case TEXTEMOTE_LISTEN:
+            emoteId = EMOTE_ONESHOT_TALK;
+            textEmote = TEXTEMOTE_TALKQ;
             emoteText = "Blah Blah Blah Yakety Smackety..";
             break;
-        case TEXT_EMOTE_THANK:
+        case TEXTEMOTE_THANK:
             emoteId = EMOTE_ONESHOT_BOW;
+            textEmote = TEXTEMOTE_BOW;
             emoteText = "You are quite welcome!";
             break;
-        case TEXT_EMOTE_VICTORY:
-        case TEXT_EMOTE_CHEER:
-        case TEXT_EMOTE_TOAST:
-            //case TEXT_EMOTE_HIGHFIVE:
-            //case TEXT_EMOTE_DING:
+        case TEXTEMOTE_VICTORY:
+        case TEXTEMOTE_CHEER:
+        case TEXTEMOTE_TOAST:
+            //case TEXTEMOTE_HIGHFIVE:
+            //case TEXTEMOTE_DING:
             emoteId = EMOTE_ONESHOT_CHEER;
+            textEmote = TEXTEMOTE_CHEER;
             emoteText = "Yay!";
             break;
-        case TEXT_EMOTE_COLD:
-        case TEXT_EMOTE_SHIVER:
-        case TEXT_EMOTE_THIRSTY:
-            //case TEXT_EMOTE_OOM:
-            //case TEXT_EMOTE_HEALME:
-            //case TEXT_EMOTE_POUT:
+        case TEXTEMOTE_COLD:
+        case TEXTEMOTE_SHIVER:
+        case TEXTEMOTE_THIRSTY:
+            //case TEXTEMOTE_OOM:
+            //case TEXTEMOTE_HEALME:
+            //case TEXTEMOTE_POUT:
             emoteId = EMOTE_ONESHOT_QUESTION;
+            textEmote = TEXTEMOTE_PUZZLE;
             emoteText = "And what exactly am I supposed to do about that?";
             break;
-        case TEXT_EMOTE_COMFORT:
-        case TEXT_EMOTE_SOOTHE:
-        case TEXT_EMOTE_PAT:
+        case TEXTEMOTE_COMFORT:
+        case TEXTEMOTE_SOOTHE:
+        case TEXTEMOTE_PAT:
             emoteId = EMOTE_ONESHOT_CRY;
+            textEmote = TEXTEMOTE_CRY;
             emoteText = "Thanks...";
             break;
-        case TEXT_EMOTE_INSULT:
+        case TEXTEMOTE_INSULT:
             emoteId = EMOTE_ONESHOT_CRY;
+            textEmote = TEXTEMOTE_CRY;
             emoteText = "You hurt my feelings..";
             break;
-        case TEXT_EMOTE_JK:
+        case TEXTEMOTE_JK:
             emoteId = EMOTE_ONESHOT_POINT;
+            textEmote = TEXTEMOTE_POINT;
             emoteText = "You.....";
             break;
-        case TEXT_EMOTE_RAISE:
+        case TEXTEMOTE_RAISE:
             emoteId = EMOTE_ONESHOT_POINT;
+            textEmote = TEXTEMOTE_POINT;
             emoteText = "Yes.. you.. at the back of the class..";
             break;
-        case TEXT_EMOTE_READY:
+        case TEXTEMOTE_READY:
             emoteId = EMOTE_ONESHOT_SALUTE;
+            textEmote = TEXTEMOTE_SALUTE;
             emoteText = "Ready here, too!";
             break;
-        case TEXT_EMOTE_SHOO:
+        case TEXTEMOTE_SHOO:
             emoteId = EMOTE_ONESHOT_KICK;
+            textEmote = TEXTEMOTE_SHOO;
             emoteText = "Shoo yourself!";
             break;
-        case TEXT_EMOTE_SLAP:
-            //case TEXT_EMOTE_SMACK:
+        case TEXTEMOTE_SLAP:
+            //case TEXTEMOTE_SMACK:
             emoteId = EMOTE_ONESHOT_CRY;
+            textEmote = TEXTEMOTE_CRY;
             emoteText = "What did I do to deserve that?";
             break;
-        case TEXT_EMOTE_STAND:
+        case TEXTEMOTE_STAND:
             emoteId = EMOTE_ONESHOT_NONE;
+            textEmote = TEXTEMOTE_STAND;
             emoteText = "What? Break time's over? Fine..";
             break;
-        case TEXT_EMOTE_TICKLE:
+        case TEXTEMOTE_TICKLE:
             emoteId = EMOTE_ONESHOT_LAUGH;
+            textEmote = TEXTEMOTE_GIGGLE;
             emoteText = "Hey! Stop that!";
             break;
-        case TEXT_EMOTE_VIOLIN:
+        case TEXTEMOTE_VIOLIN:
             emoteId = EMOTE_ONESHOT_TALK;
+            textEmote = TEXTEMOTE_SIGH;
             emoteText = "Har Har.. very funny..";
             break;
-            //case TEXT_EMOTE_HELPME:
+            //case TEXTEMOTE_HELPME:
             //    bot->HandleEmoteCommand(EMOTE_ONESHOT_POINT);
             //    bot->Yell("Quick! Someone HELP!", LANG_UNIVERSAL);
             //    break;
-        case TEXT_EMOTE_GOODLUCK:
-            //case TEXT_EMOTE_LUCK:
+        case TEXTEMOTE_GOODLUCK:
+            //case TEXTEMOTE_LUCK:
             emoteId = EMOTE_ONESHOT_TALK;
+            textEmote = TEXTEMOTE_THANK;
             emoteText = "Thanks... I'll need it..";
             break;
-        case TEXT_EMOTE_BRANDISH:
-            //case TEXT_EMOTE_MERCY:
+        case TEXTEMOTE_BRANDISH:
+            //case TEXTEMOTE_MERCY:
             emoteId = EMOTE_ONESHOT_BEG;
+            textEmote = TEXTEMOTE_BEG;
             emoteText = "Please don't kill me!";
             break;
-        /*case TEXT_EMOTE_BADFEELING:
+        /*case TEXTEMOTE_BADFEELING:
             bot->HandleEmoteCommand(EMOTE_ONESHOT_QUESTION);
             bot->Say("I'm just waiting for the ominous music now...", LANG_UNIVERSAL);
             break;
-        case TEXT_EMOTE_MAP:
+        case TEXTEMOTE_MAP:
             bot->HandleEmoteCommand(EMOTE_ONESHOT_NO);
             bot->Say("Noooooooo.. you just couldn't ask for directions, huh?", LANG_UNIVERSAL);
             break;
-        case TEXT_EMOTE_IDEA:
-        case TEXT_EMOTE_THINK:
+        case TEXTEMOTE_IDEA:
+        case TEXTEMOTE_THINK:
             bot->HandleEmoteCommand(EMOTE_ONESHOT_NO);
             bot->Say("Oh boy.. another genius idea...", LANG_UNIVERSAL);
             break;
-        case TEXT_EMOTE_OFFER:
+        case TEXTEMOTE_OFFER:
             bot->HandleEmoteCommand(EMOTE_ONESHOT_NO);
             bot->Say("No thanks.. I had some back at the last village", LANG_UNIVERSAL);
             break;
-        case TEXT_EMOTE_PET:
+        case TEXTEMOTE_PET:
             bot->HandleEmoteCommand(EMOTE_ONESHOT_ROAR);
             bot->Say("Do I look like a dog to you?!", LANG_UNIVERSAL);
             break;
-        case TEXT_EMOTE_ROLLEYES:
+        case TEXTEMOTE_ROLLEYES:
             bot->HandleEmoteCommand(EMOTE_ONESHOT_POINT);
             bot->Say("Keep doing that and I'll roll those eyes right out of your head..", LANG_UNIVERSAL);
             break;
-        case TEXT_EMOTE_SING:
+        case TEXTEMOTE_SING:
             bot->HandleEmoteCommand(EMOTE_ONESHOT_APPLAUD);
             bot->Say("Lovely... just lovely..", LANG_UNIVERSAL);
             break;
-        case TEXT_EMOTE_COVEREARS:
+        case TEXTEMOTE_COVEREARS:
             bot->HandleEmoteCommand(EMOTE_ONESHOT_EXCLAMATION);
             bot->Yell("You think that's going to help you?!", LANG_UNIVERSAL);
             break;*/
@@ -545,17 +611,31 @@ bool EmoteActionBase::ReceiveEmote(Player* source, uint32 emote)
             break;
     }
 
-    if (source && !bot->isMoving() && !bot->HasInArc(EMOTE_ANGLE_IN_FRONT, source, sPlayerbotAIConfig->sightDistance))
+    if (source && !bot->isMoving() && !bot->HasInArc(M_PI_F, source, sPlayerbotAIConfig->farDistance))
         sServerFacade->SetFacingTo(bot, source);
 
-    if (emoteText.size())
-        bot->Say(emoteText, (bot->GetTeamId() == TEAM_ALLIANCE ? LANG_COMMON : LANG_ORCISH));
+    if (verbal)
+    {
+        if (emoteText.size())
+            bot->Say(emoteText, (bot->GetTeam() == ALLIANCE ? LANG_COMMON : LANG_ORCISH));
 
-    if (emoteYell.size())
-        bot->Yell(emoteYell, (bot->GetTeamId() == TEAM_ALLIANCE ? LANG_COMMON : LANG_ORCISH));
+        if (emoteYell.size())
+            bot->Yell(emoteYell, (bot->GetTeam() == ALLIANCE ? LANG_COMMON : LANG_ORCISH));
+    }
 
-    if (emoteId)
-        bot->HandleEmoteCommand(emoteId);
+    if (textEmote)
+    {
+        WorldPacket data(SMSG_TEXT_EMOTE);
+        data << textEmote;
+        data << GetNumberOfEmoteVariants((TextEmotes)textEmote, bot->getRace(), bot->getGender());
+        data << ((source && urand(0, 1)) ? source->GetObjectGuid() : ObjectGuid());
+        bot->GetSession()->HandleTextEmoteOpcode(data);
+    }
+    else
+    {
+        if (emoteId)
+            bot->HandleEmoteCommand(emoteId);
+    }
 
     return true;
 }
@@ -580,17 +660,12 @@ bool EmoteAction::Execute(Event event)
         if (namlen > 1)
             p >> nam;
 
-        if (strstri(bot->GetName().c_str(), nam.c_str()))
+        pSource = sObjectMgr.GetPlayer(source);
+        if (pSource && (pSource->GetObjectGuid() != bot->GetObjectGuid()) && ((urand(0, 1) && sServerFacade.IsInFront(bot, pSource, 10.0f, M_PI_F)) ||
+            (namlen > 1 && strstri(bot->GetName(), nam.c_str()))))
         {
-            pSource = ObjectAccessor::FindPlayer(source);
-
-            if (pSource && sServerFacade->GetDistance2d(bot, pSource) < sPlayerbotAIConfig->farDistance)
-            {
-                LOG_INFO("playerbots", "Bot %s %s:%d <%s> received SMSG_TEXT_EMOTE %d",
-                    bot->GetGUID().ToString().c_str(), bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H", bot->getLevel(), bot->GetName().c_str(), text_emote);
-                emote = text_emote;
-            }
-
+            sLog.outDetail("Bot #%d %s:%d <%s> received SMSG_TEXT_EMOTE %d from player #%d <%s>", bot->GetGUIDLow(), bot->GetTeam() == ALLIANCE ? "A" : "H", bot->getLevel(), bot->GetName(), text_emote, pSource->GetGUIDLow(), pSource->GetName());
+            emote = text_emote;
         }
     }
 
@@ -603,14 +678,15 @@ bool EmoteAction::Execute(Event event)
         p >> emoteId >> source;
 
         pSource = ObjectAccessor::FindPlayer(source);
-        if (pSource && sServerFacade->GetDistance2d(bot, pSource) < sPlayerbotAIConfig->farDistance && emoteId != EMOTE_ONESHOT_NONE)
+        if (pSource && pSource != bot && sServerFacade->GetDistance2d(bot, pSource) < sPlayerbotAIConfig->farDistance && emoteId != EMOTE_ONESHOT_NONE)
         {
-            if (pSource->GetTarget() == bot->GetGUID())
+            if ((pSource->GetObjectGuid() != bot->GetObjectGuid()) && (pSource->GetSelectionGuid() == bot->GetObjectGuid() ||
+                (urand(0, 1) && sServerFacade.IsInFront(bot, pSource, 10.0f, M_PI_F))))
             {
-                LOG_INFO("playerbots", "Bot %s %s:%d <%s> received SMSG_EMOTE %d",
-                    bot->GetGUID().ToString().c_str(), bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H", bot->getLevel(), bot->GetName().c_str(), emoteId);
+                sLog.outDetail("Bot #%d %s:%d <%s> received SMSG_EMOTE %d from player #%d <%s>",
+                    bot->GetGUIDLow(), bot->GetTeam() == ALLIANCE ? "A" : "H", bot->getLevel(), bot->GetName(), emoteId, pSource->GetGUIDLow(), pSource->GetName());
 
-                std::vector<uint32> types;
+                vector<uint32> types;
                 for (int32 i = sEmotesTextStore.GetNumRows(); i >= 0; --i)
                 {
                     EmotesTextEntry const* em = sEmotesTextStore.LookupEntry(uint32(i));
@@ -650,7 +726,7 @@ bool EmoteAction::Execute(Event event)
     }
 
     if (emote)
-        return ReceiveEmote(pSource, emote);
+        return ReceiveEmote(pSource, emote, bot->InBattleGround() ? false : urand(0, 1));
 
     if (param.find("sound") == 0)
     {
@@ -659,7 +735,12 @@ bool EmoteAction::Execute(Event event)
 
     if (!param.empty() && textEmotes.find(param) != textEmotes.end())
     {
-        return botAI->PlaySound(textEmotes[param]);
+        WorldPacket data(SMSG_TEXT_EMOTE);
+        data << textEmotes[param];
+        data << GetNumberOfEmoteVariants((TextEmotes)textEmotes[param], bot->getRace(), bot->getGender());
+        data << ((bot->GetSelectionGuid() && urand(0, 1)) ? bot->GetSelectionGuid() : ObjectGuid());
+        bot->GetSession()->HandleTextEmoteOpcode(data);
+        return true;
     }
 
     if (param.empty() || emotes.find(param) == emotes.end())
@@ -683,10 +764,7 @@ bool EmoteAction::Execute(Event event)
 
 bool EmoteAction::isUseful()
 {
-    if (!botAI->HasPlayerNearby())
-        return false;
-
-    if (bot->isMoving())
+    if (!ai->AllowActivity())
         return false;
 
     time_t lastEmote = AI_VALUE2(time_t, "last emote", qualifier);
@@ -713,15 +791,44 @@ bool TalkAction::Execute(Event event)
             player->GetPlayerbotAI()->GetAiObjectContext()->GetValue<ObjectGuid>("talk target")->Set(bot->GetGUID());
 
         context->GetValue<ObjectGuid>("talk target")->Set(target->GetGUID());
-        return Emote(target, GetRandomEmote(target));
+        return Emote(target, GetRandomEmote(target, true), true);
     }
 
     return false;
 }
 
-uint32 TalkAction::GetRandomEmote(Unit* unit)
+uint32 TalkAction::GetRandomEmote(Unit* unit, bool textEmote)
 {
     std::vector<uint32> types;
+    if (textEmote)
+    {
+        if (!urand(0, 20))
+        {
+            // expressions
+            types.push_back(TEXTEMOTE_BOW);
+            types.push_back(TEXTEMOTE_RUDE);
+            types.push_back(TEXTEMOTE_CRY);
+            types.push_back(TEXTEMOTE_LAUGH);
+            types.push_back(TEXTEMOTE_POINT);
+            types.push_back(TEXTEMOTE_CHEER);
+            types.push_back(TEXTEMOTE_SHY);
+            types.push_back(TEXTEMOTE_JOKE);
+        }
+        else
+        {
+            // talk
+            types.push_back(TEXTEMOTE_TALK);
+            types.push_back(TEXTEMOTE_TALKEX);
+            types.push_back(TEXTEMOTE_TALKQ);
+
+            if (unit && (unit->HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_TRAINER) || unit->HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER)))
+            {
+                types.push_back(TEXTEMOTE_SALUTE);
+            }
+        }
+        return types[urand(0, types.size() - 1)];
+    }
+
     if (!urand(0, 20))
     {
         // expressions
@@ -747,4 +854,570 @@ uint32 TalkAction::GetRandomEmote(Unit* unit)
     }
 
     return types[urand(0, types.size() - 1)];
+}
+
+uint32 EmoteActionBase::GetNumberOfEmoteVariants(TextEmotes emote, uint8 Race, uint8 Gender)
+{
+    if (emote == 304)
+    {
+        switch (Race)
+        {
+            case RACE_HUMAN:
+            case RACE_DWARF:
+            case RACE_NIGHTELF:
+            case RACE_UNDEAD:
+            case RACE_TROLL:
+            {
+                if (Gender == GENDER_MALE)
+                    return 2;
+
+                return 2;
+            }
+            case RACE_GNOME:
+            {
+                if (Gender == GENDER_MALE)
+                    return 1;
+
+                return 1;
+            }
+            case RACE_ORC:
+            {
+                if (Gender == GENDER_MALE)
+                    return 3;
+
+                return 2;
+            }
+            case RACE_TAUREN:
+            {
+                if (Gender == GENDER_MALE)
+                    return 2;
+
+                return 3;
+            }
+        }
+    }
+    else if (emote == 305)
+    {
+        switch (Race)
+        {
+            case RACE_HUMAN:
+            case RACE_DWARF:
+            case RACE_UNDEAD:
+            case RACE_TROLL:
+            {
+                if (Gender == GENDER_MALE)
+                    return 2;
+
+                return 2;
+            }
+            case RACE_NIGHTELF:
+            {
+                if (Gender == GENDER_MALE)
+                    return 2;
+
+                return 3;
+            }
+            case RACE_GNOME:
+            case RACE_TAUREN:
+            {
+                if (Gender == GENDER_MALE)
+                    return 3;
+
+                return 2;
+            }
+            case RACE_ORC:
+            {
+                if (Gender == GENDER_MALE)
+                    return 3;
+
+                return 3;
+            }
+        }
+    }
+    else if (emote == 306)
+    {
+        switch (Race)
+        {
+            case RACE_HUMAN:
+            case RACE_NIGHTELF:
+            case RACE_ORC:
+            case RACE_UNDEAD:
+            case RACE_TAUREN:
+            case RACE_TROLL:
+            {
+                if (Gender == GENDER_MALE)
+                    return 2;
+
+                return 2;
+            }
+            case RACE_DWARF:
+            {
+                if (Gender == GENDER_MALE)
+                    return 3;
+
+                return 2;
+            }
+            case RACE_GNOME:
+            {
+                if (Gender == GENDER_MALE)
+                    return 3;
+
+                return 3;
+            }
+        }
+    }
+    else if (emote == TEXTEMOTE_HELLO)
+    {
+        switch (Race)
+        {
+            case RACE_HUMAN:
+            case RACE_DWARF:
+            case RACE_GNOME:
+            {
+                if (Gender == GENDER_MALE)
+                    return 4;
+
+                return 3;
+            }
+            case RACE_NIGHTELF:
+            {
+                if (Gender == GENDER_MALE)
+                    return 3;
+
+                return 4;
+            }
+            case RACE_ORC:
+            case RACE_UNDEAD:
+            case RACE_TAUREN:
+            case RACE_TROLL:
+            {
+                if (Gender == GENDER_MALE)
+                    return 3;
+
+                return 3;
+            }
+        }
+    }
+    else if (emote == 323)
+    {
+        return 2;
+    }
+    else if (emote == 324)
+    {
+        switch (Race)
+        {
+            case RACE_HUMAN:
+            case RACE_NIGHTELF:
+            case RACE_ORC:
+            case RACE_UNDEAD:
+            case RACE_TAUREN:
+            case RACE_TROLL:
+            {
+                if (Gender == GENDER_MALE)
+                    return 2;
+
+                return 2;
+            }
+            case RACE_DWARF:
+            {
+                if (Gender == GENDER_MALE)
+                    return 3;
+
+                return 2;
+            }
+            case RACE_GNOME:
+            {
+                if (Gender == GENDER_MALE)
+                    return 2;
+
+                return 1;
+            }
+        }
+    }
+    else if (emote == 325)
+    {
+        switch (Race)
+        {
+            case RACE_HUMAN:
+            case RACE_TROLL:
+            {
+                if (Gender == GENDER_MALE)
+                    return 3;
+
+                return 3;
+            }
+            case RACE_DWARF:
+            case RACE_TAUREN:
+            {
+                if (Gender == GENDER_MALE)
+                    return 3;
+
+                return 2;
+            }
+            case RACE_NIGHTELF:
+            case RACE_GNOME:
+            case RACE_ORC:
+            case RACE_UNDEAD:
+            {
+                if (Gender == GENDER_MALE)
+                    return 2;
+
+                return 2;
+            }
+        }
+    }
+    else if (emote == 326)
+    {
+        switch (Race)
+        {
+            case RACE_HUMAN:
+            case RACE_NIGHTELF:
+            case RACE_GNOME:
+            case RACE_ORC:
+            case RACE_UNDEAD:
+            case RACE_TAUREN:
+            {
+                if (Gender == GENDER_MALE)
+                    return 2;
+
+                return 2;
+            }
+            case RACE_DWARF:
+            case RACE_TROLL:
+            {
+                if (Gender == GENDER_MALE)
+                    return 3;
+
+                return 3;
+            }
+        }
+    }
+    else if (emote == TEXTEMOTE_CHEER)
+    {
+        switch (Race)
+        {
+            case RACE_HUMAN:
+            case RACE_NIGHTELF:
+            case RACE_GNOME:
+            case RACE_ORC:
+            case RACE_UNDEAD:
+            case RACE_TAUREN:
+            {
+                if (Gender == GENDER_MALE)
+                    return 2;
+
+                return 2;
+            }
+            case RACE_DWARF:
+            case RACE_TROLL:
+            {
+                if (Gender == GENDER_MALE)
+                    return 3;
+
+                return 2;
+            }
+        }
+    }
+    else if (emote == TEXTEMOTE_OPENFIRE)
+    {
+        switch (Race)
+        {
+            case RACE_HUMAN:
+            case RACE_DWARF:
+            case RACE_NIGHTELF:
+            case RACE_UNDEAD:
+            case RACE_TAUREN:
+            case RACE_TROLL:
+            case RACE_GNOME:
+            {
+                return 2;
+            }
+            case RACE_ORC:
+            {
+                if (Gender == GENDER_MALE)
+                    return 2;
+
+                return 3;
+            }
+        }
+    }
+    else if (emote == TEXTEMOTE_BYE)
+    {
+        switch (Race)
+        {
+            case RACE_HUMAN:
+            case RACE_DWARF:
+            case RACE_NIGHTELF:
+            case RACE_ORC:
+            case RACE_UNDEAD:
+            case RACE_TAUREN:
+            case RACE_TROLL:
+            {
+                if (Gender == GENDER_MALE)
+                    return 3;
+
+                return 3;
+            }
+            case RACE_GNOME:
+            {
+                if (Gender == GENDER_MALE)
+                    return 4;
+
+                return 4;
+            }
+        }
+    }
+    else if (emote == TEXTEMOTE_NOD)
+    {
+        switch (Race)
+        {
+            case RACE_HUMAN:
+            case RACE_NIGHTELF:
+            case RACE_GNOME:
+            case RACE_UNDEAD:
+            case RACE_TAUREN:
+            {
+                if (Gender == GENDER_MALE)
+                    return 3;
+
+                return 3;
+            }
+            case RACE_DWARF:
+            case RACE_TROLL:
+            {
+                if (Gender == GENDER_MALE)
+                    return 4;
+
+                return 3;
+            }
+            case RACE_ORC:
+            {
+                if (Gender == GENDER_MALE)
+                    return 4;
+
+                return 4;
+            }
+        }
+    }
+    else if (emote == TEXTEMOTE_NO)
+    {
+        switch (Race)
+        {
+            case RACE_HUMAN:
+            case RACE_DWARF:
+            case RACE_TROLL:
+            {
+                if (Gender == GENDER_MALE)
+                    return 4;
+
+                return 3;
+            }
+            case RACE_NIGHTELF:
+            case RACE_GNOME:
+            case RACE_ORC:
+            case RACE_UNDEAD:
+            case RACE_TAUREN:
+            {
+                if (Gender == GENDER_MALE)
+                    return 3;
+
+                return 3;
+            }
+        }
+    }
+    else if (emote == TEXTEMOTE_THANK)
+    {
+        switch (Race)
+        {
+            case RACE_HUMAN:
+            case RACE_NIGHTELF:
+            case RACE_GNOME:
+            case RACE_ORC:
+            case RACE_UNDEAD:
+            case RACE_TROLL:
+            {
+                if (Gender == GENDER_MALE)
+                    return 3;
+
+                return 3;
+            }
+            case RACE_DWARF:
+            {
+                if (Gender == GENDER_MALE)
+                    return 4;
+
+                return 4;
+            }
+            case RACE_TAUREN:
+            {
+                if (Gender == GENDER_MALE)
+                    return 4;
+
+                return 3;
+            }
+        }
+    }
+    else if (emote == TEXTEMOTE_WELCOME)
+    {
+        switch (Race)
+        {
+        case RACE_HUMAN:
+        case RACE_DWARF:
+        case RACE_NIGHTELF:
+        case RACE_GNOME:
+        case RACE_ORC:
+        case RACE_TAUREN:
+        case RACE_TROLL:
+        {
+            if (Gender == GENDER_MALE)
+                return 3;
+            return 3;
+        }
+        case RACE_UNDEAD:
+        {
+            if (Gender == GENDER_MALE)
+                return 2;
+            return 3;
+        }
+        }
+    }
+    else if (emote == TEXTEMOTE_CONGRATULATE)
+    {
+        switch (Race)
+        {
+            case RACE_HUMAN:
+            case RACE_NIGHTELF:
+            case RACE_ORC:
+            case RACE_TAUREN:
+            case RACE_TROLL:
+            {
+                if (Gender == GENDER_MALE)
+                    return 3;
+
+                return 3;
+            }
+            case RACE_DWARF:
+            {
+                if (Gender == GENDER_MALE)
+                    return 5;
+
+                return 4;
+            }
+            case RACE_GNOME:
+            case RACE_UNDEAD:
+            {
+                if (Gender == GENDER_MALE)
+                    return 3;
+
+                return 4;
+            }
+        }
+    }
+    else if (emote == TEXTEMOTE_FLIRT)
+    {
+        switch (Race)
+        {
+            case RACE_HUMAN:
+            {
+                if (Gender == GENDER_MALE)
+                    return 6;
+                return 3;
+            }
+            case RACE_DWARF:
+            case RACE_TAUREN:
+            {
+                if (Gender == GENDER_MALE)
+                    return 6;
+
+                return 5;
+            }
+            case RACE_NIGHTELF:
+            {
+                if (Gender == GENDER_MALE)
+                    return 5;
+
+                return 4;
+            }
+            case RACE_GNOME:
+            case RACE_TROLL:
+            {
+                if (Gender == GENDER_MALE)
+                    return 4;
+
+                return 5;
+            }
+            case RACE_ORC:
+            case RACE_UNDEAD:
+            {
+                if (Gender == GENDER_MALE)
+                    return 6;
+
+                return 6;
+            }
+        }
+    }
+    else if (emote == TEXTEMOTE_JOKE)
+    {
+        switch (Race)
+        {
+            case RACE_HUMAN:
+            {
+                if (Gender == GENDER_MALE)
+                    return 5;
+
+                return 6;
+            }
+            case RACE_DWARF:
+            {
+                if (Gender == GENDER_MALE)
+                    return 6;
+
+                return 5;
+            }
+            case RACE_NIGHTELF:
+            {
+                if (Gender == GENDER_MALE)
+                    return 7;
+
+                return 4;
+            }
+            case RACE_GNOME:
+            {
+                if (Gender == GENDER_MALE)
+                    return 5;
+
+                return 3;
+            }
+            case RACE_ORC:
+            {
+                if (Gender == GENDER_MALE)
+                    return 5;
+
+                return 5;
+            }
+            case RACE_TAUREN:
+            {
+                if (Gender == GENDER_MALE)
+                    return 4;
+
+                return 3;
+            }
+            case RACE_TROLL:
+            {
+                if (Gender == GENDER_MALE)
+                    return 5;
+
+                return 4;
+            }
+            case RACE_UNDEAD:
+            {
+                if (Gender == GENDER_MALE)
+                    return 4;
+
+                return 7;
+            }
+        }
+    }
+
+    return 1;
 }

@@ -9,6 +9,9 @@
 
 class PlayerbotAI;
 
+DEFLECT_TRIGGER(FireWardTrigger, "fire ward");
+DEFLECT_TRIGGER(FrostWardTrigger, "frost ward");
+
 class ArcaneIntellectOnPartyTrigger : public BuffOnPartyTrigger
 {
     public:

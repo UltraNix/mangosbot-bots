@@ -5,6 +5,7 @@
 #include "CastCustomSpellAction.h"
 #include "ChatHelper.h"
 #include "Event.h"
+#include "ItemUsageValue.h"
 #include "Playerbot.h"
 
 uint32 FindLastSeparator(std::string const& text, std::string const& sep)
@@ -50,8 +51,11 @@ bool CastCustomSpellAction::Execute(Event event)
         if (master && master->GetTarget())
             target = botAI->GetUnit(master->GetTarget());
 
-    if (!target)
+     if (!target)
         target = bot;
+
+    if (!master) // Use self as master for permissions.
+        master = bot;
 
     Item* itemTarget = nullptr;
 
@@ -111,7 +115,7 @@ bool CastCustomSpellAction::Execute(Event event)
     else
         spellName << target->GetName();
 
-    if (!bot->GetTrader() && !botAI->CanCastSpell(spell, target, true, itemTarget))
+    if (!bot->GetTrader() && !botAI->CanCastSpell(spell, target, 0, true, itemTarget))
     {
         msg << "Cannot cast " << spellName.str();
         botAI->TellError(msg.str());
@@ -152,9 +156,15 @@ std::string const& CastCustomNcSpellAction::castString(WorldObject* target)
     return "castnc " + chat->formatWorldobject(target);
 }
 
+bool CastRandomSpellAction::AcceptSpell(SpellInfo const* pSpellInfo)
+{
+    bool isTradeSkill = pSpellInfo->Effect[0] == SPELL_EFFECT_CREATE_ITEM && pSpellInfo->ReagentCount > 0 && pSpellInfo->SchoolMask == 1;
+    return !isTradeSkill && GetSpellRecoveryTime(pSpellInfo) < MINUTE * IN_MILLISECONDS;
+}
+
 bool CastRandomSpellAction::Execute(Event event)
 {
-    PlayerSpellMap const& spellMap = bot->GetSpellMap();
+    list<pair<uint32, string>> spellMap = GetSpellList();
     Player* master = GetMaster();
 
     Unit* target = nullptr;
@@ -188,33 +198,29 @@ bool CastRandomSpellAction::Execute(Event event)
     if (!got && !target)
         target = bot;
 
-    std::vector<std::pair<uint32, std::pair<Unit*, GameObject*>>> spellList;
+    std::vector<std::pair<uint32, std::pair<uint32, WorldObject*>>> spellList;
 
     for (auto& spell : spellMap)
     {
         uint32 spellId = spell.first;
 
-        if (spell.second->State == PLAYERSPELL_REMOVED || !spell.second->Active)
-            continue;
-
         SpellInfo const* pSpellInfo = sSpellMgr->GetSpellInfo(spellId);
         if (!pSpellInfo)
             continue;
 
-        if (pSpellInfo->IsPassive() || !AcceptSpell(pSpellInfo))
-            continue;
-
-        if (pSpellInfo->Effects[0].Effect == SPELL_EFFECT_LEARN_SPELL || pSpellInfo->Effects[0].Effect == SPELL_EFFECT_TRADE_SKILL)
+        if (!AcceptSpell(pSpellInfo))
             continue;
 
         if (bot->HasSpell(spellId))
         {
+            uint32 spellPriority = GetSpellPriority(pSpellInfo);
+
             if (target && botAI->CanCastSpell(spellId, target, true))
-                spellList.push_back(std::make_pair(spellId, std::make_pair(target, nullptr)));
+                spellList.push_back(std::make_pair(spellId, std::make_pair(spellPriority, target)));
             if (got && botAI->CanCastSpell(spellId, got->GetPositionX(), got->GetPositionY(), got->GetPositionZ(), true))
-                spellList.push_back(std::make_pair(spell.first, std::make_pair(nullptr, got)));
+                spellList.push_back(std::make_pair(spellId, std::make_pair(spellPriority, got)));
             if (botAI->CanCastSpell(spellId, bot, true))
-                spellList.push_back(std::make_pair(spellId, std::make_pair(bot, nullptr)));
+                spellList.push_back(std::make_pair(spellId, std::make_pair(spellPriority, bot)));
         }
     }
 
@@ -223,31 +229,33 @@ bool CastRandomSpellAction::Execute(Event event)
 
     bool isCast = false;
 
+    std::sort(spellList.begin(), spellList.end(), [](pair<uint32, pair<uint32, WorldObject*>> i, pair<uint32, pair<uint32, WorldObject*>> j)
+    {
+        return i.first > j.first;
+    });
+
+    uint32 rndBound = spellList.size() / 4;
+
+    rndBound = std::min(rndBound, (uint32)10);
+    rndBound = std::max(rndBound, (uint32)0);
+
     for (uint32 i = 0; i < 5; i++)
     {
-        uint32 rnd = urand(0, spellList.size() - 1);
+        uint32 rnd = urand(0, rndBound);
 
-        uint32 spellId = spellList[rnd].first;
+        auto spell = spellList[rnd];
 
-        Unit* unit = spellList[rnd].second.first;
-        GameObject* go = spellList[rnd].second.second;
+        uint32 spellId = spell.first;
+        WorldObject* wo = spell.second.second;
 
-        if (unit)
-            isCast = botAI->CastSpell(spellId, unit);
-        else
-            isCast = botAI->CastSpell(spellId, go->GetPositionX(), go->GetPositionY(), go->GetPositionZ());
+        bool isCast = castSpell(spellId, wo);
 
         if (isCast)
         {
-            if (MultiCast && ((unit && bot->HasInArc(CAST_ANGLE_IN_FRONT, unit, sPlayerbotAIConfig->sightDistance)) ||
-                (go && bot->HasInArc(CAST_ANGLE_IN_FRONT, unit, sPlayerbotAIConfig->sightDistance))))
+            if (MultiCast && ((wo && sServerFacade.IsInFront(bot, wo, sPlayerbotAIConfig.sightDistance, CAST_ANGLE_IN_FRONT))))
             {
                 std::ostringstream cmd;
-                if (unit)
-                    cmd << "castnc " << chat->formatWorldobject(unit) + " " << spellId << " " << 19;
-                else
-                    cmd << "castnc " << chat->formatWorldobject(go) + " " << spellId << " " << 19;
-
+                cmd << "castnc " << chat->formatWorldobject(wo) + " " << spellId << " " << 19;
                 botAI->HandleCommand(CHAT_MSG_WHISPER, cmd.str(), bot);
             }
             return true;
@@ -257,7 +265,76 @@ bool CastRandomSpellAction::Execute(Event event)
     return false;
 }
 
-bool CraftRandomItemAction::AcceptSpell(SpellInfo const* pSpellInfo)
+bool CraftRandomItemAction::AcceptSpell(SpellInfo const* spellInfo)
 {
-    return pSpellInfo->Effects[0].Effect == SPELL_EFFECT_CREATE_ITEM;
+    return spellInfo->Effects[0].Effect == SPELL_EFFECT_CREATE_ITEM && spellInfo->ReagentCount > 0 && spellInfo->SchoolMask == 0;
+}
+
+uint32 CraftRandomItemAction::GetSpellPriority(SpellInfo const* spellInfo)
+{
+    if (spellInfo->Effect[0] != SPELL_EFFECT_CREATE_ITEM)
+    {
+        uint32 newItemId = *pSpellInfo->EffectItemType;
+
+        if (newItemId)
+        {
+            ItemUsage usage = AI_VALUE2(ItemUsage, "item usage", newItemId);
+
+            if (usage == ITEM_USAGE_REPLACE || usage == ITEM_USAGE_EQUIP || usage == ITEM_USAGE_AMMO || usage == ITEM_USAGE_QUEST || usage == ITEM_USAGE_SKILL || usage == ITEM_USAGE_USE)
+                return 10;
+        }
+
+        if (ItemUsageValue::SpellGivesSkillUp(pSpellInfo->Id, bot))
+            return 8;
+    }
+    return 1;
+}
+
+bool CastRandomSpellAction::castSpell(uint32 spellId, WorldObject* wo)
+{
+
+    if (wo->GetObjectGuid().IsUnit())
+        return ai->CastSpell(spellId, (Unit*)(wo));
+    else
+        return ai->CastSpell(spellId, wo->GetPositionX(), wo->GetPositionY(), wo->GetPositionZ());
+}
+
+bool DisEnchantRandomItemAction::Execute(Event event)
+{
+    list<Item*> items = AI_VALUE2(list<Item*>, "inventory items", "usage " + to_string(ITEM_USAGE_DISENCHANT));
+
+    items.reverse();
+
+    for (auto& item: items)
+    {
+        if(CastCustomSpellAction::Execute(Event("disenchant random item", "13262 "+ chat->formatQItem(item->GetEntry()))))
+            return true;
+    }
+
+    return false;
+}
+
+bool DisEnchantRandomItemAction::isUseful()
+{
+    return ai->HasSkill(SKILL_ENCHANTING) && !bot->IsInCombat() && AI_VALUE2(uint32, "item count", "usage " + to_string(ITEM_USAGE_DISENCHANT)) > 0;
+}
+
+virtual bool EnchantRandomItemAction::isUseful()
+{
+    return ai->HasSkill(SKILL_ENCHANTING) && !bot->IsInCombat();
+}
+
+virtual bool EnchantRandomItemAction::AcceptSpell(const SpellEntry* pSpellInfo)
+{
+    return pSpellInfo->Effect[0] == SPELL_EFFECT_ENCHANT_ITEM && pSpellInfo->ReagentCount > 0;
+}
+
+virtual uint32 EnchantRandomItemAction::GetSpellPriority(const SpellEntry* pSpellInfo)
+{
+    if (pSpellInfo->Effect[0] == SPELL_EFFECT_ENCHANT_ITEM)
+    {
+        if (AI_VALUE2(Item*, "item for spell", pSpellInfo->Id) && ItemUsageValue::SpellGivesSkillUp(pSpellInfo->Id, bot))
+            return 10;
+    }
+    return 1;
 }

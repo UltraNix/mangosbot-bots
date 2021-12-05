@@ -40,22 +40,22 @@ class FindNonCcTargetStrategy : public FindTargetStrategy
 class TargetValue : public UnitCalculatedValue
 {
 	public:
-        TargetValue(PlayerbotAI* botAI) : UnitCalculatedValue(botAI) { }
+        TargetValue(PlayerbotAI* botAI, string name = "target") : UnitCalculatedValue(ai, name) {}
 
     protected:
         Unit* FindTarget(FindTargetStrategy* strategy);
 };
 
-class RpgTargetValue : public ManualSetValue<ObjectGuid>
+class RpgTargetValue : public ManualSetValue<GuidPosition>
 {
     public:
-        RpgTargetValue(PlayerbotAI* botAI) : ManualSetValue<ObjectGuid>(botAI, ObjectGuid::Empty) { }
+        RpgTargetValue(PlayerbotAI* botAI, string name = "rpg target") : ManualSetValue<GuidPosition>(ai, GuidPosition(), name) { }
 };
 
 class TravelTargetValue : public ManualSetValue<TravelTarget*>
 {
     public:
-        TravelTargetValue(PlayerbotAI* botAI) : ManualSetValue<TravelTarget*>(botAI, new TravelTarget(botAI)) { }
+        TravelTargetValue(PlayerbotAI* botAI, string name = "travel target") : ManualSetValue<TravelTarget*>(botAI, new TravelTarget(botAI), name) { }
 
         virtual ~TravelTargetValue() { delete value; }
 };
@@ -88,13 +88,13 @@ class IgnoreRpgTargetValue : public ManualSetValue<GuidSet&>
 class TalkTargetValue : public ManualSetValue<ObjectGuid>
 {
     public:
-        TalkTargetValue(PlayerbotAI* botAI) : ManualSetValue<ObjectGuid>(botAI, ObjectGuid::Empty) { }
+        TalkTargetValue(PlayerbotAI* botAI, string name = "talk target") : ManualSetValue<ObjectGuid>(botAI, ObjectGuid::Empty, name) { }
 };
 
 class PullTargetValue : public ManualSetValue<ObjectGuid>
 {
     public:
-        PullTargetValue(PlayerbotAI* botAI) : ManualSetValue<ObjectGuid>(botAI, ObjectGuid::Empty) { }
+        PullTargetValue(PlayerbotAI* botAI, string name = "pull target") : ManualSetValue<ObjectGuid>(botAI, ObjectGuid::Empty, name) { }
 };
 
 #endif

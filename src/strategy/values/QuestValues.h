@@ -5,37 +5,62 @@
 #ifndef _PLAYERBOT_QUESTVALUES_H
 #define _PLAYERBOT_QUESTVALUES_H
 
+#include "NamedObjectContext.h"
 #include "TravelMgr.h"
 #include "Value.h"
 
+class Player;
 class PlayerbotAI;
 
 struct CreatureData;
 struct GameObjectData;
 
-enum class QuestRelationType : uint32
-{
-    objective1 = 0,
-    objective2 = 1,
-    objective3 = 2,
-    objective4 = 3,
-    questGiver = 4,
-    questTaker = 5
-};
-
-typedef std::unordered_map<QuestRelationType, std::vector<GuidPosition>> questGuidps;
-typedef std::unordered_map<uint32, questGuidps> questGuidpMap;
-
-typedef std::unordered_map<uint32, std::vector<GuidPosition>> questGivers;
-
-//Cheat class copy to hack into the loot system
-class LootTemplateAccess
+class QuestObjectMgr : ObjectMgr
 {
     public:
-        class  LootGroup;                                   // A set of loot definitions for items (refs are not allowed inside)
-        typedef std::vector<LootGroup> LootGroups;
-        LootStoreItemList Entries;                          // not grouped only
-        LootGroups        Groups;                           // groups have own (optimized) processing, grouped entries go there
+        QuestRelationsMap& GetCreatureQuestRelationsMap() { return m_CreatureQuestRelations; }
+        QuestRelationsMap& GetCreatureQuestInvolvedRelationsMap() { return m_CreatureQuestInvolvedRelations; }
+        QuestRelationsMap& GetGOQuestRelationsMap() { return m_GOQuestRelations; }
+        QuestRelationsMap& GetGOQuestInvolvedRelationsMap() { return m_GOQuestInvolvedRelations; }
+};
+
+enum class QuestRelationFlag : uint32
+{
+    none                 = 0,
+    objective1           = 1,
+    objective2           = 2,
+    objective3           = 4,
+    objective4           = 8,
+    questGiver           = 16,
+    questTaker           = 32,
+    maxQuestRelationFlag = 64
+};
+
+//                     questId, QuestRelationFlag
+typedef unordered_map<uint32, uint32> questRelationMap;
+//                     entry
+typedef unordered_map<int32, questRelationMap> entryQuestRelationMap;
+
+//                      entry
+typedef unordered_map<int32, list<GuidPosition>> questEntryGuidps;
+
+//                      QuestRelationFlag
+typedef unordered_map<uint32, questEntryGuidps> questRelationGuidps;
+
+//                      questId
+typedef unordered_map<uint32, questRelationGuidps> questGuidpMap;
+
+//                      questId
+typedef unordered_map<uint32, list<GuidPosition>> questGiverMap;
+
+
+//Returns the quest relation Flags for all entries and quests
+class EntryQuestRelationMapValue : public SingleCalculatedValue<entryQuestRelationMap>
+{
+    public:
+        EntryQuestRelationMapValue(PlayerbotAI* ai) : SingleCalculatedValue(ai, "entry quest relation map") {}
+
+        entryQuestRelationMap Calculate() override;
 };
 
 //Generic quest object finder
@@ -50,8 +75,10 @@ class FindQuestObjectData
         questGuidpMap GetResult() const { return data; };
 
     private:
-        std::unordered_map<int32, std::vector<std::pair<uint32, QuestRelationType>>> entryMap;
-        std::unordered_map<uint32, std::vector<std::pair<uint32, QuestRelationType>>> itemMap;
+        std::unordered_map<int32, std::vector<std::pair<uint32, QuestRelationFlag>>>  entryMap;
+        std::unordered_map<uint32, std::vector<std::pair<uint32, QuestRelationFlag>>> itemMap;
+
+        entryQuestRelationMap relationMap;
 
         questGuidpMap data;
 };
@@ -66,12 +93,12 @@ class QuestGuidpMapValue : public SingleCalculatedValue<questGuidpMap>
 };
 
 //All questgivers and their quests that are Useful for a specific level
-class QuestGiversValue : public SingleCalculatedValue<questGivers>, public Qualified
+class QuestGiversValue : public SingleCalculatedValue<questGiverMap>, public Qualified
 {
 	public:
         QuestGiversValue(PlayerbotAI* botAI) : SingleCalculatedValue(botAI, "quest givers") { }
 
-        questGivers Calculate() override;
+        questGiverMap Calculate() override;
 };
 
 //All questgivers that have a quest for the bot.
@@ -105,9 +132,56 @@ class ActiveQuestObjectivesValue : public CalculatedValue<std::vector<GuidPositi
 class FreeQuestLogSlotValue : public Uint8CalculatedValue
 {
     public:
-        FreeQuestLogSlotValue(PlayerbotAI* botAI) : Uint8CalculatedValue(botAI, "free quest log slots") { }
+        FreeQuestLogSlotValue(PlayerbotAI* botAI) : Uint8CalculatedValue(botAI, "free quest log slots", 2) { }
 
         uint8 Calculate() override;
+};
+
+//Dialog status npc
+class DialogStatusValue : public Uint32CalculatedValue, public Qualified
+{
+    public:
+        DialogStatusValue(PlayerbotAI* ai, string name = "dialog status") : Uint32CalculatedValue(ai, name , 2) {}
+
+        static uint32 getDialogStatus(Player* bot, int32 questgiver, uint32 questId = 0);
+
+        uint32 Calculate() override;
+};
+
+//Dialog status npc quest
+class DialogStatusQuestValue : public DialogStatusValue
+{
+    public:
+        DialogStatusQuestValue(PlayerbotAI* ai) : DialogStatusValue(ai, "dialog status quest") {}
+
+        uint32 Calculate() override;
+};
+
+//Can accept quest from npc
+class CanAcceptQuestValue : public BoolCalculatedValue, public Qualified
+{
+    public:
+        CanAcceptQuestValue(PlayerbotAI* ai) : BoolCalculatedValue(ai, "can accept quest npc") {}
+
+        bool Calculate() override
+};
+
+//Can accept low level quest from npc
+class CanAcceptQuestLowLevelValue : public BoolCalculatedValue, public Qualified
+{
+    public:
+        CanAcceptQuestLowLevelValue(PlayerbotAI* ai) : BoolCalculatedValue(ai, "can accept quest low level npc") {}
+
+        bool Calculate() override;
+};
+
+//Can hand in quest to npc
+class CanTurnInQuestValue : public BoolCalculatedValue, public Qualified
+{
+    public:
+        CanTurnInQuestValue(PlayerbotAI* ai) : BoolCalculatedValue(ai, "can turn in quest npc") {}
+
+        bool Calculate() override;
 };
 
 #endif

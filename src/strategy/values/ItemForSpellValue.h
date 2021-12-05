@@ -15,7 +15,7 @@ class SpellInfo;
 class ItemForSpellValue : public CalculatedValue<Item*>, public Qualified
 {
 	public:
-        ItemForSpellValue(PlayerbotAI* botAI) : CalculatedValue<Item*>(botAI) { }
+        ItemForSpellValue(PlayerbotAI* botAI, string name = "item for spell") : CalculatedValue<Item*>(ai, name) {}
 
         Item* Calculate() override;
 
